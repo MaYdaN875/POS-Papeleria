@@ -158,35 +158,43 @@ export default function DashboardPage() {
       </div>
 
       {/* Inventory Alerts */}
-      <div className="dashboard-low-stock">
-        <div className="dashboard-low-stock-header">
+      <div className="dashboard-inventory">
+        <div className="dashboard-inventory-header">
           <div>
-            <span className="dashboard-low-stock-label">INVENTARIO BAJO</span>
-            <h2 className="dashboard-low-stock-title">
+            <span className="dashboard-inventory-alert">INVENTARIO BAJO</span>
+            <h2 className="dashboard-inventory-title">
               Productos que Requieren Atención
             </h2>
           </div>
-          <button className="dashboard-low-stock-btn" onClick={() => navigate('/sales')}>
+          <button className="dashboard-inventory-link-btn" onClick={() => navigate('/inventory')}>
             Ver Todo el Inventario <ArrowUpRight size={16} />
           </button>
         </div>
 
-        <div className="dashboard-low-stock-grid">
+        <div className="dashboard-inventory-grid">
           {lowStock.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', padding: '24px', textAlign: 'center', color: 'var(--color-text-secondary)', background: 'var(--color-bg-body)', borderRadius: '12px' }}>
               No hay productos con stock bajo 🎉
             </div>
           ) : (
             lowStock.map((item: any) => (
-              <div className="dashboard-stock-item" key={item.id}>
-                <div className="dashboard-stock-item-info">
-                  <span className="dashboard-stock-item-name">{item.name}</span>
-                  <span className="dashboard-stock-item-category">
+              <div className="dashboard-inventory-item" key={item.id}>
+                <div className="dashboard-inventory-item-info">
+                  <span className="dashboard-inventory-item-name">{item.name}</span>
+                  <span className="dashboard-inventory-item-category">
                     {item.category}
                   </span>
                 </div>
-                <div className="dashboard-stock-item-qty dashboard-stock-item-qty--critical">
-                  {item.stock} u.
+                <div className="dashboard-inventory-item-stock">
+                  <div className="dashboard-inventory-item-bar-track">
+                    <div 
+                      className="dashboard-inventory-item-bar-fill" 
+                      style={{ width: `${Math.max(5, Math.min(100, (item.stock / 10) * 100))}%` }}
+                    ></div>
+                  </div>
+                  <span className="dashboard-inventory-item-count">
+                    {item.stock} u.
+                  </span>
                 </div>
               </div>
             ))

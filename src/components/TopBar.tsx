@@ -1,4 +1,4 @@
-import { Wifi, RefreshCw, LogOut } from 'lucide-react';
+import { Search, Bell, Wifi, RefreshCw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../services/authService';
 import '../styles/TopBar.css';
@@ -14,13 +14,32 @@ export default function TopBar() {
   };
 
   return (
-    <header className="topbar" style={{ justifyContent: 'flex-end' }}>
+    <header className="topbar">
+      <div className="topbar-search">
+        <Search size={18} className="topbar-search-icon" />
+        <input
+          type="text"
+          placeholder="Buscar productos, órdenes..."
+          className="topbar-search-input"
+        />
+      </div>
+
       <div className="topbar-actions">
+        <button className="topbar-icon-btn" title="Notificaciones">
+          <Bell size={20} />
+        </button>
         <button className="topbar-icon-btn topbar-icon-btn--online" title="Servidor Conectado">
           <Wifi size={20} />
         </button>
         <button className="topbar-icon-btn" title="Recargar y Sincronizar" onClick={() => window.location.reload()}>
           <RefreshCw size={20} />
+        </button>
+
+        <button
+          className="topbar-new-sale-btn"
+          onClick={() => navigate('/sales')}
+        >
+          Nueva Venta
         </button>
 
         <div style={{ width: '1px', height: '24px', background: 'var(--color-border)', margin: '0 8px' }}></div>
