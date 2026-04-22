@@ -63,3 +63,41 @@ export function getCategories(products: Product[]): string[] {
   const cats = new Set(products.map((p) => p.parentCategory));
   return ['Todos', ...Array.from(cats).sort()];
 }
+
+/**
+ * Actualiza el precio y stock de un producto
+ */
+export async function updateProduct(id: number, price: number, stock: number): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    
+    if (!token) {
+      return { ok: false, message: 'No hay sesión iniciada' };
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('product_id', id.toString());
+    formData.append('price', price.toString());
+    formData.append('stock', stock.toString());
+
+    // Nota: El endpoint debe estar en /admin/sales/ o el directorio adecuado del servidor
+    const response = await fetch(`${ENDPOINTS.POS_INVENTORY_UPDATE}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return { ok: false, message: 'Error de red al actualizar' };
+  }
+}

@@ -166,7 +166,7 @@ export default function DashboardPage() {
               Productos que Requieren Atención
             </h2>
           </div>
-          <button className="dashboard-low-stock-btn" onClick={() => navigate('/sales')}>
+          <button className="dashboard-inventory-link-btn" onClick={() => navigate('/inventory')}>
             Ver Todo el Inventario <ArrowUpRight size={16} />
           </button>
         </div>

@@ -113,12 +113,12 @@ try {
     SELECT
       p.id,
       p.name,
-      p.stock,
+      p.stock_quantity AS stock,
       COALESCE(c.name, 'General') AS category
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
-    WHERE p.is_active = 1 AND p.stock < 10
-    ORDER BY p.stock ASC
+    WHERE p.is_active = 1 AND p.stock_quantity < 10
+    ORDER BY p.stock_quantity ASC
     LIMIT 8
   ");
   $lowStock = $lowStockStmt->fetchAll(PDO::FETCH_ASSOC);

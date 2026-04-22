@@ -6,6 +6,7 @@ import SalesPage from './pages/SalesPage';
 import PaymentPage from './pages/PaymentPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
+import InventoryPage from './pages/InventoryPage';
 
 export default function App() {
   return (
@@ -24,8 +25,8 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/sales" element={<SalesPage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
               {/* Rutas futuras */}
-              <Route path="/inventory" element={<DashboardPage />} />
               <Route path="/cash" element={<DashboardPage />} />
               <Route path="/reports" element={<DashboardPage />} />
               <Route path="/billing" element={<DashboardPage />} />

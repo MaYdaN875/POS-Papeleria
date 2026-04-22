@@ -21,4 +21,5 @@ export const ENDPOINTS = {
   // Nuevos endpoints para el POS
   POS_SALE_CREATE:   `${API_BASE_URL}/admin/sales/pos_create.php`,
   POS_DASHBOARD:     `${API_BASE_URL}/admin/sales/pos_dashboard.php`,
+  POS_INVENTORY_UPDATE: `${API_BASE_URL}/admin/sales/pos_inventory_update.php`,
 };
