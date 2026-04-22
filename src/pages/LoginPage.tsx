@@ -53,16 +53,13 @@ export default function LoginPage() {
       <header className="login-header">
         <div className="login-header-logo">
           <div className="login-header-logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14,2 14,8 20,8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
             </svg>
           </div>
           <div>
-            <span className="login-header-title">Digital Atelier</span>
-            <span className="login-header-subtitle">STATIONERY POS</span>
+            <span className="login-header-title">Papelería Godart</span>
+            <span className="login-header-subtitle">PUNTO DE VENTA</span>
           </div>
         </div>
 
