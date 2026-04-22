@@ -17,6 +17,17 @@ export interface DashboardSummary {
     totalRevenue: number;
     totalOrders: number;
   }[];
+  low_stock: {
+    id: number;
+    name: string;
+    stock: number;
+    category: string;
+  }[];
+  hourly_sales: {
+    hour: number;
+    label: string;
+    amount: number;
+  }[];
   periodStart: string | null;
 }
 
@@ -34,6 +45,8 @@ export async function getPosDashboard(): Promise<DashboardSummary> {
         totalUnits: 0,
         totalOrders: 0,
         products: [],
+        low_stock: [],
+        hourly_sales: [],
         periodStart: null,
       };
     }
@@ -49,6 +62,8 @@ export async function getPosDashboard(): Promise<DashboardSummary> {
         totalRevenue: p.total_revenue,
         totalOrders: p.total_orders,
       })),
+      low_stock: data.low_stock || [],
+      hourly_sales: data.hourly_sales || [],
       periodStart: data.period_start || null,
     };
   } catch (err) {
@@ -58,7 +73,27 @@ export async function getPosDashboard(): Promise<DashboardSummary> {
       totalUnits: 0,
       totalOrders: 0,
       products: [],
+      low_stock: [],
+      hourly_sales: [],
       periodStart: null,
     };
   }
+}
+
+/**
+ * Cierra la sesión de caja.
+ */
+export async function closeCashSession(payload: {
+  expected_cash: number;
+  expected_card: number;
+  counted_cash: number;
+  counted_card: number;
+  difference?: number;
+  notes?: string;
+}) {
+  const res = await authFetch(ENDPOINTS.POS_CASH_CLOSE, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.json();
 }
