@@ -1,0 +1,24 @@
+/**
+ * Configuración central del POS.
+ * La API es la misma que usa la tienda web de Papelería Godart en Hostinger.
+ */
+
+export const API_BASE_URL = 'https://godart-papelería.com/api';
+
+// Endpoints existentes (de la tienda web)
+export const ENDPOINTS = {
+  // Auth
+  LOGIN:          `${API_BASE_URL}/admin/auth/login.php`,
+  LOGOUT:         `${API_BASE_URL}/admin/auth/logout.php`,
+
+  // Productos (público, sin auth)
+  PRODUCTS:       `${API_BASE_URL}/public/products.php`,
+  CATEGORIES:     `${API_BASE_URL}/public/categories.php`,
+
+  // Ventas del día (admin, con auth)
+  SALES_TODAY:    `${API_BASE_URL}/admin/sales/today.php`,
+
+  // Nuevos endpoints para el POS
+  POS_SALE_CREATE:   `${API_BASE_URL}/admin/sales/pos_create.php`,
+  POS_DASHBOARD:     `${API_BASE_URL}/admin/sales/pos_dashboard.php`,
+};
