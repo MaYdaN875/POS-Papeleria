@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { login, isAuthenticated, checkServerStatus } from '../services/authService';
 import '../styles/LoginPage.css';
 
 export default function LoginPage() {
@@ -8,11 +9,42 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [serverOnline, setServerOnline] = useState<boolean | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Si ya está logueado, ir al dashboard
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  // Verificar estado del servidor
+  useEffect(() => {
+    checkServerStatus().then(setServerOnline);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Por ahora solo navegamos al dashboard
-    navigate('/dashboard');
+    setError('');
+
+    if (!email.trim() || !password.trim()) {
+      setError('Ingresa usuario y contraseña');
+      return;
+    }
+
+    setLoading(true);
+
+    const result = await login(email.trim(), password);
+
+    setLoading(false);
+
+    if (result.ok) {
+      navigate('/dashboard');
+    } else {
+      setError(result.message || 'Credenciales incorrectas');
+    }
   };
 
   return (
@@ -34,9 +66,21 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="login-server-status">
-          <span className="login-server-dot"></span>
-          Servidor Conectado
+        <div
+          className={`login-server-status ${
+            serverOnline === false ? 'login-server-status--offline' : ''
+          }`}
+        >
+          <span
+            className={`login-server-dot ${
+              serverOnline === false ? 'login-server-dot--offline' : ''
+            }`}
+          ></span>
+          {serverOnline === null
+            ? 'Verificando...'
+            : serverOnline
+              ? 'Servidor Conectado'
+              : 'Servidor No Disponible'}
         </div>
       </header>
 
@@ -48,16 +92,23 @@ export default function LoginPage() {
             Accede al panel administrativo de la papelería
           </p>
 
+          {error && (
+            <div className="login-error">
+              {error}
+            </div>
+          )}
+
           <div className="login-field">
             <label className="login-label">USUARIO / EMAIL</label>
             <div className="login-input-wrapper">
               <User size={18} className="login-input-icon" />
               <input
                 type="text"
-                placeholder="ej. admin@atelier.com"
+                placeholder="ej. admin@godart.com"
                 className="login-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
           </div>
@@ -72,6 +123,7 @@ export default function LoginPage() {
                 className="login-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
               <button
                 type="button"
@@ -83,8 +135,16 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" className="login-btn">
-            Iniciar Sesión <ArrowRight size={18} />
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 size={18} className="login-spinner" /> Conectando...
+              </>
+            ) : (
+              <>
+                Iniciar Sesión <ArrowRight size={18} />
+              </>
+            )}
           </button>
 
           <a href="#" className="login-forgot">

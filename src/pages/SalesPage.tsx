@@ -1,58 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, ArrowRight } from 'lucide-react';
-import { products, sampleCart, type CartItem, type Product } from '../data/mockData';
+import { Minus, Plus, ArrowRight, Loader2, Search, Trash2 } from 'lucide-react';
+import { getProducts, getCategories, type Product } from '../services/productService';
+import { useCart } from '../context/CartContext';
+import { API_BASE_URL } from '../config';
 import '../styles/SalesPage.css';
-
-const categories = ['Todos', 'Papel', 'Escritura', 'Arte'];
 
 export default function SalesPage() {
   const navigate = useNavigate();
+  const { cart, addToCart, updateQuantity, removeFromCart, subtotal } = useCart();
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Todos']);
   const [activeCategory, setActiveCategory] = useState('Todos');
-  const [cart, setCart] = useState<CartItem[]>(sampleCart);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const featured = products.find((p) => p.featured);
+  // Cargar productos de la API
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true);
+        const prods = await getProducts();
+        setProducts(prods);
+        setCategories(getCategories(prods));
+        setError('');
+      } catch (err) {
+        console.error(err);
+        setError('No se pudieron cargar los productos');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
 
+  // Filtrar productos por categoría y búsqueda
   const filteredProducts = products.filter((p) => {
-    if (activeCategory === 'Todos') return !p.featured;
-    const categoryMap: Record<string, string> = {
-      'Papel': 'paper',
-      'Escritura': 'writing',
-      'Arte': 'art',
-    };
-    return p.category === categoryMap[activeCategory] && !p.featured;
+    const matchesCategory =
+      activeCategory === 'Todos' || p.parentCategory === activeCategory;
+    const matchesSearch =
+      searchTerm === '' ||
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.brand.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
 
-  const orderNumber = '#22094-AT';
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const orderNumber = `#${Date.now().toString().slice(-5)}-POS`;
 
-  const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-  };
-
-  const updateQuantity = (productId: number, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) =>
-          item.product.id === productId
-            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+  /**
+   * Construye la URL de la imagen del producto.
+   */
+  const getImageUrl = (imagePath: string) => {
+    if (imagePath.startsWith('http')) return imagePath;
+    // Las imágenes están en Hostinger
+    return `https://godart-papelería.com${imagePath}`;
   };
 
   return (
@@ -61,13 +64,13 @@ export default function SalesPage() {
       <div className="sales-products">
         <div className="sales-products-header">
           <div>
-            <h1 className="sales-title">Productos rápidos</h1>
+            <h1 className="sales-title">Productos</h1>
             <p className="sales-subtitle">
-              Artículos más vendidos de tu papelería
+              {products.length} productos disponibles
             </p>
           </div>
           <div className="sales-categories">
-            {categories.map((cat) => (
+            {categories.slice(0, 6).map((cat) => (
               <button
                 key={cat}
                 className={`sales-category-btn ${
@@ -81,37 +84,48 @@ export default function SalesPage() {
           </div>
         </div>
 
-        <div className="sales-products-grid">
-          {/* Featured Product */}
-          {featured && activeCategory === 'Todos' && (
-            <div
-              className="sales-featured-card"
-              onClick={() => addToCart(featured)}
-            >
-              <div className="sales-featured-image">
-                <span className="sales-featured-emoji">{featured.image}</span>
-              </div>
-              <div className="sales-featured-overlay">
-                <span className="sales-featured-badge">DESTACADO</span>
-                <h3 className="sales-featured-name">{featured.name}</h3>
-                <p className="sales-featured-sub">{featured.subtitle}</p>
-                <span className="sales-featured-price">
-                  ${featured.price.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          )}
+        {/* Search bar */}
+        <div className="sales-search">
+          <Search size={18} className="sales-search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar producto por nombre..."
+            className="sales-search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          {/* Product Grid */}
+        {/* Loading / Error / Products */}
+        {loading ? (
+          <div className="sales-loading">
+            <Loader2 size={32} className="sales-spinner" />
+            <p>Cargando productos...</p>
+          </div>
+        ) : error ? (
+          <div className="sales-error">
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>
+              Reintentar
+            </button>
+          </div>
+        ) : (
           <div className="sales-grid">
-            {filteredProducts.slice(0, 4).map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 className="sales-product-card"
                 key={product.id}
                 onClick={() => addToCart(product)}
               >
                 <div className="sales-product-image">
-                  <span className="sales-product-emoji">{product.image}</span>
+                  <img
+                    src={getImageUrl(product.image)}
+                    alt={product.name}
+                    className="sales-product-img"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `${API_BASE_URL}/../images/boligrafos.jpg`;
+                    }}
+                  />
                 </div>
                 <div className="sales-product-info">
                   <span className="sales-product-name">{product.name}</span>
@@ -119,18 +133,30 @@ export default function SalesPage() {
                     ${product.price.toFixed(2)}
                   </span>
                 </div>
-                <span className="sales-product-stock">
-                  EN STOCK: {product.stock}
+                {product.isOffer && (
+                  <span className="sales-product-offer">
+                    -{product.discountPercentage}%
+                  </span>
+                )}
+                <span
+                  className={`sales-product-stock ${
+                    product.stock < 5 ? 'sales-product-stock--low' : ''
+                  }`}
+                >
+                  {product.stock > 0
+                    ? `EN STOCK: ${product.stock}`
+                    : 'AGOTADO'}
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        )}
 
-        <button className="sales-browse-btn">
-          Ver Catálogo Completo
-          <ArrowRight size={16} />
-        </button>
+        {!loading && filteredProducts.length === 0 && !error && (
+          <div className="sales-empty">
+            <p>No se encontraron productos</p>
+          </div>
+        )}
       </div>
 
       {/* Cart Section */}
@@ -140,42 +166,66 @@ export default function SalesPage() {
             <h2 className="sales-cart-title">Carrito</h2>
             <span className="sales-cart-order">Orden {orderNumber}</span>
           </div>
-          <span className="sales-cart-badge">{cart.length} ARTÍCULOS</span>
+          <span className="sales-cart-badge">
+            {cart.length} ARTÍCULOS
+          </span>
         </div>
 
         <div className="sales-cart-items">
-          {cart.map((item) => (
-            <div className="sales-cart-item" key={item.product.id}>
-              <div className="sales-cart-item-image">
-                <span>{item.product.image}</span>
-              </div>
-              <div className="sales-cart-item-info">
-                <span className="sales-cart-item-name">
-                  {item.product.name}
-                </span>
-                <div className="sales-cart-item-controls">
-                  <button
-                    className="sales-cart-qty-btn"
-                    onClick={() => updateQuantity(item.product.id, -1)}
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="sales-cart-qty">
-                    {String(item.quantity).padStart(2, '0')}
+          {cart.length === 0 ? (
+            <div className="sales-cart-empty">
+              <p>Agrega productos al carrito</p>
+            </div>
+          ) : (
+            cart.map((item) => (
+              <div className="sales-cart-item" key={item.product.id}>
+                <div className="sales-cart-item-image">
+                  <img
+                    src={getImageUrl(item.product.image)}
+                    alt={item.product.name}
+                    className="sales-cart-item-img"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div className="sales-cart-item-info">
+                  <span className="sales-cart-item-name">
+                    {item.product.name}
                   </span>
-                  <button
-                    className="sales-cart-qty-btn"
-                    onClick={() => updateQuantity(item.product.id, 1)}
+                  <div className="sales-cart-item-controls">
+                    <button
+                      className="sales-cart-qty-btn"
+                      onClick={() => updateQuantity(item.product.id, -1)}
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="sales-cart-qty">
+                      {String(item.quantity).padStart(2, '0')}
+                    </span>
+                    <button
+                      className="sales-cart-qty-btn"
+                      onClick={() => updateQuantity(item.product.id, 1)}
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                  <button 
+                    onClick={() => removeFromCart(item.product.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '4px' }}
+                    title="Eliminar producto"
                   >
-                    <Plus size={14} />
+                    <Trash2 size={16} />
                   </button>
+                  <span className="sales-cart-item-price">
+                    ${(item.product.price * item.quantity).toFixed(2)}
+                  </span>
                 </div>
               </div>
-              <span className="sales-cart-item-price">
-                ${(item.product.price * item.quantity).toFixed(2)}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="sales-cart-footer">
@@ -188,6 +238,7 @@ export default function SalesPage() {
           <button
             className="sales-checkout-btn"
             onClick={() => navigate('/payment')}
+            disabled={cart.length === 0}
           >
             Cobrar
             <ArrowRight size={18} />

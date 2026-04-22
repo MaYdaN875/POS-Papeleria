@@ -243,3 +243,47 @@
   bottom: 60px;
   right: 100px;
 }
+
+/* Error message */
+.login-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-lg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* Spinner */
+.login-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Disabled state */
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.login-input:disabled {
+  opacity: 0.6;
+}
+
+/* Server offline */
+.login-server-status--offline {
+  color: var(--color-danger);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.login-server-dot--offline {
+  background: var(--color-danger);
+}
+

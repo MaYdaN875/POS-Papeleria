@@ -4,30 +4,37 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import SalesPage from './pages/SalesPage';
 import PaymentPage from './pages/PaymentPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import { CartProvider } from './context/CartContext';
 
 export default function App() {
   return (
     <HashRouter>
-      <Routes>
-        {/* Login - sin sidebar/topbar */}
-        <Route path="/" element={<LoginPage />} />
+      <CartProvider>
+        <Routes>
+          {/* Login - sin sidebar/topbar */}
+          <Route path="/" element={<LoginPage />} />
 
-        {/* Payment - pantalla completa sin sidebar */}
-        <Route path="/payment" element={<PaymentPage />} />
+          {/* Rutas Protegidas */}
+          <Route element={<ProtectedRoute />}>
+            {/* Payment - pantalla completa sin sidebar */}
+            <Route path="/payment" element={<PaymentPage />} />
 
-        {/* Rutas con Layout (sidebar + topbar) */}
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/sales" element={<SalesPage />} />
-          {/* Rutas futuras */}
-          <Route path="/inventory" element={<DashboardPage />} />
-          <Route path="/cash" element={<DashboardPage />} />
-          <Route path="/reports" element={<DashboardPage />} />
-          <Route path="/billing" element={<DashboardPage />} />
-          <Route path="/users" element={<DashboardPage />} />
-          <Route path="/settings" element={<DashboardPage />} />
-        </Route>
-      </Routes>
+            {/* Rutas con Layout (sidebar + topbar) */}
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/sales" element={<SalesPage />} />
+              {/* Rutas futuras */}
+              <Route path="/inventory" element={<DashboardPage />} />
+              <Route path="/cash" element={<DashboardPage />} />
+              <Route path="/reports" element={<DashboardPage />} />
+              <Route path="/billing" element={<DashboardPage />} />
+              <Route path="/users" element={<DashboardPage />} />
+              <Route path="/settings" element={<DashboardPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </CartProvider>
     </HashRouter>
   );
 }
