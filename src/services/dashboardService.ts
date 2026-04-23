@@ -97,3 +97,40 @@ export async function closeCashSession(payload: {
   });
   return res.json();
 }
+
+export interface SalesHistoryResponse {
+  ok: boolean;
+  message?: string;
+  sales?: any[];
+  summary?: {
+    total_revenue: number;
+    total_orders: number;
+  };
+  sale?: any;
+}
+
+export async function getSalesHistory(params: { date_start?: string, date_end?: string, limit?: number, sale_id?: number } = {}): Promise<SalesHistoryResponse> {
+  try {
+    const query = new URLSearchParams();
+    if (params.date_start) query.append('date_start', params.date_start);
+    if (params.date_end) query.append('date_end', params.date_end);
+    if (params.limit) query.append('limit', params.limit.toString());
+    if (params.sale_id) query.append('sale_id', params.sale_id.toString());
+
+    const queryString = query.toString();
+    const url = queryString ? `${ENDPOINTS.POS_SALES_HISTORY}?${queryString}` : ENDPOINTS.POS_SALES_HISTORY;
+    
+    const res = await authFetch(url);
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await res.json();
+    } else {
+      const text = await res.text();
+      console.error("Non-JSON response received:", text);
+      return { ok: false, message: "El servidor devolvió un error inesperado (revisa la consola)" };
+    }
+  } catch (err: any) {
+    console.error('Sales history fetch error:', err);
+    return { ok: false, message: err.message };
+  }
+}
