@@ -3,7 +3,7 @@
  * Usa el mismo endpoint de login admin que la tienda web.
  */
 
-import { ENDPOINTS, API_BASE_URL } from '../config';
+import { API_BASE_URL, ENDPOINTS } from '../config';
 
 const TOKEN_KEY = 'pos_token';
 const ADMIN_ID_KEY = 'pos_admin_id';
@@ -15,6 +15,8 @@ export interface LoginResult {
   token?: string;
   adminId?: number;
 }
+
+const ROLE_KEY = 'pos_role';
 
 /**
  * Intenta hacer login con email/usuario y contraseña.
@@ -33,6 +35,11 @@ export async function login(identifier: string, password: string): Promise<Login
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(ADMIN_ID_KEY, String(data.adminId));
       localStorage.setItem(EXPIRES_KEY, data.expiresAt);
+      
+      // Guardar el rol (si no viene, por defecto es cashier hasta que se valide)
+      const role = data.role || (data.adminId === 1 ? 'admin' : 'cashier');
+      localStorage.setItem(ROLE_KEY, role);
+
       return { ok: true, token: data.token, adminId: data.adminId };
     }
 
@@ -49,22 +56,28 @@ export async function login(identifier: string, password: string): Promise<Login
 export async function logout(): Promise<void> {
   const token = getToken();
   if (token) {
-    try {
-      await fetch(ENDPOINTS.LOGOUT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    } catch {
-      // Ignorar error de red al hacer logout
-    }
+    // Mandamos la petición pero NO la esperamos (no usamos await)
+    // Así el usuario no tiene que esperar al servidor para salir
+    fetch(ENDPOINTS.LOGOUT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }).catch(() => {}); 
   }
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(ADMIN_ID_KEY);
   localStorage.removeItem(EXPIRES_KEY);
+  localStorage.removeItem(ROLE_KEY);
 }
+
+export const authService = {
+  setRole: (role: string) => localStorage.setItem(ROLE_KEY, role),
+  getRole: () => localStorage.getItem(ROLE_KEY) || 'cashier',
+  isAdmin: () => localStorage.getItem(ROLE_KEY) === 'admin',
+  logout: logout
+};
 
 /**
  * Devuelve el token guardado o null.
