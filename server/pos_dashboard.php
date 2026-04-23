@@ -14,6 +14,17 @@ require_once __DIR__ . '/../../_admin_common.php';
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
 
+if (!function_exists('adminTableExists')) {
+  function adminTableExists($pdo, $tableName) {
+    try {
+      $result = $pdo->query("SELECT 1 FROM {$tableName} LIMIT 1");
+      return $result !== false;
+    } catch (Exception $e) {
+      return false;
+    }
+  }
+}
+
 try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
