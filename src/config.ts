@@ -23,4 +23,5 @@ export const ENDPOINTS = {
   POS_DASHBOARD:     `${API_BASE_URL}/admin/sales/pos_dashboard.php`,
   POS_INVENTORY_UPDATE: `${API_BASE_URL}/admin/sales/pos_inventory_update.php`,
   POS_CASH_CLOSE:    `${API_BASE_URL}/admin/sales/pos_cash_close.php`,
+  POS_SALES_HISTORY: `${API_BASE_URL}/admin/sales/pos_sales_history.php`,
 };

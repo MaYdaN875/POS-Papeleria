@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
 import InventoryPage from './pages/InventoryPage';
 import CashPage from './pages/CashPage';
+import { ReportsPage } from './pages/ReportsPage';
 
 export default function App() {
   return (
@@ -29,7 +30,7 @@ export default function App() {
               <Route path="/inventory" element={<InventoryPage />} />
               <Route path="/cash" element={<CashPage />} />
               {/* Rutas futuras */}
-              <Route path="/reports" element={<DashboardPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/billing" element={<DashboardPage />} />
               <Route path="/users" element={<DashboardPage />} />
               <Route path="/settings" element={<DashboardPage />} />
