@@ -9,6 +9,7 @@ import { CartProvider } from './context/CartContext';
 import InventoryPage from './pages/InventoryPage';
 import CashPage from './pages/CashPage';
 import { ReportsPage } from './pages/ReportsPage';
+import UsersPage from './pages/UsersPage';
 
 export default function App() {
   return (
@@ -27,13 +28,16 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/sales" element={<SalesPage />} />
-              <Route path="/inventory" element={<InventoryPage />} />
               <Route path="/cash" element={<CashPage />} />
-              {/* Rutas futuras */}
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/billing" element={<DashboardPage />} />
-              <Route path="/users" element={<DashboardPage />} />
-              <Route path="/settings" element={<DashboardPage />} />
+              
+              {/* Rutas SOLO para Administradores */}
+              <Route element={<ProtectedRoute requireAdmin={true} />}>
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/billing" element={<DashboardPage />} />
+                <Route path="/settings" element={<DashboardPage />} />
+              </Route>
             </Route>
           </Route>
         </Routes>

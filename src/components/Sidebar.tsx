@@ -8,19 +8,25 @@ import {
   Users,
   Settings,
 } from 'lucide-react';
+import { authService } from '../services/authService';
 import '../styles/Sidebar.css';
 
 const navItems = [
-  { to: '/dashboard', icon: ShoppingCart, label: 'Ventas' },
-  { to: '/inventory', icon: Package, label: 'Inventario' },
-  { to: '/cash', icon: Wallet, label: 'Caja' },
-  { to: '/reports', icon: BarChart3, label: 'Reportes' },
-  { to: '/billing', icon: FileText, label: 'Facturación' },
-  { to: '/users', icon: Users, label: 'Usuarios' },
-  { to: '/settings', icon: Settings, label: 'Ajustes' },
+  { to: '/dashboard', icon: ShoppingCart, label: 'Ventas', adminOnly: false },
+  { to: '/inventory', icon: Package, label: 'Inventario', adminOnly: true },
+  { to: '/cash', icon: Wallet, label: 'Caja', adminOnly: false },
+  { to: '/reports', icon: BarChart3, label: 'Reportes', adminOnly: true },
+  { to: '/billing', icon: FileText, label: 'Facturación', adminOnly: true },
+  { to: '/users', icon: Users, label: 'Usuarios', adminOnly: true },
+  { to: '/settings', icon: Settings, label: 'Ajustes', adminOnly: true },
 ];
 
 export default function Sidebar() {
+  const isAdmin = authService.isAdmin();
+
+  // Filtrar ítems: si es adminOnly y NO es admin, no se muestra
+  const filteredItems = navItems.filter(item => !item.adminOnly || isAdmin);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -36,7 +42,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map((item) => (
+        {filteredItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
