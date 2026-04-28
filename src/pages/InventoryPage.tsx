@@ -94,33 +94,29 @@ export default function InventoryPage() {
   return (
     <div className="inventory-page">
       <div className="inventory-header">
-        <div>
+        <div className="inventory-header-left">
           <h1 className="inventory-title">Inventario</h1>
-          <p className="inventory-subtitle">
-            {products.length} productos registrados
-          </p>
+          <span className="inventory-count-badge">{products.length} productos</span>
         </div>
-        <div className="inventory-header-actions" style={{ display: 'flex', gap: '12px' }}>
+        
+        <div className="inventory-header-right">
+          <div className="inventory-search">
+            <Search size={18} className="inventory-search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar producto o marca..."
+              className="inventory-search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
           <button 
             className="topbar-new-sale-btn" 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
             onClick={() => alert('Función para agregar nuevo producto próximamente')}
           >
-            <span>+</span> Nuevo Producto
+            <span>+</span> Nuevo
           </button>
-        </div>
-      </div>
-
-      <div className="inventory-controls">
-        <div className="inventory-search">
-          <Search size={18} className="inventory-search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre o marca..."
-            className="inventory-search-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
       </div>
 

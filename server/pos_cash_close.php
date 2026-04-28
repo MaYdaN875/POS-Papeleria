@@ -32,23 +32,18 @@ if (empty($authHeader) || strpos($authHeader, 'Bearer pos_auth_') === false) {
 $token_parts = explode('_', $authHeader);
 $cashier_name = isset($token_parts[2]) ? $token_parts[2] : 'Desconocido';
 
-$db_host = 'localhost';
-$db_user = 'u159958117_xabibi';
-$db_pass = '1=V0f5aM>P>u';
-$db_name = 'u159958117_godart_store';
+require_once __DIR__ . '/../../_admin_common.php';
 
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-if ($conn->connect_error) {
+try {
+    $pdo = adminGetPdo();
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["ok" => false, "message" => "Error de conexión: " . $conn->connect_error]);
+    echo json_encode(["ok" => false, "message" => "Error de conexión: " . $e->getMessage()]);
     exit();
 }
 
-$conn->set_charset("utf8mb4");
-
 // Crear tabla si no existe (para asegurar compatibilidad)
-$conn->query("
+$pdo->query("
 CREATE TABLE IF NOT EXISTS pos_cash_sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cashier_name VARCHAR(100),
@@ -75,16 +70,12 @@ $status = 'ok';
 if ($difference < 0) $status = 'faltante';
 if ($difference > 0) $status = 'sobrante';
 
-$stmt = $conn->prepare("INSERT INTO pos_cash_sessions (cashier_name, expected_cash, expected_card, counted_cash, counted_card, difference, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sddddds", $cashier_name, $expected_cash, $expected_card, $counted_cash, $counted_card, $difference, $status);
+$stmt = $pdo->prepare("INSERT INTO pos_cash_sessions (cashier_name, expected_cash, expected_card, counted_cash, counted_card, difference, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
-if ($stmt->execute()) {
+if ($stmt->execute([$cashier_name, $expected_cash, $expected_card, $counted_cash, $counted_card, $difference, $status])) {
     echo json_encode(["ok" => true, "message" => "Caja cerrada exitosamente"]);
 } else {
     http_response_code(500);
     echo json_encode(["ok" => false, "message" => "Error al guardar sesión de caja"]);
 }
-
-$stmt->close();
-$conn->close();
 ?>

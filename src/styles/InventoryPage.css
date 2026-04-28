@@ -6,54 +6,76 @@
   background: var(--color-bg-card);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .inventory-header {
-  padding: var(--space-lg);
+  padding: 12px var(--space-lg);
   border-bottom: 1px solid var(--color-border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-bg-main);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: sticky;
+  top: -1px;
+  z-index: 10;
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.inventory-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 .inventory-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--color-text-primary);
+  margin: 0;
 }
 
-.inventory-subtitle {
+.inventory-count-badge {
+  background: var(--color-bg-hover);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-top: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
 }
 
-/* Controls (Search, Filters) */
-.inventory-controls {
+.inventory-header-right {
   display: flex;
-  padding: var(--space-md) var(--space-lg);
+  align-items: center;
   gap: var(--space-md);
-  border-bottom: 1px solid var(--color-border-light);
-  background: var(--color-bg-card);
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .inventory-search {
   display: flex;
   align-items: center;
-  background: var(--color-bg-main);
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
   gap: var(--space-sm);
   flex: 1;
-  max-width: 400px;
+  max-width: 320px;
+  transition: all 0.2s ease;
 }
 
 .inventory-search:focus-within {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+  max-width: 400px;
 }
 
 .inventory-search-icon {
@@ -72,7 +94,6 @@
 /* Grid Area */
 .inventory-table-container {
   flex: 1;
-  overflow: auto;
   padding: var(--space-lg);
   background: var(--color-bg-main);
 }
