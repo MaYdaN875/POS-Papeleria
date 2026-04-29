@@ -72,7 +72,9 @@ export default function PaymentPage() {
       clearCart();
       navigate('/sales');
     } else {
-      setError(result.message || 'Error al procesar el pago');
+      const errorMsg = result.message || 'Error al procesar el pago';
+      setError(errorMsg);
+      alert(errorMsg);
     }
   };
 

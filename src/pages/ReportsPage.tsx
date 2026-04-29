@@ -87,7 +87,12 @@ export function ReportsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-MX', {
+    // Si la fecha viene de MySQL sin formato de zona horaria (ej: 2026-04-29 16:14:00)
+    // la convertimos a formato UTC estándar para que el navegador haga la resta de horas automáticamente.
+    const safeDate = dateString.includes('T') ? dateString : dateString.replace(' ', 'T');
+    const utcDate = safeDate.includes('Z') ? safeDate : `${safeDate}Z`;
+    
+    return new Date(utcDate).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

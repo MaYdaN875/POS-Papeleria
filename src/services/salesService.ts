@@ -65,19 +65,26 @@ export async function createSale(
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
-
-    if (data.ok) {
-      return {
-        ok: true,
-        saleId: data.sale_id,
-        total: data.total,
-      };
+    const text = await res.text();
+    
+    try {
+      const data = JSON.parse(text);
+      if (data.ok) {
+        return {
+          ok: true,
+          saleId: data.sale_id,
+          total: data.total,
+        };
+      }
+      return { ok: false, message: data.message || 'Error al registrar la venta' };
+    } catch (parseError) {
+      console.error('Server returned non-JSON response:', text);
+      // Extraemos el texto del error PHP (normalmente viene después de <b>Warning</b> o <b>Fatal error</b>)
+      const cleanError = text.replace(/<[^>]*>?/gm, '').trim().substring(0, 150);
+      return { ok: false, message: 'Error interno del servidor: ' + cleanError };
     }
-
-    return { ok: false, message: data.message || 'Error al registrar la venta' };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Sale creation error:', err);
-    return { ok: false, message: 'No se pudo conectar con el servidor' };
+    return { ok: false, message: 'Error de red: ' + (err.message || 'Desconocido') };
   }
 }

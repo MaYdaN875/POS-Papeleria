@@ -17,7 +17,20 @@ adminRequireMethod('POST');
 
 try {
   $pdo = adminGetPdo();
-  $adminId = adminRequireSession($pdo);
+  $adminSession = adminRequireSession($pdo);
+  
+  // Extraemos el ID correcto del cajero.
+  // IMPORTANTE: En tu sistema, 'id' es el ID de la sesión, y 'admin_user_id' es el ID del usuario real.
+  $adminId = 0;
+  if (is_array($adminSession)) {
+      $adminId = (int)($adminSession['admin_user_id'] ?? $adminSession['id'] ?? 0);
+  } else {
+      $adminId = (int)$adminSession;
+  }
+
+  if ($adminId === 0) {
+      adminJsonResponse(400, ['ok' => false, 'message' => 'No se pudo identificar al usuario de la sesión.']);
+  }
 
   $data = adminReadJsonBody();
 
@@ -111,8 +124,8 @@ try {
 
 } catch (PDOException $e) {
   error_log('pos_create.php DB error: ' . $e->getMessage());
-  adminJsonResponse(500, ['ok' => false, 'message' => 'Error interno del servidor']);
+  adminJsonResponse(500, ['ok' => false, 'message' => 'DB Error: ' . $e->getMessage()]);
 } catch (Throwable $e) {
   error_log('pos_create.php fatal error: ' . $e->getMessage());
-  adminJsonResponse(500, ['ok' => false, 'message' => 'Error interno del servidor']);
+  adminJsonResponse(500, ['ok' => false, 'message' => 'Fatal Error: ' . $e->getMessage()]);
 }

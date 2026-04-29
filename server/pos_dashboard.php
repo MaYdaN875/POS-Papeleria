@@ -29,8 +29,20 @@ try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
 
-  // Inicio del día actual
+  // Inicio del día actual por defecto
   $todayStart = date('Y-m-d 00:00:00');
+
+  // Si hubo un corte de caja HOY, solo contamos las ventas que ocurrieron DESPUÉS de ese corte.
+  // Esto hace que al hacer el corte, la caja vuelva a quedar en $0.00 esperados.
+  if (adminTableExists($pdo, 'pos_cash_sessions')) {
+      $stmtClose = $pdo->prepare("SELECT created_at FROM pos_cash_sessions WHERE created_at >= :today_start ORDER BY created_at DESC LIMIT 1");
+      $stmtClose->execute(['today_start' => $todayStart]);
+      $lastCloseTime = $stmtClose->fetchColumn();
+      
+      if ($lastCloseTime) {
+          $todayStart = $lastCloseTime;
+      }
+  }
 
   // Valores por defecto
   $summary = [

@@ -110,7 +110,7 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-xl);
   padding: var(--space-xl);
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Left Column */
