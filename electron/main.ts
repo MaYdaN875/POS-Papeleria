@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, session } from 'electron'
 // import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -27,6 +27,15 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 let win: BrowserWindow | null
 
 function createWindow() {
+  // Falsificar la cabecera Origin para evitar que Hostinger bloquee (403) las peticiones desde Electron (file:// o null)
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ['https://godart-papelería.com/*', 'https://xn--godart-papelera-ipb.com/*'] },
+    (details, callback) => {
+      details.requestHeaders['Origin'] = 'http://localhost:5173';
+      callback({ requestHeaders: details.requestHeaders });
+    }
+  );
+
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
