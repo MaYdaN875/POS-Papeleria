@@ -1,6 +1,5 @@
 /**
  * Servicio de autenticación.
- * Usa el mismo endpoint de login admin que la tienda web.
  */
 
 import { API_BASE_URL, ENDPOINTS } from '../config';
@@ -8,15 +7,16 @@ import { API_BASE_URL, ENDPOINTS } from '../config';
 const TOKEN_KEY = 'pos_token';
 const ADMIN_ID_KEY = 'pos_admin_id';
 const EXPIRES_KEY = 'pos_expires_at';
+const NAME_KEY = 'pos_user_name';
+const ROLE_KEY = 'pos_role';
 
 export interface LoginResult {
   ok: boolean;
   message?: string;
   token?: string;
   adminId?: number;
+  name?: string;
 }
-
-const ROLE_KEY = 'pos_role';
 
 /**
  * Intenta hacer login con email/usuario y contraseña.
@@ -35,12 +35,12 @@ export async function login(identifier: string, password: string): Promise<Login
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(ADMIN_ID_KEY, String(data.adminId));
       localStorage.setItem(EXPIRES_KEY, data.expiresAt);
+      localStorage.setItem(NAME_KEY, data.name || 'Caja 01');
       
-      // Guardar el rol (si no viene, por defecto es cashier hasta que se valide)
       const role = data.role || (data.adminId === 1 ? 'admin' : 'cashier');
       localStorage.setItem(ROLE_KEY, role);
 
-      return { ok: true, token: data.token, adminId: data.adminId };
+      return { ok: true, token: data.token, adminId: data.adminId, name: data.name };
     }
 
     return { ok: false, message: data.message || 'Credenciales incorrectas' };
@@ -56,8 +56,6 @@ export async function login(identifier: string, password: string): Promise<Login
 export async function logout(): Promise<void> {
   const token = getToken();
   if (token) {
-    // Mandamos la petición pero NO la esperamos (no usamos await)
-    // Así el usuario no tiene que esperar al servidor para salir
     fetch(ENDPOINTS.LOGOUT, {
       method: 'POST',
       headers: {
@@ -70,11 +68,13 @@ export async function logout(): Promise<void> {
   localStorage.removeItem(ADMIN_ID_KEY);
   localStorage.removeItem(EXPIRES_KEY);
   localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(NAME_KEY);
 }
 
 export const authService = {
   setRole: (role: string) => localStorage.setItem(ROLE_KEY, role),
   getRole: () => localStorage.getItem(ROLE_KEY) || 'cashier',
+  getName: () => localStorage.getItem(NAME_KEY) || 'Caja 01',
   isAdmin: () => localStorage.getItem(ROLE_KEY) === 'admin',
   logout: logout
 };

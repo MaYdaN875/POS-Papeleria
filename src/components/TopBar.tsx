@@ -1,12 +1,15 @@
 import { Search, Bell, Wifi, RefreshCw, LogOut, AlertTriangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../services/authService';
+import { logout, authService } from '../services/authService';
 import { useState } from 'react';
 import '../styles/TopBar.css';
 
 export default function TopBar() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const userName = authService.getName();
+  const userRole = authService.getRole() === 'admin' ? 'ADMINISTRADOR' : 'CAJERO';
 
   const confirmLogout = async () => {
     await logout();
@@ -47,8 +50,8 @@ export default function TopBar() {
 
           <div className="topbar-profile">
             <div className="topbar-profile-info">
-              <span className="topbar-profile-name">Caja 01</span>
-              <span className="topbar-profile-role">ADMINISTRADOR</span>
+              <span className="topbar-profile-name">{userName}</span>
+              <span className="topbar-profile-role">{userRole}</span>
             </div>
             <button 
               onClick={() => setShowLogoutModal(true)} 
@@ -65,7 +68,11 @@ export default function TopBar() {
       {showLogoutModal && (
         <div className="logout-modal-overlay">
           <div className="logout-modal">
-            <button className="logout-modal-close" onClick={() => setShowLogoutModal(false)}>
+            <button 
+              className="logout-modal-close" 
+              onClick={() => setShowLogoutModal(false)}
+              title="Cerrar"
+            >
               <X size={20} />
             </button>
             
