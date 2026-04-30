@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { login, isAuthenticated, checkServerStatus } from '../services/authService';
@@ -13,12 +13,19 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [serverOnline, setServerOnline] = useState<boolean | null>(null);
 
-  // Si ya está logueado, ir al dashboard
+  // Forzar enfoque al cargar
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
+    const timer = setTimeout(() => {
+      const input = document.querySelector('.login-input') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        const val = input.value;
+        input.value = '';
+        input.value = val;
+      }
+    }, 150); // Un pelín más de delay para Electron
+    return () => clearTimeout(timer);
+  }, []);
 
   // Verificar estado del servidor
   useEffect(() => {

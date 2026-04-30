@@ -30,7 +30,20 @@ if (!function_exists('adminTableExists')) {
 
 try {
   $pdo = adminGetPdo();
-  $adminId = adminRequireSession($pdo);
+  
+  // FIX: Validación manual para usar 'token_hash' de Hostinger
+  $headers = getallheaders();
+  $auth = $headers['Authorization'] ?? '';
+  $token = str_replace('Bearer ', '', $auth);
+  $session = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE token_hash = ? AND expires_at > NOW() LIMIT 1");
+  $session->execute([$token]);
+  $sessionData = $session->fetch();
+  
+  if (!$sessionData) {
+      adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+  }
+  
+  $adminId = (int)$sessionData['admin_user_id'];
 
   // 1. AUTO-CREACIÓN DE TABLAS (Para que no tengas que entrar a la BD manualmente)
   $pdo->exec("
