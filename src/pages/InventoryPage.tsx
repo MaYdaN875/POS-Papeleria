@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Loader2, Edit2, X, Check } from 'lucide-react';
 import { getProducts, updateProduct, type Product } from '../services/productService';
 import { API_BASE_URL } from '../config';
+import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import '../styles/InventoryPage.css';
 
 export default function InventoryPage() {
@@ -15,6 +16,25 @@ export default function InventoryPage() {
   const [editPrice, setEditPrice] = useState<string>('');
   const [editStock, setEditStock] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  // Detectar escáner para buscar o editar rápidamente
+  useBarcodeScanner({
+    onScan: (code) => {
+      setSearchTerm(code);
+      
+      // Buscar si el código coincide exactamente con un producto
+      const matchingProduct = products.find(p => 
+        p.id.toString() === code || 
+        (p as any).barcode === code || 
+        (p as any).sku === code ||
+        p.name.toLowerCase() === code.toLowerCase()
+      );
+
+      if (matchingProduct) {
+        handleEditClick(matchingProduct);
+      }
+    }
+  });
 
   useEffect(() => {
     loadProducts();

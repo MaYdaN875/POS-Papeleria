@@ -4,6 +4,7 @@ import { Minus, Plus, ArrowRight, Loader2, Search, Trash2 } from 'lucide-react';
 import { getProducts, getCategories, type Product } from '../services/productService';
 import { useCart } from '../context/CartContext';
 import { API_BASE_URL } from '../config';
+import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import '../styles/SalesPage.css';
 
 export default function SalesPage() {
@@ -16,6 +17,28 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Detectar escáner de código de barras
+  useBarcodeScanner({
+    onScan: (code) => {
+      // Buscar el producto por código de barras, id, sku o nombre exacto
+      const product = products.find(
+        (p) =>
+          p.id.toString() === code ||
+          p.name.toLowerCase() === code.toLowerCase() ||
+          (p as any).barcode === code ||
+          (p as any).sku === code
+      );
+
+      if (product) {
+        addToCart(product);
+        // Limpiamos el buscador si el usuario estaba escribiendo
+        setSearchTerm('');
+      } else {
+        alert(`Producto no encontrado para el código: ${code}`);
+      }
+    },
+  });
 
   // Cargar productos de la API
   useEffect(() => {
