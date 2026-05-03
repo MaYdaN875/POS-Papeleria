@@ -27,7 +27,8 @@ export default function SalesPage() {
           p.id.toString() === code ||
           p.name.toLowerCase() === code.toLowerCase() ||
           (p as any).barcode === code ||
-          (p as any).sku === code
+          (p as any).sku === code ||
+          (p.barcodes && p.barcodes.includes(code))
       );
 
       if (product) {

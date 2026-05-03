@@ -20,6 +20,7 @@ export interface Product {
   isOffer: boolean;
   offerPrice: number | null;
   discountPercentage: number;
+  barcodes?: string[];
 }
 
 export interface CartItem {
@@ -53,6 +54,7 @@ export async function getProducts(): Promise<Product[]> {
     isOffer: !!p.is_offer,
     offerPrice: p.offer_price,
     discountPercentage: p.discount_percentage || 0,
+    barcodes: p.barcodes || [],
   }));
 }
 
@@ -99,5 +101,51 @@ export async function updateProduct(id: number, price: number, stock: number): P
   } catch (error) {
     console.error('Error updating product:', error);
     return { ok: false, message: 'Error de red al actualizar' };
+  }
+}
+
+/**
+ * Agrega un código de barras a un producto.
+ */
+export async function addProductBarcode(productId: number, barcode: string): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const res = await fetch(ENDPOINTS.POS_PRODUCT_BARCODES, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ product_id: productId, barcode })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return { ok: false, message: 'Error de red' };
+  }
+}
+
+/**
+ * Elimina un código de barras.
+ */
+export async function removeProductBarcode(barcode: string): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const res = await fetch(ENDPOINTS.POS_PRODUCT_BARCODES, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ barcode })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return { ok: false, message: 'Error de red' };
   }
 }
