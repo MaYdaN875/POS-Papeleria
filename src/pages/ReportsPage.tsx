@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getSalesHistory, SalesHistoryResponse } from '../services/dashboardService';
-import { Calendar, FileText, Printer, ChevronDown, ChevronUp, DollarSign, Package } from 'lucide-react';
+import { getSalesHistory, getCashHistory, SalesHistoryResponse, CashHistoryResponse } from '../services/dashboardService';
+import { Calendar, FileText, Printer, ChevronDown, ChevronUp, DollarSign, Package, Vault } from 'lucide-react';
 import '../styles/ReportsPage.css';
 
 export function ReportsPage() {
+  const [activeTab, setActiveTab] = useState<'sales' | 'cash'>('sales');
   const [salesData, setSalesData] = useState<SalesHistoryResponse | null>(null);
+  const [cashData, setCashData] = useState<CashHistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('today');
@@ -37,12 +39,20 @@ export function ReportsPage() {
       }
 
       const params = startStr ? { date_start: startStr, date_end: endStr } : {};
-      const data = await getSalesHistory(params);
       
-      if (data.ok) {
-        setSalesData(data);
+      const [salesRes, cashRes] = await Promise.all([
+        getSalesHistory(params),
+        getCashHistory(params)
+      ]);
+      
+      if (salesRes.ok) {
+        setSalesData(salesRes);
       } else {
-        setError(data.message || 'Error al obtener el historial');
+        setError(salesRes.message || 'Error al obtener el historial de ventas');
+      }
+
+      if (cashRes.ok) {
+        setCashData(cashRes);
       }
     } catch (err: any) {
       setError(err.message);
@@ -170,116 +180,189 @@ export function ReportsPage() {
         <hr />
       </div>
 
-      {/* Lista de Ventas */}
+      {/* Lista de Ventas o Cortes */}
       <div className="reports-list-container">
-        <h2 className="reports-section-title no-print">Historial de Tickets</h2>
-        
-        {loading && !salesData ? (
-          <div className="reports-loading">Cargando historial...</div>
-        ) : salesData?.sales?.length === 0 ? (
-          <div className="reports-empty">
-            <FileText size={48} />
-            <p>No hay ventas registradas en este periodo.</p>
-          </div>
-        ) : (
-          <div className="reports-table-wrapper">
-            <table className="reports-table">
-              <thead>
-                <tr>
-                  <th>Ticket</th>
-                  <th>Fecha y Hora</th>
-                  <th>Cajero</th>
-                  <th>Método</th>
-                  <th>Total</th>
-                  <th className="no-print">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesData?.sales?.map((sale) => (
-                  <React.Fragment key={sale.id}>
-                    <tr className={`reports-row ${expandedSaleId === sale.id ? 'reports-row--expanded' : ''}`}>
-                      <td className="reports-col-id">#{String(sale.id).padStart(6, '0')}</td>
-                      <td>{formatDate(sale.created_at)}</td>
-                      <td>{sale.cashier_name || 'Admin'}</td>
-                      <td>
-                        <span className={`reports-badge reports-badge--${sale.payment_method}`}>
-                          {translatePaymentMethod(sale.payment_method)}
-                        </span>
-                      </td>
-                      <td className="reports-col-total">{formatCurrency(sale.total)}</td>
-                      <td className="no-print">
-                        <button 
-                          className="reports-expand-btn"
-                          onClick={() => toggleSaleDetails(sale.id)}
-                        >
-                          {expandedSaleId === sale.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </button>
-                      </td>
+        <div className="reports-tabs no-print" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <button 
+            className={`payment-method-btn ${activeTab === 'sales' ? 'payment-method-btn--active' : ''}`}
+            style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', background: activeTab === 'sales' ? 'var(--color-primary-light)' : 'transparent', color: activeTab === 'sales' ? 'var(--color-primary)' : 'inherit', fontWeight: activeTab === 'sales' ? 'bold' : 'normal', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={() => setActiveTab('sales')}
+          >
+            <FileText size={18} /> Historial de Tickets
+          </button>
+          <button 
+            className={`payment-method-btn ${activeTab === 'cash' ? 'payment-method-btn--active' : ''}`}
+            style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', background: activeTab === 'cash' ? 'var(--color-primary-light)' : 'transparent', color: activeTab === 'cash' ? 'var(--color-primary)' : 'inherit', fontWeight: activeTab === 'cash' ? 'bold' : 'normal', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={() => setActiveTab('cash')}
+          >
+            <Vault size={18} /> Cortes de Caja
+          </button>
+        </div>
+
+        {activeTab === 'sales' && (
+          <>
+            <h2 className="reports-section-title no-print print-only">Historial de Tickets</h2>
+            {loading && !salesData ? (
+              <div className="reports-loading">Cargando historial...</div>
+            ) : salesData?.sales?.length === 0 ? (
+              <div className="reports-empty">
+                <FileText size={48} />
+                <p>No hay ventas registradas en este periodo.</p>
+              </div>
+            ) : (
+              <div className="reports-table-wrapper">
+                <table className="reports-table">
+                  <thead>
+                    <tr>
+                      <th>Ticket</th>
+                      <th>Fecha y Hora</th>
+                      <th>Cajero</th>
+                      <th>Método</th>
+                      <th>Total</th>
+                      <th className="no-print">Acciones</th>
                     </tr>
-                    
-                    {/* Detalle Expandible */}
-                    {(expandedSaleId === sale.id || true) && ( // En modo print, idealmente se mostrarían todos o ninguno, pero dejaremos el DOM normal
-                      <tr className={`reports-detail-row ${expandedSaleId === sale.id ? 'is-open' : ''}`}>
-                        <td colSpan={6}>
-                          <div className="reports-detail-content">
-                            {loadingDetails === sale.id ? (
-                              <p>Cargando detalle...</p>
-                            ) : saleDetails[sale.id] ? (
-                              <div className="reports-ticket">
-                                <h4>Detalle de Productos</h4>
-                                <table className="reports-ticket-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Cant.</th>
-                                      <th>Producto</th>
-                                      <th>P. Unitario</th>
-                                      <th>Importe</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {saleDetails[sale.id].items.map((item: any) => (
-                                      <tr key={item.id}>
-                                        <td>{item.quantity}</td>
-                                        <td>{item.product_name}</td>
-                                        <td>{formatCurrency(item.unit_price)}</td>
-                                        <td>{formatCurrency(item.total_price)}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                  <tfoot>
-                                    <tr>
-                                      <td colSpan={3} className="text-right"><strong>Subtotal:</strong></td>
-                                      <td>{formatCurrency(saleDetails[sale.id].subtotal)}</td>
-                                    </tr>
-                                    <tr>
-                                      <td colSpan={3} className="text-right"><strong>Total:</strong></td>
-                                      <td className="reports-ticket-total">{formatCurrency(saleDetails[sale.id].total)}</td>
-                                    </tr>
-                                    {saleDetails[sale.id].payment_method === 'cash' && (
-                                      <>
+                  </thead>
+                  <tbody>
+                    {salesData?.sales?.map((sale) => (
+                      <React.Fragment key={sale.id}>
+                        <tr className={`reports-row ${expandedSaleId === sale.id ? 'reports-row--expanded' : ''}`}>
+                          <td className="reports-col-id">#{String(sale.id).padStart(6, '0')}</td>
+                          <td>{formatDate(sale.created_at)}</td>
+                          <td>{sale.cashier_name || 'Admin'}</td>
+                          <td>
+                            <span className={`reports-badge reports-badge--${sale.payment_method}`}>
+                              {translatePaymentMethod(sale.payment_method)}
+                            </span>
+                          </td>
+                          <td className="reports-col-total">{formatCurrency(sale.total)}</td>
+                          <td className="no-print">
+                            <button 
+                              className="reports-expand-btn"
+                              onClick={() => toggleSaleDetails(sale.id)}
+                            >
+                              {expandedSaleId === sale.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Detalle Expandible */}
+                        {(expandedSaleId === sale.id || true) && (
+                          <tr className={`reports-detail-row ${expandedSaleId === sale.id ? 'is-open' : ''}`}>
+                            <td colSpan={6}>
+                              <div className="reports-detail-content">
+                                {loadingDetails === sale.id ? (
+                                  <p>Cargando detalle...</p>
+                                ) : saleDetails[sale.id] ? (
+                                  <div className="reports-ticket">
+                                    <h4>Detalle de Productos</h4>
+                                    <table className="reports-ticket-table">
+                                      <thead>
                                         <tr>
-                                          <td colSpan={3} className="text-right">Efectivo Recibido:</td>
-                                          <td>{formatCurrency(saleDetails[sale.id].cash_received || 0)}</td>
+                                          <th>Cant.</th>
+                                          <th>Producto</th>
+                                          <th>P. Unitario</th>
+                                          <th>Importe</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {saleDetails[sale.id].items.map((item: any) => (
+                                          <tr key={item.id}>
+                                            <td>{item.quantity}</td>
+                                            <td>{item.product_name}</td>
+                                            <td>{formatCurrency(item.unit_price)}</td>
+                                            <td>{formatCurrency(item.total_price)}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                      <tfoot>
+                                        <tr>
+                                          <td colSpan={3} className="text-right"><strong>Subtotal:</strong></td>
+                                          <td>{formatCurrency(saleDetails[sale.id].subtotal)}</td>
                                         </tr>
                                         <tr>
-                                          <td colSpan={3} className="text-right">Cambio:</td>
-                                          <td>{formatCurrency(saleDetails[sale.id].change_amount || 0)}</td>
+                                          <td colSpan={3} className="text-right"><strong>Total:</strong></td>
+                                          <td className="reports-ticket-total">{formatCurrency(saleDetails[sale.id].total)}</td>
                                         </tr>
-                                      </>
-                                    )}
-                                  </tfoot>
-                                </table>
+                                        {saleDetails[sale.id].payment_method === 'cash' && (
+                                          <>
+                                            <tr>
+                                              <td colSpan={3} className="text-right">Efectivo Recibido:</td>
+                                              <td>{formatCurrency(saleDetails[sale.id].cash_received || 0)}</td>
+                                            </tr>
+                                            <tr>
+                                              <td colSpan={3} className="text-right">Cambio:</td>
+                                              <td>{formatCurrency(saleDetails[sale.id].change_amount || 0)}</td>
+                                            </tr>
+                                          </>
+                                        )}
+                                      </tfoot>
+                                    </table>
+                                  </div>
+                                ) : null}
                               </div>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'cash' && (
+          <>
+            <h2 className="reports-section-title no-print print-only">Historial de Cortes de Caja</h2>
+            {loading && !cashData ? (
+              <div className="reports-loading">Cargando historial de cortes...</div>
+            ) : cashData?.sessions?.length === 0 ? (
+              <div className="reports-empty">
+                <Vault size={48} />
+                <p>No hay cortes de caja registrados en este periodo.</p>
+              </div>
+            ) : (
+              <div className="reports-table-wrapper">
+                <table className="reports-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha y Hora</th>
+                      <th>Cajero</th>
+                      <th>Esperado en Caja</th>
+                      <th>Físico Contado</th>
+                      <th>Diferencia</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cashData?.sessions?.map((session) => {
+                      const expected = parseFloat(session.expected_cash) + parseFloat(session.expected_card);
+                      const counted = parseFloat(session.counted_cash) + parseFloat(session.counted_card);
+                      const difference = parseFloat(session.difference);
+                      
+                      return (
+                        <tr key={session.id} className="reports-row">
+                          <td>{formatDate(session.created_at)}</td>
+                          <td>{session.cashier_name}</td>
+                          <td>{formatCurrency(expected)}</td>
+                          <td>{formatCurrency(counted)}</td>
+                          <td style={{ color: difference < 0 ? 'var(--color-danger)' : difference > 0 ? 'var(--color-warning)' : 'inherit', fontWeight: difference !== 0 ? 'bold' : 'normal' }}>
+                            {difference > 0 ? '+' : ''}{formatCurrency(difference)}
+                          </td>
+                          <td>
+                            <span className={`reports-badge reports-badge--${session.status === 'ok' ? 'cash' : session.status === 'faltante' ? 'transfer' : 'card'}`} style={{ backgroundColor: session.status === 'faltante' ? '#fee2e2' : session.status === 'sobrante' ? '#fef3c7' : '#dcfce7', color: session.status === 'faltante' ? '#991b1b' : session.status === 'sobrante' ? '#92400e' : '#166534' }}>
+                              {session.status.toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

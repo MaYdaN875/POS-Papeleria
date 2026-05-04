@@ -98,6 +98,42 @@ export async function closeCashSession(payload: {
   return res.json();
 }
 
+export interface CashSession {
+  id: number;
+  cashier_name: string;
+  expected_cash: string;
+  expected_card: string;
+  counted_cash: string;
+  counted_card: string;
+  difference: string;
+  status: 'ok' | 'faltante' | 'sobrante';
+  created_at: string;
+}
+
+export interface CashHistoryResponse {
+  ok: boolean;
+  message?: string;
+  sessions?: CashSession[];
+}
+
+export async function getCashHistory(params: { date_start?: string, date_end?: string, limit?: number } = {}): Promise<CashHistoryResponse> {
+  try {
+    const query = new URLSearchParams();
+    if (params.date_start) query.append('date_start', params.date_start);
+    if (params.date_end) query.append('date_end', params.date_end);
+    if (params.limit) query.append('limit', params.limit.toString());
+
+    const queryString = query.toString();
+    const url = queryString ? `${ENDPOINTS.POS_CASH_HISTORY}?${queryString}` : ENDPOINTS.POS_CASH_HISTORY;
+    
+    const res = await authFetch(url);
+    return await res.json();
+  } catch (err: any) {
+    console.error('Cash history fetch error:', err);
+    return { ok: false, message: err.message };
+  }
+}
+
 export interface SalesHistoryResponse {
   ok: boolean;
   message?: string;
