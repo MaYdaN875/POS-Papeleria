@@ -1,0 +1,198 @@
+/* ============================
+   Estilos del Ticket de Venta
+   ============================ */
+
+/* El ticket está oculto en pantalla, solo se ve al imprimir */
+.ticket-print-overlay {
+  display: none;
+}
+
+/* ---- ESTILOS SOLO PARA IMPRESIÓN ---- */
+@media print {
+  /* Ocultar TODA la interfaz de la app */
+  body > *:not(#root) {
+    display: none !important;
+  }
+
+  /* Dentro de React, ocultar todo menos el ticket */
+  .payment-page > *:not(.ticket-print-overlay),
+  .payment-header,
+  .payment-content,
+  .sidebar,
+  .topbar,
+  header,
+  nav {
+    display: none !important;
+  }
+
+  /* Mostrar el ticket */
+  .ticket-print-overlay {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    background: white;
+    z-index: 99999;
+  }
+
+  /* Formato del ticket para impresora térmica de 80mm */
+  .ticket {
+    width: 72mm;
+    max-width: 72mm;
+    margin: 0 auto;
+    padding: 4mm 2mm;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: #000;
+    line-height: 1.4;
+  }
+
+  /* ---- Encabezado ---- */
+  .ticket-header {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .ticket-store-name {
+    font-size: 18px;
+    font-weight: 900;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .ticket-store-address,
+  .ticket-store-city,
+  .ticket-store-phone {
+    margin: 1px 0;
+    font-size: 10px;
+  }
+
+  /* ---- Divisor ---- */
+  .ticket-divider {
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: -1px;
+    margin: 4px 0;
+    color: #333;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* ---- Info de Venta ---- */
+  .ticket-sale-info {
+    margin-bottom: 2px;
+  }
+
+  .ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    font-size: 11px;
+  }
+
+  .ticket-row--grand-total {
+    font-size: 15px;
+    font-weight: 900;
+    margin: 4px 0;
+    padding: 4px 0;
+    border-top: 1px dashed #000;
+    border-bottom: 1px dashed #000;
+  }
+
+  .ticket-row--change {
+    font-weight: 700;
+  }
+
+  /* ---- Tabla de Productos ---- */
+  .ticket-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0;
+  }
+
+  .ticket-items th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    border-bottom: 1px solid #000;
+    padding: 2px 0;
+  }
+
+  .ticket-th-qty { width: 12%; text-align: center; }
+  .ticket-th-desc { width: 40%; }
+  .ticket-th-price { width: 24%; text-align: right; }
+  .ticket-th-total { width: 24%; text-align: right; }
+
+  .ticket-items td {
+    font-size: 10px;
+    padding: 2px 0;
+    vertical-align: top;
+  }
+
+  .ticket-td-qty { text-align: center; }
+  .ticket-td-desc {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ticket-td-price { text-align: right; }
+  .ticket-td-total { text-align: right; font-weight: 600; }
+
+  /* ---- Totales ---- */
+  .ticket-totals {
+    margin: 4px 0;
+  }
+
+  /* ---- Pie de Ticket ---- */
+  .ticket-footer {
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .ticket-thanks {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 6px 0 4px;
+  }
+
+  .ticket-visit {
+    font-size: 10px;
+    margin: 2px 0;
+    color: #333;
+  }
+
+  .ticket-website {
+    font-size: 11px;
+    font-weight: 700;
+    margin: 2px 0 6px;
+  }
+
+  .ticket-qr {
+    display: block;
+    margin: 4px auto;
+    width: 100px;
+    height: 100px;
+  }
+
+  .ticket-footer-phone {
+    font-size: 9px;
+    color: #555;
+    margin-top: 6px;
+    padding-bottom: 10px;
+  }
+
+  /* ---- Reset de márgenes de página ---- */
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
