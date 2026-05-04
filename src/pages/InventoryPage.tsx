@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Search, Loader2, Edit2, X, Check } from 'lucide-react';
-import { getProducts, updateProduct, type Product } from '../services/productService';
+import { getProducts, updateProduct, addProductBarcode, removeProductBarcode, type Product } from '../services/productService';
 import { API_BASE_URL } from '../config';
+import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import '../styles/InventoryPage.css';
 
 export default function InventoryPage() {
@@ -14,7 +15,28 @@ export default function InventoryPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editPrice, setEditPrice] = useState<string>('');
   const [editStock, setEditStock] = useState<string>('');
+  const [newBarcode, setNewBarcode] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  // Detectar escáner para buscar o editar rápidamente
+  useBarcodeScanner({
+    onScan: (code) => {
+      setSearchTerm(code);
+      
+      // Buscar si el código coincide exactamente con un producto
+      const matchingProduct = products.find(p => 
+        p.id.toString() === code || 
+        (p as any).barcode === code || 
+        (p as any).sku === code ||
+        p.name.toLowerCase() === code.toLowerCase() ||
+        (p.barcodes && p.barcodes.includes(code))
+      );
+
+      if (matchingProduct) {
+        handleEditClick(matchingProduct);
+      }
+    }
+  });
 
   useEffect(() => {
     loadProducts();
@@ -38,6 +60,7 @@ export default function InventoryPage() {
     setEditingId(product.id);
     setEditPrice(product.price.toString());
     setEditStock(product.stock.toString());
+    setNewBarcode('');
   };
 
   const handleCancelEdit = () => {
@@ -74,11 +97,52 @@ export default function InventoryPage() {
     }
   };
 
-  const filteredProducts = products.filter((p) =>
-    searchTerm === '' ||
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleAddBarcode = async (productId: number) => {
+    if (!newBarcode.trim()) return;
+    setSaving(true);
+    const result = await addProductBarcode(productId, newBarcode.trim());
+    if (result.ok) {
+      setProducts(products.map(p => 
+        p.id === productId 
+          ? { ...p, barcodes: [...(p.barcodes || []), newBarcode.trim()] } 
+          : p
+      ));
+      setNewBarcode('');
+    } else {
+      alert(result.message || 'Error al agregar código de barras');
+    }
+    setSaving(false);
+  };
+
+  const handleRemoveBarcode = async (productId: number, barcode: string) => {
+    if (!window.confirm('¿Eliminar este código de barras?')) return;
+    setSaving(true);
+    const result = await removeProductBarcode(barcode);
+    if (result.ok) {
+      setProducts(products.map(p => 
+        p.id === productId 
+          ? { ...p, barcodes: (p.barcodes || []).filter(b => b !== barcode) } 
+          : p
+      ));
+    } else {
+      alert(result.message || 'Error al eliminar código de barras');
+    }
+    setSaving(false);
+  };
+
+  const filteredProducts = products.filter((p) => {
+    if (searchTerm === '') return true;
+    
+    const term = searchTerm.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(term) ||
+      p.brand.toLowerCase().includes(term) ||
+      p.id.toString() === term ||
+      (p as any).barcode === term ||
+      ((p as any).sku && (p as any).sku.toLowerCase() === term) ||
+      (p.barcodes && p.barcodes.some(b => b.toLowerCase() === term))
+    );
+  });
 
   const getImageUrl = (imagePath: string) => {
     if (imagePath.startsWith('http')) return imagePath;
@@ -186,6 +250,42 @@ export default function InventoryPage() {
                               onChange={(e) => setEditStock(e.target.value)}
                             />
                           </div>
+                          
+                          <div className="inv-edit-group" style={{ gridColumn: '1 / -1' }}>
+                            <label>Códigos de barras</label>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                              {(product.barcodes || []).map(b => (
+                                <span key={b} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                                  {b}
+                                  <button type="button" onClick={() => handleRemoveBarcode(product.id, b)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', color: 'var(--color-danger)' }}>
+                                    <X size={14} />
+                                  </button>
+                                </span>
+                              ))}
+                              {(!product.barcodes || product.barcodes.length === 0) && (
+                                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Sin códigos</span>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input 
+                                type="text"
+                                placeholder="Nuevo código..."
+                                className="inv-edit-input"
+                                value={newBarcode}
+                                onChange={(e) => setNewBarcode(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddBarcode(product.id)}
+                              />
+                              <button 
+                                type="button"
+                                className="inv-action-btn"
+                                onClick={() => handleAddBarcode(product.id)}
+                                disabled={saving || !newBarcode.trim()}
+                              >
+                                Añadir
+                              </button>
+                            </div>
+                          </div>
+
                           <div className="inv-edit-buttons">
                             <button 
                               className="inv-action-btn inv-action-btn--cancel" 

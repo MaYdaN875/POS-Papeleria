@@ -20,8 +20,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // 1. Verificación básica de Token
-$headers = apache_request_headers();
-$authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+
+if (empty($authHeader) && function_exists('getallheaders')) {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+}
+
+if (empty($authHeader) && function_exists('apache_request_headers')) {
+    $headers = apache_request_headers();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+}
+
+if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+}
 
 if (empty($authHeader) || strpos($authHeader, 'Bearer pos_auth_') === false) {
     http_response_code(401);
