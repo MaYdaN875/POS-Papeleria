@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { createSale } from '../services/salesService';
+import TicketPrint, { TicketData } from '../components/TicketPrint';
 import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';
@@ -28,6 +29,7 @@ export default function PaymentPage() {
   const [cashReceived, setCashReceived] = useState(total > 0 ? total.toString() : '0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ticketData, setTicketData] = useState<TicketData | null>(null);
 
   // Redirigir a ventas si el carrito está vacío
   useEffect(() => {
@@ -68,15 +70,39 @@ export default function PaymentPage() {
     setLoading(false);
 
     if (result.ok) {
-      alert(`¡Pago procesado exitosamente!\nTicket #${result.saleId}`);
-      clearCart();
-      navigate('/sales');
+      // Preparar los datos del ticket para impresión
+      const cashierName = localStorage.getItem('pos_user_name') || 'Cajero';
+      const ticket: TicketData = {
+        saleId: result.saleId || 0,
+        items: cart.map(item => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          unitPrice: item.product.price,
+          totalPrice: item.product.price * item.quantity,
+        })),
+        subtotal: subtotal,
+        total: total,
+        paymentMethod: paymentMethod,
+        cashReceived: parsedCash,
+        change: paymentMethod === 'cash' ? change : undefined,
+        cashierName: cashierName,
+        date: new Date().toISOString(),
+      };
+      setTicketData(ticket);
+      // El componente TicketPrint se encargará de llamar a window.print()
     } else {
       const errorMsg = result.message || 'Error al procesar el pago';
       setError(errorMsg);
       alert(errorMsg);
     }
   };
+
+  // Callback que se ejecuta cuando termina la impresión (o se cancela)
+  const handlePrintDone = useCallback(() => {
+    setTicketData(null);
+    clearCart();
+    navigate('/sales');
+  }, [clearCart, navigate]);
 
   if (cart.length === 0) return null; // Prevenir renderizado fugaz antes del redirect
 
@@ -251,6 +277,11 @@ export default function PaymentPage() {
           </button>
         </div>
       </div>
+
+      {/* Componente de Ticket (invisible en pantalla, visible al imprimir) */}
+      {ticketData && (
+        <TicketPrint data={ticketData} onPrintDone={handlePrintDone} />
+      )}
     </div>
   );
 }
