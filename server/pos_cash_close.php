@@ -13,18 +13,20 @@ adminRequireMethod('POST');
 
 try {
   $pdo = adminGetPdo();
-  $adminSession = adminRequireSession($pdo);
   
-  $adminId = 0;
-  if (is_array($adminSession)) {
-      $adminId = (int)($adminSession['admin_user_id'] ?? $adminSession['id'] ?? 0);
-  } else {
-      $adminId = (int)$adminSession;
+  // FIX: Validación manual para usar 'token_hash' de Hostinger
+  $headers = getallheaders();
+  $auth = $headers['Authorization'] ?? '';
+  $token = str_replace('Bearer ', '', $auth);
+  $session = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE token_hash = ? AND expires_at > NOW() LIMIT 1");
+  $session->execute([$token]);
+  $sessionData = $session->fetch();
+  
+  if (!$sessionData) {
+      adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
   }
-
-  if ($adminId === 0) {
-      adminJsonResponse(400, ['ok' => false, 'message' => 'No se pudo identificar al usuario de la sesión.']);
-  }
+  
+  $adminId = (int)$sessionData['admin_user_id'];
 
   // Obtener nombre del cajero
   $stmtUser = $pdo->prepare("SELECT full_name FROM admin_users WHERE id = ?");
