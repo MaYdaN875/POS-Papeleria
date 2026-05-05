@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Search, Loader2, Edit2, X, Check } from 'lucide-react';
-import { getProducts, updateProduct, addProductBarcode, removeProductBarcode, type Product } from '../services/productService';
+import { Check, Edit2, Loader2, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
+import { addProductBarcode, getProducts, removeProductBarcode, updateProduct, type Product } from '../services/productService';
 import '../styles/InventoryPage.css';
 
 export default function InventoryPage() {

@@ -1,19 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
-  Bell,
-  Wifi,
-  RefreshCw,
-  Banknote,
-  CreditCard,
-  Building2,
-  Delete,
-  Loader2,
+    ArrowLeft,
+    Banknote,
+    Bell,
+    Building2,
+    CreditCard,
+    Delete,
+    Loader2,
+    RefreshCw,
+    Wifi,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
 import { createSale } from '../services/salesService';
-import TicketPrint, { TicketData } from '../components/TicketPrint';
 import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';

@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
-import { login, isAuthenticated, checkServerStatus } from '../services/authService';
+import { checkServerStatus, login } from '../services/authService';
 import '../styles/LoginPage.css';
 
 export default function LoginPage() {

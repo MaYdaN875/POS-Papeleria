@@ -1,14 +1,14 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import SalesPage from './pages/SalesPage';
-import PaymentPage from './pages/PaymentPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './context/CartContext';
-import InventoryPage from './pages/InventoryPage';
 import CashPage from './pages/CashPage';
+import DashboardPage from './pages/DashboardPage';
+import InventoryPage from './pages/InventoryPage';
+import LoginPage from './pages/LoginPage';
+import PaymentPage from './pages/PaymentPage';
 import { ReportsPage } from './pages/ReportsPage';
+import SalesPage from './pages/SalesPage';
 import UsersPage from './pages/UsersPage';
 
 export default function App() {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { TrendingUp, ShoppingBag, Timer, ArrowUpRight, Loader2 } from 'lucide-react';
+import { ArrowUpRight, Loader2, ShoppingBag, Timer, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPosDashboard } from '../services/dashboardService';
 import '../styles/DashboardPage.css';

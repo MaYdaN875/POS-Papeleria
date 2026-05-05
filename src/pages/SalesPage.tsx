@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { ArrowRight, Loader2, Minus, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, ArrowRight, Loader2, Search, Trash2 } from 'lucide-react';
-import { getProducts, getCategories, type Product } from '../services/productService';
-import { useCart } from '../context/CartContext';
 import { API_BASE_URL } from '../config';
+import { useCart } from '../context/CartContext';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
+import { getCategories, getProducts, type Product } from '../services/productService';
 import '../styles/SalesPage.css';
 
 export default function SalesPage() {
