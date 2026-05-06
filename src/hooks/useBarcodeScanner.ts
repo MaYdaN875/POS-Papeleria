@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { playBeep } from '../utils/sounds';
 
 interface UseBarcodeScannerOptions {
   onScan: (code: string) => void;
@@ -37,6 +38,7 @@ export function useBarcodeScanner({ onScan, threshold = 50 }: UseBarcodeScannerO
       if (e.key === 'Enter') {
         if (barcode.current.length > 0) {
           // ¡Es un escaneo!
+          playBeep();
           savedOnScan.current(barcode.current);
           barcode.current = '';
           

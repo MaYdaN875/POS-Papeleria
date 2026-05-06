@@ -10,8 +10,19 @@ import PaymentPage from './pages/PaymentPage';
 import { ReportsPage } from './pages/ReportsPage';
 import SalesPage from './pages/SalesPage';
 import UsersPage from './pages/UsersPage';
+import SettingsPage from './pages/SettingsPage';
+import { useEffect } from 'react';
+import { getGlobalSettings } from './services/settingsService';
 
 export default function App() {
+  useEffect(() => {
+    getGlobalSettings().then(res => {
+      if (res.ok && res.settings) {
+        document.documentElement.setAttribute('data-theme', res.settings.theme || 'light');
+      }
+    });
+  }, []);
+
   return (
     <HashRouter>
       <CartProvider>
@@ -36,7 +47,7 @@ export default function App() {
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/billing" element={<DashboardPage />} />
-                <Route path="/settings" element={<DashboardPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>
           </Route>

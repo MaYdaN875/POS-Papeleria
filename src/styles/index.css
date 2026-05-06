@@ -164,3 +164,25 @@ img {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+
+/* ---- Dark Mode Variables ---- */
+[data-theme="dark"] {
+  --color-bg-main: #121212;
+  --color-bg-card: #1E1E1E;
+  --color-bg-sidebar: #1E1E1E;
+  --color-bg-input: #2D2D2D;
+  --color-bg-topbar: #1E1E1E;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A0A0A0;
+  --color-text-muted: #707070;
+  --color-border: #333333;
+  --color-border-light: #2D2D2D;
+  --color-primary-bg: #1A233A;
+  --color-primary-bg-hover: #233050;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

@@ -49,6 +49,16 @@
     line-height: 1.4;
   }
 
+  .ticket--58mm {
+    width: 48mm;
+    max-width: 48mm;
+    font-size: 9px;
+  }
+
+  .ticket--58mm .ticket-store-name {
+    font-size: 14px;
+  }
+
   /* ---- Encabezado ---- */
   .ticket-header {
     text-align: center;
