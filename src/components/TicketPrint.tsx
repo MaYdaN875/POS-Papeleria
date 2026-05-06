@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { GlobalSettings } from '../services/settingsService';
+import { Printer, X } from 'lucide-react';
 import '../styles/TicketPrint.css';
 
 export interface TicketData {
@@ -43,31 +45,12 @@ function formatMoney(amount: number): string {
 }
 
 export default function TicketPrint({ data, settings, onPrintDone }: TicketPrintProps) {
-  const hasPrinted = useRef(false);
-
-  // Fallback to defaults if settings are not loaded
   const storeInfo = (settings || STORE_INFO) as any;
 
-  useEffect(() => {
-    if (hasPrinted.current) return;
-    hasPrinted.current = true;
-
-    // Pequeña pausa para asegurar que el DOM del ticket se renderice
-    const timer = setTimeout(() => {
-      window.print();
-    }, 400);
-
-    // Detectar cuando el diálogo de impresión se cierra
-    const handleAfterPrint = () => {
-      onPrintDone();
-    };
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-  }, [onPrintDone]);
+  // Manejar impresión real
+  const handlePrint = () => {
+    window.print();
+  };
 
   const dateObj = new Date(data.date);
   const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -80,121 +63,130 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
     minute: '2-digit',
   });
 
-  // Generar URL para QR usando una API pública gratuita
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(storeInfo.storeWebsiteUrl || storeInfo.websiteUrl)}`;
-
   const printerClass = storeInfo.printerSize === '58mm' ? 'ticket ticket--58mm' : 'ticket';
 
-  return (
-    <div className="ticket-print-overlay" id="ticket-print-area">
-      <div className={printerClass}>
-        {/* ---- Encabezado ---- */}
-        <div className="ticket-header">
-          <h1 className="ticket-store-name">{storeInfo.storeName || storeInfo.name}</h1>
-          <p className="ticket-store-address">{storeInfo.storeAddress || storeInfo.address}</p>
-          <p className="ticket-store-city">{storeInfo.storeCity || storeInfo.city}</p>
-          <p className="ticket-store-phone">Tel: {storeInfo.storePhone || storeInfo.phone}</p>
-        </div>
-
-        <div className="ticket-divider">{'━'.repeat(32)}</div>
-
-        {/* ---- Info de Venta ---- */}
-        <div className="ticket-sale-info">
-          <div className="ticket-row">
-            <span>Ticket:</span>
-            <span>#{String(data.saleId).padStart(6, '0')}</span>
-          </div>
-          <div className="ticket-row">
-            <span>Fecha:</span>
-            <span>{formattedDate}</span>
-          </div>
-          <div className="ticket-row">
-            <span>Hora:</span>
-            <span>{formattedTime}</span>
-          </div>
-          <div className="ticket-row">
-            <span>Cajero:</span>
-            <span>{data.cashierName}</span>
+  return createPortal(
+    <div className="ticket-preview-modal">
+      <div className="ticket-preview-overlay" onClick={onPrintDone} />
+      
+      <div className="ticket-preview-container">
+        <div className="ticket-preview-header">
+          <h3>Vista Previa de Ticket</h3>
+          <div className="ticket-preview-actions">
+            <button className="btn-print-now" onClick={handlePrint}>
+              <Printer size={18} />
+              Imprimir
+            </button>
+            <button className="btn-close-preview" onClick={onPrintDone}>
+              <X size={18} />
+            </button>
           </div>
         </div>
 
-        <div className="ticket-divider">{'━'.repeat(32)}</div>
+        <div className="ticket-preview-content">
+          <div className="ticket-print-overlay" id="ticket-print-area">
+            <div className={printerClass}>
+              <div className="ticket-header">
+                <h1 className="ticket-store-name">{storeInfo.storeName || storeInfo.name}</h1>
+                <p className="ticket-store-address">{storeInfo.storeAddress || storeInfo.address}</p>
+                <p className="ticket-store-city">{storeInfo.storeCity || storeInfo.city}</p>
+                <p className="ticket-store-phone">Tel: {storeInfo.storePhone || storeInfo.phone}</p>
+              </div>
 
-        {/* ---- Productos ---- */}
-        <table className="ticket-items">
-          <thead>
-            <tr>
-              <th className="ticket-th-qty">Cant</th>
-              <th className="ticket-th-desc">Descripción</th>
-              <th className="ticket-th-price">Precio</th>
-              <th className="ticket-th-total">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item, idx) => (
-              <tr key={idx}>
-                <td className="ticket-td-qty">{item.quantity}</td>
-                <td className="ticket-td-desc">{item.name}</td>
-                <td className="ticket-td-price">{formatMoney(item.unitPrice)}</td>
-                <td className="ticket-td-total">{formatMoney(item.totalPrice)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              <div className="ticket-divider">{'━'.repeat(32)}</div>
 
-        <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-info">
+                <p>Ticket: #{data.saleId}</p>
+                <p>Fecha: {formattedDate}</p>
+                <p>Hora: {formattedTime}</p>
+                <p>Cajero: {data.cashierName}</p>
+              </div>
 
-        {/* ---- Totales ---- */}
-        <div className="ticket-totals">
-          <div className="ticket-row">
-            <span>Subtotal:</span>
-            <span>{formatMoney(data.subtotal)}</span>
-          </div>
-          {storeInfo.taxRate > 0 && (
-            <div className="ticket-row">
-              <span>IVA ({storeInfo.taxRate}%):</span>
-              <span>{formatMoney(data.subtotal * storeInfo.taxRate / 100)}</span>
+              <div className="ticket-divider">{'━'.repeat(32)}</div>
+
+              <div className="ticket-items">
+                <div className="ticket-item-header">
+                  <span className="col-qty">Cant</span>
+                  <span className="col-desc">Descripción</span>
+                  <span className="col-total">Total</span>
+                </div>
+                {data.items.map((item, idx) => (
+                  <div key={idx} className="ticket-item">
+                    <div className="ticket-item-row">
+                      <span className="col-qty">{item.quantity}</span>
+                      <span className="col-desc">{item.name}</span>
+                      <span className="col-total">{formatMoney(item.totalPrice)}</span>
+                    </div>
+                    <div className="ticket-item-details">
+                      {item.quantity} x {formatMoney(item.unitPrice)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="ticket-divider">{'━'.repeat(32)}</div>
+
+              <div className="ticket-totals">
+                <div className="ticket-total-row">
+                  <span>Subtotal:</span>
+                  <span>{formatMoney(data.subtotal)}</span>
+                </div>
+                {settings && settings.taxRate > 0 && (
+                  <div className="ticket-total-row">
+                    <span>IVA ({settings.taxRate}%):</span>
+                    <span>{formatMoney(data.total - data.subtotal)}</span>
+                  </div>
+                )}
+                <div className="ticket-total-row ticket-total-grand">
+                  <span>TOTAL:</span>
+                  <span>{formatMoney(data.total)}</span>
+                </div>
+              </div>
+
+              <div className="ticket-divider">{'━'.repeat(32)}</div>
+
+              <div className="ticket-payment">
+                <div className="ticket-total-row">
+                  <span>Método:</span>
+                  <span>{translateMethod(data.paymentMethod)}</span>
+                </div>
+                {data.paymentMethod === 'cash' && data.cashReceived && (
+                  <>
+                    <div className="ticket-total-row">
+                      <span>Efectivo:</span>
+                      <span>{formatMoney(data.cashReceived)}</span>
+                    </div>
+                    <div className="ticket-total-row">
+                      <span>Cambio:</span>
+                      <span>{formatMoney(data.change || 0)}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="ticket-divider">{'━'.repeat(32)}</div>
+
+              <div className="ticket-footer">
+                <p className="thanks-msg">¡Gracias por su compra!</p>
+                <img 
+                  className="ticket-qr"
+                  src={qrUrl}
+                  alt="QR Página Web"
+                  width={120}
+                  height={120}
+                />
+                <p className="ticket-footer-phone">Atención al cliente: {storeInfo.storePhone || storeInfo.phone}</p>
+              </div>
             </div>
-          )}
-          <div className="ticket-row ticket-row--grand-total">
-            <span>TOTAL:</span>
-            <span>{formatMoney(data.total)}</span>
           </div>
-          <div className="ticket-row">
-            <span>Método:</span>
-            <span>{translateMethod(data.paymentMethod)}</span>
-          </div>
-          {data.paymentMethod === 'cash' && (
-            <>
-              <div className="ticket-row">
-                <span>Efectivo:</span>
-                <span>{formatMoney(data.cashReceived || 0)}</span>
-              </div>
-              <div className="ticket-row ticket-row--change">
-                <span>Cambio:</span>
-                <span>{formatMoney(data.change || 0)}</span>
-              </div>
-            </>
-          )}
         </div>
-
-        <div className="ticket-divider">{'━'.repeat(32)}</div>
-
-        {/* ---- Pie: Contacto y QR ---- */}
-        <div className="ticket-footer">
-          <p className="ticket-thanks">{storeInfo.ticketThanksMessage || '¡Gracias por su compra!'}</p>
-          <p className="ticket-visit">Visítanos en:</p>
-          <p className="ticket-website">{storeInfo.storeWebsite || storeInfo.website}</p>
-          <img
-            className="ticket-qr"
-            src={qrUrl}
-            alt="QR Página Web"
-            width={120}
-            height={120}
-          />
-          <p className="ticket-footer-phone">Atención al cliente: {storeInfo.storePhone || storeInfo.phone}</p>
+        
+        <div className="ticket-preview-hint">
+          * Esta es una vista previa visual. Presiona "Imprimir" para enviarlo a la impresora.
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

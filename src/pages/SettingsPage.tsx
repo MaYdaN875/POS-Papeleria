@@ -12,12 +12,14 @@ import {
   Percent
 } from 'lucide-react';
 import { getGlobalSettings, saveGlobalSettings, GlobalSettings } from '../services/settingsService';
+import TicketPrint from '../components/TicketPrint';
 import '../styles/SettingsPage.css';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [activeTab, setActiveTab] = useState<'general' | 'ticket' | 'system' | 'appearance'>('general');
 
@@ -251,6 +253,17 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </div>
+              
+              <div className="settings-preview-action" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  className="settings-action-btn"
+                  onClick={() => setShowPreview(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--pos-primary)' }}
+                >
+                  <Printer size={18} />
+                  Imprimir Ticket de Prueba
+                </button>
+              </div>
             </div>
           )}
 
@@ -390,6 +403,28 @@ export default function SettingsPage() {
 
         </div>
       </div>
+
+      {showPreview && settings && (
+        <TicketPrint 
+          data={{
+            saleId: 9999,
+            items: [
+              { name: 'Cuaderno Profesional Scribe', quantity: 2, unitPrice: 25.50, totalPrice: 51.00 },
+              { name: 'Lápiz Mirado No. 2', quantity: 3, unitPrice: 5.00, totalPrice: 15.00 },
+              { name: 'Goma de Migajón Pelikan', quantity: 1, unitPrice: 8.00, totalPrice: 8.00 }
+            ],
+            subtotal: 74.00,
+            total: settings.taxRate > 0 ? 74.00 * (1 + (settings.taxRate / 100)) : 74.00,
+            paymentMethod: 'cash',
+            cashReceived: 100.00,
+            change: 100.00 - (settings.taxRate > 0 ? 74.00 * (1 + (settings.taxRate / 100)) : 74.00),
+            cashierName: 'Administrador (Prueba)',
+            date: new Date().toISOString()
+          }}
+          settings={settings}
+          onPrintDone={() => setShowPreview(false)}
+        />
+      )}
     </div>
   );
 }
