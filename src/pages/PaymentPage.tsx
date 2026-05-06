@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
 import { createSale } from '../services/salesService';
+import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
+import { playCashSound } from '../utils/sounds';
 import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';
@@ -22,14 +24,32 @@ export default function PaymentPage() {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
   
-  // En este punto, como no hay IVA en este proyecto, total = subtotal
-  const total = subtotal;
+  const [settings, setSettings] = useState<GlobalSettings | null>(null);
+  
+  const taxRate = settings?.taxRate || 0;
+  const total = subtotal + (subtotal * taxRate / 100);
   
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
-  const [cashReceived, setCashReceived] = useState(total > 0 ? total.toString() : '0');
+  const [cashReceived, setCashReceived] = useState('0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
+
+  // Initialize cashReceived based on total only when total changes initially
+  useEffect(() => {
+    if (cashReceived === '0' && total > 0) {
+      setCashReceived(total.toString());
+    }
+  }, [total, cashReceived]);
+
+  // Cargar ajustes globales
+  useEffect(() => {
+    getGlobalSettings().then(res => {
+      if (res.ok && res.settings) {
+        setSettings(res.settings);
+      }
+    });
+  }, []);
 
   // Redirigir a ventas si el carrito está vacío
   useEffect(() => {
@@ -70,6 +90,7 @@ export default function PaymentPage() {
     setLoading(false);
 
     if (result.ok) {
+      playCashSound();
       // Preparar los datos del ticket para impresión
       const cashierName = localStorage.getItem('pos_user_name') || 'Cajero';
       const ticket: TicketData = {
@@ -88,8 +109,15 @@ export default function PaymentPage() {
         cashierName: cashierName,
         date: new Date().toISOString(),
       };
-      setTicketData(ticket);
-      // El componente TicketPrint se encargará de llamar a window.print()
+      if (settings && settings.autoPrintTicket === false) {
+        // Si la impresión automática está apagada, solo limpiar e ir a ventas
+        alert(`¡Pago procesado exitosamente!\nTicket #${result.saleId}`);
+        clearCart();
+        navigate('/sales');
+      } else {
+        // Renderizar el ticket, TicketPrint se encargará de imprimir y llamar a handlePrintDone
+        setTicketData(ticket);
+      }
     } else {
       const errorMsg = result.message || 'Error al procesar el pago';
       setError(errorMsg);
@@ -152,7 +180,11 @@ export default function PaymentPage() {
               })}
             </div>
             <span className="payment-total-note">
-              No incluye IVA. {cart.length} artículo(s).
+              {taxRate > 0 ? (
+                <>Subtotal: ${(subtotal).toFixed(2)} | IVA ({taxRate}%): ${(subtotal * taxRate / 100).toFixed(2)}<br/>{cart.length} artículo(s).</>
+              ) : (
+                <>Sin IVA. {cart.length} artículo(s).</>
+              )}
             </span>
           </div>
 
@@ -280,7 +312,7 @@ export default function PaymentPage() {
 
       {/* Componente de Ticket (invisible en pantalla, visible al imprimir) */}
       {ticketData && (
-        <TicketPrint data={ticketData} onPrintDone={handlePrintDone} />
+        <TicketPrint data={ticketData} settings={settings} onPrintDone={handlePrintDone} />
       )}
     </div>
   );

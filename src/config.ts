@@ -27,4 +27,5 @@ export const ENDPOINTS = {
   POS_SALES_HISTORY: `${API_BASE_URL}/admin/sales/pos_sales_history.php`,
   POS_CASH_HISTORY:  `${API_BASE_URL}/admin/sales/pos_cash_history.php`,
   POS_USERS_MANAGER: `${API_BASE_URL}/admin/users/pos_users_manager.php`,
+  POS_SETTINGS:      `${API_BASE_URL}/admin/sales/pos_settings.php`,
 };

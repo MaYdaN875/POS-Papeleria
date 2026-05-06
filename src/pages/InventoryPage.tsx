@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { addProductBarcode, getProducts, removeProductBarcode, updateProduct, type Product } from '../services/productService';
+import { getGlobalSettings } from '../services/settingsService';
 import '../styles/InventoryPage.css';
 
 export default function InventoryPage() {
@@ -10,6 +11,7 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState(5);
   
   // Estado para la edición en línea
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -40,7 +42,15 @@ export default function InventoryPage() {
 
   useEffect(() => {
     loadProducts();
+    loadSettings();
   }, []);
+
+  async function loadSettings() {
+    const res = await getGlobalSettings();
+    if (res.ok && res.settings) {
+      setLowStockThreshold(res.settings.lowStockThreshold);
+    }
+  }
 
   async function loadProducts() {
     try {
@@ -151,7 +161,7 @@ export default function InventoryPage() {
 
   const getStockBadgeClass = (stock: number) => {
     if (stock <= 0) return 'inv-stock--out';
-    if (stock < 5) return 'inv-stock--low';
+    if (stock <= lowStockThreshold) return 'inv-stock--low';
     return 'inv-stock--good';
   };
 
