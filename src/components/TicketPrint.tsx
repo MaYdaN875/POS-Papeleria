@@ -168,7 +168,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
               <div className="ticket-divider">{'━'.repeat(32)}</div>
 
               <div className="ticket-footer">
-                <p className="thanks-msg">¡Gracias por su compra!</p>
+                <p className="thanks-msg">{storeInfo.ticketThanksMessage || '¡Gracias por su compra!'}</p>
                 <img 
                   className="ticket-qr"
                   src={qrUrl}
@@ -176,6 +176,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
                   width={120}
                   height={120}
                 />
+                <p className="ticket-footer-website">{storeInfo.storeWebsite || storeInfo.website}</p>
                 <p className="ticket-footer-phone">Atención al cliente: {storeInfo.storePhone || storeInfo.phone}</p>
               </div>
             </div>
