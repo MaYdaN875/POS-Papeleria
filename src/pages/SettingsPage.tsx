@@ -48,10 +48,12 @@ export default function SettingsPage() {
     setLoading(false);
   };
 
-  // Aplicar el tema al instante cuando cambia el toggle
+  // Aplicar el tema al instante cuando cambia el toggle y guardarlo localmente
   useEffect(() => {
     if (settings) {
-      document.documentElement.setAttribute('data-theme', settings.theme || 'light');
+      const currentTheme = settings.theme || 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('pos_theme', currentTheme);
     }
   }, [settings?.theme]);
 
@@ -78,6 +80,9 @@ export default function SettingsPage() {
     const res = await saveGlobalSettings(settings);
     
     if (res.ok) {
+      // Guardar también localmente para persistencia inmediata
+      localStorage.setItem('pos_theme', settings.theme || 'light');
+      
       setMessage({ text: 'Ajustes guardados exitosamente en el servidor.', type: 'success' });
       // Limpiar mensaje después de 3 segundos
       setTimeout(() => setMessage({ text: '', type: '' }), 3000);

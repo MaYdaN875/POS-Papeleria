@@ -16,9 +16,18 @@ import { getGlobalSettings } from './services/settingsService';
 
 export default function App() {
   useEffect(() => {
+    // 1. Aplicar tema local de inmediato para evitar el "flash" blanco
+    const localTheme = localStorage.getItem('pos_theme');
+    if (localTheme) {
+      document.documentElement.setAttribute('data-theme', localTheme);
+    }
+
+    // 2. Sincronizar con el servidor para obtener el resto de los ajustes
     getGlobalSettings().then(res => {
       if (res.ok && res.settings) {
-        document.documentElement.setAttribute('data-theme', res.settings.theme || 'light');
+        const serverTheme = res.settings.theme || 'light';
+        document.documentElement.setAttribute('data-theme', serverTheme);
+        localStorage.setItem('pos_theme', serverTheme);
       }
     });
   }, []);
