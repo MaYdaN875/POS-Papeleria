@@ -21,14 +21,14 @@ adminHandleCors(['GET', 'POST']);
 
 $settingsFile = __DIR__ . '/settings.json';
 
-// Valores por defecto (Genéricos para Marca Blanca)
+// Valores por defecto
 $defaultSettings = [
-    'storeName' => 'Mi Negocio',
-    'storeAddress' => 'Calle Principal 123',
-    'storeCity' => 'Ciudad, Estado',
-    'storePhone' => '55 1234 5678',
-    'storeWebsite' => 'minegocio.com',
-    'storeWebsiteUrl' => 'https://www.minegocio.com',
+    'storeName' => 'Papelería Godart',
+    'storeAddress' => '3909 Av Presa de Osorio',
+    'storeCity' => 'Guadalajara, Jalisco',
+    'storePhone' => '33 1112 4070',
+    'storeWebsite' => 'godart-papelería.com',
+    'storeWebsiteUrl' => 'https://www.godart-papelería.com',
     'ticketThanksMessage' => '¡Gracias por su compra!',
     'autoPrintTicket' => true,
     'lowStockThreshold' => 5,

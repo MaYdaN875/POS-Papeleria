@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import {
   ShoppingCart,
   Package,
@@ -10,7 +9,6 @@ import {
   Settings,
 } from 'lucide-react';
 import { authService } from '../services/authService';
-import { getGlobalSettings } from '../services/settingsService';
 import '../styles/Sidebar.css';
 
 const navItems = [
@@ -25,15 +23,6 @@ const navItems = [
 
 export default function Sidebar() {
   const isAdmin = authService.isAdmin();
-  const [storeName, setStoreName] = useState(import.meta.env.VITE_APP_NAME || 'Punto de Venta');
-
-  useEffect(() => {
-    getGlobalSettings().then(res => {
-      if (res.ok && res.settings) {
-        setStoreName(res.settings.storeName);
-      }
-    });
-  }, []);
 
   // Filtrar ítems: si es adminOnly y NO es admin, no se muestra
   const filteredItems = navItems.filter(item => !item.adminOnly || isAdmin);
@@ -47,7 +36,7 @@ export default function Sidebar() {
           </svg>
         </div>
         <div className="sidebar-logo-text">
-          <span className="sidebar-logo-title">{storeName}</span>
+          <span className="sidebar-logo-title">Papelería Godart</span>
           <span className="sidebar-logo-subtitle">PUNTO DE VENTA</span>
         </div>
       </div>

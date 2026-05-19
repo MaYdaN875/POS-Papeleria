@@ -23,12 +23,12 @@ interface TicketPrintProps {
 }
 
 const STORE_INFO = {
-  name: 'Mi Negocio',
-  address: 'Calle Principal 123',
-  city: 'Ciudad, Estado',
-  phone: '55 1234 5678',
-  website: 'minegocio.com',
-  websiteUrl: 'https://www.minegocio.com',
+  name: 'Papelería Godart',
+  address: '3909 Av Presa de Osorio',
+  city: 'Guadalajara, Jalisco',
+  phone: '33 1112 4070',
+  website: 'godart-papelería.com',
+  websiteUrl: 'https://www.godart-papelería.com',
 };
 
 function translateMethod(method: string): string {
