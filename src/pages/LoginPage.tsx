@@ -65,8 +65,8 @@ export default function LoginPage() {
             </svg>
           </div>
           <div>
-            <span className="login-header-title">Papelería Godart</span>
-            <span className="login-header-subtitle">PUNTO DE VENTA</span>
+            <span className="login-header-title">{import.meta.env.VITE_APP_NAME || 'Punto de Venta'}</span>
+            <span className="login-header-subtitle">ADMINISTRACIÓN</span>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
         <form className="login-card" onSubmit={handleLogin}>
           <h1 className="login-title">Bienvenido de nuevo</h1>
           <p className="login-subtitle">
-            Accede al panel administrativo de la papelería
+            Accede al panel administrativo
           </p>
 
           {error && (

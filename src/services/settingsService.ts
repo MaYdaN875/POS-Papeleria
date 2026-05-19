@@ -23,12 +23,12 @@ export interface SettingsResponse {
 }
 
 const DEFAULT_SETTINGS: GlobalSettings = {
-  storeName: 'Papelería Godart',
-  storeAddress: '3909 Av Presa de Osorio',
-  storeCity: 'Guadalajara, Jalisco',
-  storePhone: '33 1112 4070',
-  storeWebsite: 'godart-papelería.com',
-  storeWebsiteUrl: 'https://www.godart-papelería.com',
+  storeName: 'Mi Negocio',
+  storeAddress: 'Calle Principal 123',
+  storeCity: 'Ciudad, Estado',
+  storePhone: '55 1234 5678',
+  storeWebsite: 'minegocio.com',
+  storeWebsiteUrl: 'https://www.minegocio.com',
   ticketThanksMessage: '¡Gracias por su compra!',
   autoPrintTicket: true,
   lowStockThreshold: 5,
