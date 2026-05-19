@@ -167,13 +167,13 @@ export default function SettingsPage() {
               <h2 className="settings-section-title">Información del Negocio</h2>
               <div className="settings-grid">
                 <div className="settings-field">
-                  <label>Nombre de la Papelería</label>
+                  <label>Nombre del Negocio</label>
                   <input 
                     type="text" 
                     name="storeName" 
                     value={settings.storeName} 
                     onChange={handleChange}
-                    placeholder="Ej. Papelería Godart"
+                    placeholder="Ej. Mi Tienda"
                   />
                 </div>
                 <div className="settings-field">
