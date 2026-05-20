@@ -11,6 +11,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import SalesPage from './pages/SalesPage';
 import UsersPage from './pages/UsersPage';
 import SettingsPage from './pages/SettingsPage';
+import { ServicesPage } from './pages/ServicesPage';
 import { useEffect } from 'react';
 import { getGlobalSettings } from './services/settingsService';
 
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/cash" element={<CashPage />} />
+              <Route path="/services" element={<ServicesPage />} />
               
               {/* Rutas SOLO para Administradores */}
               <Route element={<ProtectedRoute requireAdmin={true} />}>
