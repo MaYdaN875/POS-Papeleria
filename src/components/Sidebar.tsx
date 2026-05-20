@@ -7,12 +7,14 @@ import {
   FileText,
   Users,
   Settings,
+  Smartphone
 } from 'lucide-react';
 import { authService } from '../services/authService';
 import '../styles/Sidebar.css';
 
 const navItems = [
   { to: '/dashboard', icon: ShoppingCart, label: 'Ventas', adminOnly: false },
+  { to: '/services', icon: Smartphone, label: 'Recargas', adminOnly: false },
   { to: '/inventory', icon: Package, label: 'Inventario', adminOnly: true },
   { to: '/cash', icon: Wallet, label: 'Caja', adminOnly: false },
   { to: '/reports', icon: BarChart3, label: 'Reportes', adminOnly: true },
