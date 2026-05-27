@@ -1,0 +1,20 @@
+==== REQUEST a /statusTXN ====
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501706296"
+}
+
+==== RESPONSE de /statusTXN ====
+{
+  "success": true,
+  "error": 0,
+  "message": "Consulta Exitosa",
+  "data": {
+    "TransID": "260501706296",
+    "Status": "Exitosa",
+    "Folio": "123456789",
+    "Nota": "Su transaccion fue exitosa",
+    "Monto": "10.00"
+  }
+}
