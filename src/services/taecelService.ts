@@ -1,32 +1,40 @@
 import { TaecelProduct, TaecelTransaction, TaecelBalance } from '../types/taecel';
 
-// MODO SIMULADO: Pon esto en "false" cuando tengas tus llaves reales de Taecel.
-const IS_MOCK_MODE = true; 
+const IS_MOCK_MODE = false; 
 
-// TODO: Reemplazar con tus credenciales reales cuando Taecel te las envíe.
-const TAECEL_API_KEY = 'TU_API_KEY_AQUI'; 
-const TAECEL_API_URL = 'https://taecel.com/api/v2';
+// Llaves de Prueba (Cámbialas cuando Taecel te dé las de Producción)
+const TAECEL_API_KEY = 'I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ'; 
+const TAECEL_API_NIP = '07328698c645cd0860372b8efa18be9aVmYC5HgwuJ';
+const TAECEL_API_URL = 'https://app.taecel.com/api';
 
 /**
- * Consulta el saldo actual disponible para hacer recargas.
+ * Consulta el saldo actual disponible
  */
 export const getTaecelBalance = async (): Promise<TaecelBalance> => {
   if (IS_MOCK_MODE) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          available: 1500.50, // Saldo simulado
-          last_updated: new Date().toISOString()
-        });
-      }, 500);
-    });
+    return { available: 1500.50, last_updated: new Date().toISOString() };
   }
 
-  // Código real de producción
-  const response = await fetch(`${TAECEL_API_URL}/balance`, {
-    headers: { 'Authorization': `Bearer ${TAECEL_API_KEY}` }
+  const body = new URLSearchParams();
+  body.append('key', TAECEL_API_KEY);
+  body.append('nip', TAECEL_API_NIP);
+
+  const response = await fetch(`${TAECEL_API_URL}/getBalance`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
   });
-  return response.json();
+  
+  const res = await response.json();
+  if (!res.success) throw new Error(res.message || 'Error al obtener saldo');
+  
+  let total = 0;
+  if (res.data && Array.isArray(res.data)) {
+    for (const b of res.data) {
+      total += parseFloat(b.Saldo.replace(/,/g, ''));
+    }
+  }
+  return { available: total, last_updated: new Date().toISOString() };
 };
 
 /**
@@ -34,60 +42,81 @@ export const getTaecelBalance = async (): Promise<TaecelBalance> => {
  */
 export const executeTransaction = async (
   productId: string,
-  reference: string, // Teléfono o número de servicio
+  reference: string, 
   amount: number
 ): Promise<TaecelTransaction> => {
-  
   if (IS_MOCK_MODE) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulamos un error si el teléfono empieza con 0000
-        if (reference.startsWith('0000')) {
-          reject(new Error('Número inválido o saldo insuficiente en Taecel.'));
-          return;
-        }
-
-        resolve({
-          id: `tx_${Math.random().toString(36).substr(2, 9)}`,
-          date: new Date().toISOString(),
-          product_id: productId,
-          amount: amount,
-          reference: reference,
-          status: 'success',
-          authorization_code: Math.floor(100000 + Math.random() * 900000).toString()
-        });
-      }, 1500); // Simulamos 1.5 segundos de procesamiento
-    });
+    return {
+      id: `tx_${Math.random().toString(36).substr(2, 9)}`,
+      date: new Date().toISOString(),
+      product_id: productId,
+      amount: amount,
+      reference: reference,
+      status: 'success',
+      authorization_code: '123456'
+    };
   }
 
-  // Código real de producción
-  const response = await fetch(`${TAECEL_API_URL}/transaction`, {
+  const body = new URLSearchParams();
+  body.append('key', TAECEL_API_KEY);
+  body.append('nip', TAECEL_API_NIP);
+  body.append('producto', productId);
+  body.append('referencia', reference);
+  if (amount > 0) body.append('monto', amount.toString());
+
+  const response = await fetch(`${TAECEL_API_URL}/requestTXN`, {
     method: 'POST',
-    headers: { 
-      'Authorization': `Bearer ${TAECEL_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ product_id: productId, reference, amount })
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
   });
   
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Error en la transacción con Taecel');
+  const res = await response.json();
+  if (!res.success) {
+    throw new Error(`${res.message} (Código: ${res.error})`);
   }
   
-  return response.json();
+  return {
+    id: res.data?.TransID || res.data?.transID || '',
+    date: res.data?.Fecha || res.data?.fecha || new Date().toISOString(),
+    product_id: productId,
+    amount: amount,
+    reference: reference,
+    status: res.data?.Status || 'En proceso',
+    authorization_code: res.data?.Folio || ''
+  };
 };
 
 /**
- * Obtiene la lista de compañías (Telcel, Movistar, CFE, etc.)
- * En un escenario real, esto se consulta a la API. Aquí ponemos los principales.
+ * Obtiene la lista de productos de Taecel
  */
 export const getProducts = async (): Promise<TaecelProduct[]> => {
-  return [
-    { id: 'telcel', name: 'Telcel', type: 'recarga', carrier: 'Telcel', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Telcel_logo.png' },
-    { id: 'movistar', name: 'Movistar', type: 'recarga', carrier: 'Movistar' },
-    { id: 'atnt', name: 'AT&T', type: 'recarga', carrier: 'AT&T' },
-    { id: 'cfe', name: 'CFE', type: 'servicio', carrier: 'CFE' },
-    { id: 'megacable', name: 'Megacable', type: 'servicio', carrier: 'Megacable' },
-  ];
+  if (IS_MOCK_MODE) {
+    return [
+      { id: 'TEL010', name: 'Telcel $10', type: 'recarga', carrier: 'Telcel' }
+    ];
+  }
+
+  const body = new URLSearchParams();
+  body.append('key', TAECEL_API_KEY);
+  body.append('nip', TAECEL_API_NIP);
+
+  const response = await fetch(`${TAECEL_API_URL}/getProducts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  
+  const res = await response.json();
+  if (!res.success) throw new Error(res.message || 'Error al obtener productos');
+
+  const productosList = res.data[0]?.productos || [];
+  
+  // Mapear al modelo interno del POS
+  return productosList.map((p: any) => ({
+    id: p.codigo,
+    name: p.descripcion,
+    type: p.bolsa === 1 ? 'recarga' : 'servicio',
+    carrier: p.carrier,
+    logoUrl: p.logo
+  }));
 };
