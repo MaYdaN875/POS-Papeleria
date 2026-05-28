@@ -1,20 +1,2502 @@
-==== REQUEST a /statusTXN ====
+[2026-05-28T02:04:16.185Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:04:16.185Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
-  "transID": "260501706296"
+  "transID": "260501761575"
 }
 
-==== RESPONSE de /statusTXN ====
+[2026-05-28T02:04:24.161Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:04:24.161Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
-  "message": "Consulta Exitosa",
+  "message": "Transacción Exitosa",
   "data": {
-    "TransID": "260501706296",
+    "TransID": "260501761575",
+    "Fecha": "2026-05-27 20:04:18",
+    "Carrier": "Telcel",
+    "Telefono": "5555555505",
+    "Folio": "378809",
     "Status": "Exitosa",
-    "Folio": "123456789",
-    "Nota": "Su transaccion fue exitosa",
-    "Monto": "10.00"
-  }
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "5.02",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,624.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
 }
+
+[2026-05-28T02:04:27.172Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:04:27.172Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761590"
+}
+
+[2026-05-28T02:04:37.184Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:04:37.184Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:04:40.195Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:04:40.195Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761590"
+}
+
+[2026-05-28T02:04:51.406Z]
+==== ERROR en /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:04:51.406Z
+Error: read ECONNRESET
+
+[2026-05-28T02:04:54.409Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:04:54.409Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761590"
+}
+
+[2026-05-28T02:04:58.656Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:04:58.656Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Recarga Exitosa",
+  "data": {
+    "TransID": "260501761590",
+    "Fecha": "2026-05-27 20:04:35",
+    "Carrier": "Telcel",
+    "Telefono": "5555555510",
+    "Folio": "433097",
+    "Status": "Exitosa",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "10.05",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,574.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:04:59.922Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:04:59.922Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761616"
+}
+
+[2026-05-28T02:05:09.925Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:05:09.925Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:05:12.941Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:12.941Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761616"
+}
+
+[2026-05-28T02:05:13.241Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:13.241Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761616",
+    "Fecha": "2026-05-27 20:05:09",
+    "Carrier": "Telcel",
+    "Telefono": "5555555515",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,474.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:16.245Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:05:16.245Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761616"
+}
+
+[2026-05-28T02:05:16.502Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:05:16.502Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Recarga Exitosa",
+  "data": {
+    "TransID": "260501761616",
+    "Fecha": "2026-05-27 20:05:09",
+    "Carrier": "Telcel",
+    "Telefono": "5555555515",
+    "Folio": "191566",
+    "Status": "Exitosa",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "15.03",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,474.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:17.774Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:05:17.774Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761634"
+}
+
+[2026-05-28T02:05:27.777Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:05:27.777Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:05:30.790Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:30.790Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761634"
+}
+
+[2026-05-28T02:05:31.153Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:31.153Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Recarga Exitosa",
+  "data": {
+    "TransID": "260501761634",
+    "Fecha": "2026-05-27 20:05:26",
+    "Carrier": "Telcel",
+    "Telefono": "5555555520",
+    "Folio": "146942",
+    "Status": "Exitosa",
+    "Monto": "$150.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "12.03",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,324.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:32.457Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:05:32.457Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:42.474Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:05:42.474Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:05:45.485Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:45.485Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:45.831Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:05:45.831Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761646",
+    "Fecha": "2026-05-27 20:05:41",
+    "Carrier": "Telcel",
+    "Telefono": "5555555525",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$200.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,124.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:48.840Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:05:48.840Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:49.058Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:05:49.058Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761646",
+    "Fecha": "2026-05-27 20:05:41",
+    "Carrier": "Telcel",
+    "Telefono": "5555555525",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$200.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,124.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:52.071Z]
+==== REQUEST a /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:05:52.071Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:52.367Z]
+==== RESPONSE de /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:05:52.367Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761646",
+    "Fecha": "2026-05-27 20:05:41",
+    "Carrier": "Telcel",
+    "Telefono": "5555555525",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$200.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,124.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:55.371Z]
+==== REQUEST a /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:05:55.371Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:55.604Z]
+==== RESPONSE de /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:05:55.604Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761646",
+    "Fecha": "2026-05-27 20:05:41",
+    "Carrier": "Telcel",
+    "Telefono": "5555555525",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$200.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,124.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:05:58.611Z]
+==== REQUEST a /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:05:58.611Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761646"
+}
+
+[2026-05-28T02:05:58.843Z]
+==== RESPONSE de /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:05:58.843Z
+Respuesta recibida:
+{
+  "success": false,
+  "error": "2",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761646",
+    "Fecha": "2026-05-27 20:05:41",
+    "Carrier": "Telcel",
+    "Telefono": "5555555525",
+    "Folio": "",
+    "Status": "Fracasada ",
+    "Monto": "$200.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "25.06",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,324.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telcel.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:00.151Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:06:00.151Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:10.158Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:06:10.158Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:06:13.160Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:06:13.160Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:13.519Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:06:13.519Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:16.534Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:06:16.534Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:17.252Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:06:17.252Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:20.257Z]
+==== REQUEST a /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:06:20.257Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:21.169Z]
+==== RESPONSE de /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:06:21.169Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:24.183Z]
+==== REQUEST a /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:06:24.183Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:24.695Z]
+==== RESPONSE de /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:06:24.695Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:27.701Z]
+==== REQUEST a /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:06:27.701Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:27.922Z]
+==== RESPONSE de /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:06:27.921Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:30.933Z]
+==== REQUEST a /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:06:30.933Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761677"
+}
+
+[2026-05-28T02:06:36.252Z]
+==== RESPONSE de /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:06:36.252Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Recarga Exitosa",
+  "data": {
+    "TransID": "260501761677",
+    "Fecha": "2026-05-27 20:06:09",
+    "Carrier": "Movistar",
+    "Telefono": "5555555530",
+    "Folio": "198470",
+    "Status": "Exitosa",
+    "Monto": "$10.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "30.03",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:39.861Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:06:39.861Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:06:49.874Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:06:49.874Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:06:52.888Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:06:52.888Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:06:55.325Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:06:55.325Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:06:58.336Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:06:58.336Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:06:59.206Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:06:59.206Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:02.207Z]
+==== REQUEST a /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:07:02.207Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:07:04.467Z]
+==== RESPONSE de /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:07:04.467Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:07.471Z]
+==== REQUEST a /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:07:07.471Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:07:07.989Z]
+==== RESPONSE de /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:07:07.988Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:10.990Z]
+==== REQUEST a /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:07:10.990Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:07:12.033Z]
+==== RESPONSE de /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:07:12.033Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:15.048Z]
+==== REQUEST a /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:07:15.048Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:07:15.264Z]
+==== RESPONSE de /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:07:15.264Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,264.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:18.267Z]
+==== REQUEST a /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:07:18.267Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761702"
+}
+
+[2026-05-28T02:07:24.139Z]
+==== RESPONSE de /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:07:24.139Z
+Respuesta recibida:
+{
+  "success": false,
+  "error": "3",
+  "message": "Monto Invalido",
+  "data": {
+    "TransID": "260501761702",
+    "Fecha": "2026-05-27 20:06:48",
+    "Carrier": "Movistar",
+    "Telefono": "5555555540",
+    "Folio": "",
+    "Status": "Fracasada ",
+    "Monto": "$50.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "40.04",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,314.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:35.023Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:07:35.023Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:07:45.031Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:07:45.031Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:07:48.039Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:07:48.039Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:07:48.547Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:07:48.547Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:51.550Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:07:51.550Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:07:51.812Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:07:51.812Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:54.815Z]
+==== REQUEST a /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:07:54.815Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:07:55.075Z]
+==== RESPONSE de /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:07:55.075Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:07:58.086Z]
+==== REQUEST a /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:07:58.086Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:07:58.310Z]
+==== RESPONSE de /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:07:58.310Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:01.325Z]
+==== REQUEST a /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:08:01.325Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:01.550Z]
+==== RESPONSE de /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:08:01.550Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:04.566Z]
+==== REQUEST a /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:08:04.566Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:04.800Z]
+==== RESPONSE de /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:08:04.800Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:07.814Z]
+==== REQUEST a /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:08:07.814Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:08.026Z]
+==== RESPONSE de /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:08:08.026Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:11.034Z]
+==== REQUEST a /StatusTXN (Intento #9) ====
+Fecha y hora: 2026-05-28T02:08:11.034Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:11.263Z]
+==== RESPONSE de /StatusTXN (Intento #9) ====
+Fecha y hora: 2026-05-28T02:08:11.263Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:14.276Z]
+==== REQUEST a /StatusTXN (Intento #10) ====
+Fecha y hora: 2026-05-28T02:08:14.276Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:14.505Z]
+==== RESPONSE de /StatusTXN (Intento #10) ====
+Fecha y hora: 2026-05-28T02:08:14.505Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:17.507Z]
+==== REQUEST a /StatusTXN (Intento #11) ====
+Fecha y hora: 2026-05-28T02:08:17.507Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:17.715Z]
+==== RESPONSE de /StatusTXN (Intento #11) ====
+Fecha y hora: 2026-05-28T02:08:17.715Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:20.726Z]
+==== REQUEST a /StatusTXN (Intento #12) ====
+Fecha y hora: 2026-05-28T02:08:20.726Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:20.957Z]
+==== RESPONSE de /StatusTXN (Intento #12) ====
+Fecha y hora: 2026-05-28T02:08:20.957Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:23.962Z]
+==== REQUEST a /StatusTXN (Intento #13) ====
+Fecha y hora: 2026-05-28T02:08:23.962Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761753"
+}
+
+[2026-05-28T02:08:24.299Z]
+==== RESPONSE de /StatusTXN (Intento #13) ====
+Fecha y hora: 2026-05-28T02:08:24.299Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761753",
+    "Fecha": "2026-05-27 20:07:43",
+    "Carrier": "Movistar",
+    "Telefono": "5555555560",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$100.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "189.203.97.142",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,214.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:25.629Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:08:25.629Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:35.631Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:08:35.631Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:08:38.647Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:08:38.647Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:39.096Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:08:39.096Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:42.101Z]
+==== REQUEST a /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:08:42.101Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:42.363Z]
+==== RESPONSE de /StatusTXN (Intento #3) ====
+Fecha y hora: 2026-05-28T02:08:42.363Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:45.366Z]
+==== REQUEST a /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:08:45.366Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:45.574Z]
+==== RESPONSE de /StatusTXN (Intento #4) ====
+Fecha y hora: 2026-05-28T02:08:45.574Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:48.576Z]
+==== REQUEST a /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:08:48.576Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:48.820Z]
+==== RESPONSE de /StatusTXN (Intento #5) ====
+Fecha y hora: 2026-05-28T02:08:48.820Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:51.828Z]
+==== REQUEST a /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:08:51.828Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:52.174Z]
+==== RESPONSE de /StatusTXN (Intento #6) ====
+Fecha y hora: 2026-05-28T02:08:52.174Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:55.184Z]
+==== REQUEST a /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:08:55.184Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:55.416Z]
+==== RESPONSE de /StatusTXN (Intento #7) ====
+Fecha y hora: 2026-05-28T02:08:55.416Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:08:58.421Z]
+==== REQUEST a /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:08:58.421Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:08:58.663Z]
+==== RESPONSE de /StatusTXN (Intento #8) ====
+Fecha y hora: 2026-05-28T02:08:58.663Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:01.676Z]
+==== REQUEST a /StatusTXN (Intento #9) ====
+Fecha y hora: 2026-05-28T02:09:01.676Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:01.917Z]
+==== RESPONSE de /StatusTXN (Intento #9) ====
+Fecha y hora: 2026-05-28T02:09:01.917Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:04.931Z]
+==== REQUEST a /StatusTXN (Intento #10) ====
+Fecha y hora: 2026-05-28T02:09:04.931Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:05.196Z]
+==== RESPONSE de /StatusTXN (Intento #10) ====
+Fecha y hora: 2026-05-28T02:09:05.196Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:08.204Z]
+==== REQUEST a /StatusTXN (Intento #11) ====
+Fecha y hora: 2026-05-28T02:09:08.204Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:08.438Z]
+==== RESPONSE de /StatusTXN (Intento #11) ====
+Fecha y hora: 2026-05-28T02:09:08.438Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:11.447Z]
+==== REQUEST a /StatusTXN (Intento #12) ====
+Fecha y hora: 2026-05-28T02:09:11.447Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:11.684Z]
+==== RESPONSE de /StatusTXN (Intento #12) ====
+Fecha y hora: 2026-05-28T02:09:11.684Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:14.695Z]
+==== REQUEST a /StatusTXN (Intento #13) ====
+Fecha y hora: 2026-05-28T02:09:14.695Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:14.931Z]
+==== RESPONSE de /StatusTXN (Intento #13) ====
+Fecha y hora: 2026-05-28T02:09:14.931Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:17.937Z]
+==== REQUEST a /StatusTXN (Intento #14) ====
+Fecha y hora: 2026-05-28T02:09:17.937Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:18.149Z]
+==== RESPONSE de /StatusTXN (Intento #14) ====
+Fecha y hora: 2026-05-28T02:09:18.149Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:21.153Z]
+==== REQUEST a /StatusTXN (Intento #15) ====
+Fecha y hora: 2026-05-28T02:09:21.153Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:21.365Z]
+==== RESPONSE de /StatusTXN (Intento #15) ====
+Fecha y hora: 2026-05-28T02:09:21.365Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:24.374Z]
+==== REQUEST a /StatusTXN (Intento #16) ====
+Fecha y hora: 2026-05-28T02:09:24.374Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761787"
+}
+
+[2026-05-28T02:09:24.588Z]
+==== RESPONSE de /StatusTXN (Intento #16) ====
+Fecha y hora: 2026-05-28T02:09:24.588Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": "0",
+  "message": "Error inesperado",
+  "data": {
+    "TransID": "260501761787",
+    "Fecha": "2026-05-27 20:08:34",
+    "Carrier": "Movistar",
+    "Telefono": "5555555565",
+    "Folio": "",
+    "Status": "En proceso",
+    "Monto": "$120.00",
+    "Cargo": "$0.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "9",
+    "Timeout": "0.00",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Tiempo Aire",
+    "Comision": "$4.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$5,094.40",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/movistar2.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:32.064Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:32.064Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761835"
+}
+
+[2026-05-28T02:09:37.367Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:37.367Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Transacción Exitosa",
+  "data": {
+    "TransID": "260501761835",
+    "Fecha": "2026-05-27 20:09:41",
+    "Carrier": "SKY",
+    "Telefono": "871235412635",
+    "Folio": "657621",
+    "Status": "Exitosa",
+    "Monto": "$95.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "5.03",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$0.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$7,782.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/sky.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:38.615Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:38.615Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761844"
+}
+
+[2026-05-28T02:09:41.892Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:41.892Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Transacción Exitosa",
+  "data": {
+    "TransID": "260501761844",
+    "Fecha": "2026-05-27 20:09:47",
+    "Carrier": "Telmex",
+    "Telefono": "6589745213",
+    "Folio": "781601",
+    "Status": "Exitosa",
+    "Monto": "$100.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "3.03",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$15.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$7,677.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/telmex.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:43.236Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:43.236Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761850"
+}
+
+[2026-05-28T02:09:47.524Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:47.524Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Transacción Exitosa",
+  "data": {
+    "TransID": "260501761850",
+    "Fecha": "2026-05-27 20:09:52",
+    "Carrier": "CFE - Codigo de Barras",
+    "Telefono": "125478965412365478965230126654",
+    "Folio": "704333",
+    "Status": "Exitosa",
+    "Monto": "$260.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "4.03",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$5.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$7,412.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/cfe.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:48.799Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:48.799Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761852"
+}
+
+[2026-05-28T02:09:51.114Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:51.114Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Transacción Exitosa",
+  "data": {
+    "TransID": "260501761852",
+    "Fecha": "2026-05-27 20:09:58",
+    "Carrier": "Megacable",
+    "Telefono": "9854123547",
+    "Folio": "289472",
+    "Status": "Exitosa",
+    "Monto": "$131.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "2.04",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$35.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$7,276.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/megacable.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:52.384Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:52.384Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761856"
+}
+
+[2026-05-28T02:09:57.671Z]
+==== RESPONSE de /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:57.671Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Transacción Exitosa",
+  "data": {
+    "TransID": "260501761856",
+    "Fecha": "2026-05-27 20:10:01",
+    "Carrier": "Dish",
+    "Telefono": "27458965324125",
+    "Folio": "127468",
+    "Status": "Exitosa",
+    "Monto": "$103.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "5.04",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$10.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$7,168.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/dish.png"
+  },
+  "extra": null
+}
+
+[2026-05-28T02:09:58.949Z]
+==== REQUEST a /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:09:58.949Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761864"
+}
+
+[2026-05-28T02:10:08.964Z]
+==== ERROR en /StatusTXN (Intento #1) ====
+Fecha y hora: 2026-05-28T02:10:08.964Z
+Error: TIMEOUT: No hubo respuesta en 10 segundos
+
+[2026-05-28T02:10:11.978Z]
+==== REQUEST a /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:10:11.978Z
+Parametros enviados:
+{
+  "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
+  "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
+  "transID": "260501761864"
+}
+
+[2026-05-28T02:10:12.350Z]
+==== RESPONSE de /StatusTXN (Intento #2) ====
+Fecha y hora: 2026-05-28T02:10:12.350Z
+Respuesta recibida:
+{
+  "success": true,
+  "error": 0,
+  "message": "Recarga Exitosa",
+  "data": {
+    "TransID": "260501761864",
+    "Fecha": "2026-05-27 20:10:08",
+    "Carrier": "Maxcom",
+    "Telefono": "3456987",
+    "Folio": "902628",
+    "Status": "Exitosa",
+    "Monto": "$177.00",
+    "Cargo": "$5.00",
+    "Abono": "$0.00",
+    "Via": "WS",
+    "Región": "0",
+    "Timeout": "5.04",
+    "IP": "2806:2f0:5501:f0c8:cda7:7fe8:e0da:b0d6",
+    "Bolsa": "Pago de Servicios",
+    "Comision": "$0.00",
+    "Nota": "",
+    "pin": "",
+    "Saldo Final": "$6,986.65",
+    "logo": "https://cdn.taecel.com/src/app/assets/img/carriers/maxcom.png"
+  },
+  "extra": null
+}
+

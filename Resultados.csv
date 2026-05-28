@@ -1,17 +1,17 @@
 Tipo,Referencia,Carrier,Codigo,Monto,Resultado,TransID,Folio,Status,Error
-Recarga,5555555505,Telcel,TEL010,10,Consulta Exitosa,260501706296,,,
-Recarga,5555555510,Telcel,TEL050,50,Consulta Exitosa,260501706297,,,
-Recarga,5555555515,Telcel,TEL100,100,Consulta Exitosa,260501706301,,,
-Recarga,5555555520,Telcel,TEL150,150,Consulta Exitosa,260501706302,,,
-Recarga,5555555525,Telcel,TEL200,200,Consulta Exitosa,260501706304,,,
-Recarga,5555555530,Movistar,MOV010,10,Consulta Exitosa,260501706306,,,
-Recarga,5555555540,Movistar,MOV050,50,Consulta Exitosa,260501706310,,,
-Recarga,5555555560,Movistar,MOV100,100,Consulta Exitosa,260501706316,,,
-Recarga,5555555565,Movistar,MOV120,120,Consulta Exitosa,260501706321,,,
-Recarga,5555555200,Movistar,MOV150,150,Tabla de transacciones llena,,,,3129
-Servicio,871235412635,SKY,SKY000,95,Consulta Exitosa,260501706343,,,
-Servicio,6589745213,TELMEX,TMX001,100,Consulta Exitosa,260501706351,,,
-Servicio,125478965412365478965230126654,CFE,CFE000,260,Consulta Exitosa,260501706366,,,
-Servicio,9854123547,MEGACABLE,MEG000,131,Consulta Exitosa,260501706378,,,
-Servicio,27458965324125,DISH,DSH000,103,Consulta Exitosa,260501706396,,,
-Servicio,3456987,MAXCOM,MAX000,177,Consulta Exitosa,260501706405,,,
+Recarga,5555555505,Telcel,TEL010,10,Transacción Exitosa,260501761575,378809,Exitosa,
+Recarga,5555555510,Telcel,TEL050,50,Recarga Exitosa,260501761590,433097,Exitosa,
+Recarga,5555555515,Telcel,TEL100,100,Recarga Exitosa,260501761616,191566,Exitosa,
+Recarga,5555555520,Telcel,TEL150,150,Recarga Exitosa,260501761634,146942,Exitosa,
+Recarga,5555555525,Telcel,TEL200,200,Error inesperado,260501761646,,Fracasada ,2
+Recarga,5555555530,Movistar,MOV010,10,Recarga Exitosa,260501761677,198470,Exitosa,
+Recarga,5555555540,Movistar,MOV050,50,Monto Invalido,260501761702,,Fracasada ,3
+Recarga,5555555560,Movistar,MOV100,100,Error inesperado,260501761753,,En proceso,0
+Recarga,5555555565,Movistar,MOV120,120,Error inesperado,260501761787,,En proceso,0
+Recarga,5555555200,Movistar,MOV150,150,Tabla de transacciones llena,,,Fracasada,3129
+Servicio,871235412635,SKY,SKY000,95,Transacción Exitosa,260501761835,657621,Exitosa,
+Servicio,6589745213,TELMEX,TMX001,100,Transacción Exitosa,260501761844,781601,Exitosa,
+Servicio,125478965412365478965230126654,CFE,CFE000,260,Transacción Exitosa,260501761850,704333,Exitosa,
+Servicio,9854123547,MEGACABLE,MEG000,131,Transacción Exitosa,260501761852,289472,Exitosa,
+Servicio,27458965324125,DISH,DSH000,103,Transacción Exitosa,260501761856,127468,Exitosa,
+Servicio,3456987,MAXCOM,MAX000,177,Recarga Exitosa,260501761864,902628,Exitosa,

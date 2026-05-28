@@ -1,4 +1,7 @@
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:03:52.276Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:03:52.276Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -6,19 +9,25 @@
   "referencia": "5555555505"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:04:16.184Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:04:16.183Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706296",
-    "fecha": "2026-05-27 08:40:11"
+    "transID": "260501761575",
+    "fecha": "2026-05-27 20:04:18"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:04:25.173Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:04:25.173Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -26,19 +35,25 @@
   "referencia": "5555555510"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:04:27.172Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:04:27.172Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706297",
-    "fecha": "2026-05-27 08:40:12"
+    "transID": "260501761590",
+    "fecha": "2026-05-27 20:04:35"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:04:59.666Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:04:59.666Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -46,19 +61,25 @@
   "referencia": "5555555515"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:04:59.922Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:04:59.922Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706301",
-    "fecha": "2026-05-27 08:40:13"
+    "transID": "260501761616",
+    "fecha": "2026-05-27 20:05:09"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:05:17.504Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:05:17.504Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -66,19 +87,25 @@
   "referencia": "5555555520"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:05:17.774Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:05:17.774Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706302",
-    "fecha": "2026-05-27 08:40:14"
+    "transID": "260501761634",
+    "fecha": "2026-05-27 20:05:26"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:05:32.162Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:05:32.162Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -86,19 +113,25 @@
   "referencia": "5555555525"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:05:32.456Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:05:32.456Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706304",
-    "fecha": "2026-05-27 08:40:16"
+    "transID": "260501761646",
+    "fecha": "2026-05-27 20:05:41"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:05:59.855Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:05:59.855Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -106,19 +139,25 @@
   "referencia": "5555555530"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:06:00.151Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:06:00.151Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706306",
-    "fecha": "2026-05-27 08:40:18"
+    "transID": "260501761677",
+    "fecha": "2026-05-27 20:06:09"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:06:37.265Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:06:37.265Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -126,19 +165,25 @@
   "referencia": "5555555540"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:06:39.860Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:06:39.860Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706310",
-    "fecha": "2026-05-27 08:40:19"
+    "transID": "260501761702",
+    "fecha": "2026-05-27 20:06:48"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:07:25.154Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:07:25.154Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -146,19 +191,25 @@
   "referencia": "5555555560"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:07:35.023Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:07:35.023Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706316",
-    "fecha": "2026-05-27 08:40:20"
+    "transID": "260501761753",
+    "fecha": "2026-05-27 20:07:43"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:08:25.303Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:08:25.303Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -166,19 +217,25 @@
   "referencia": "5555555565"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:08:25.628Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:08:25.628Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706321",
-    "fecha": "2026-05-27 08:40:22"
+    "transID": "260501761787",
+    "fecha": "2026-05-27 20:08:34"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:25.604Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:25.604Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -186,7 +243,10 @@
   "referencia": "5555555200"
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:31.791Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:31.791Z
+Respuesta recibida:
 {
   "success": false,
   "error": 3129,
@@ -195,7 +255,10 @@
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:31.792Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:31.792Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -204,19 +267,25 @@
   "monto": 95
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:32.063Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:32.063Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706343",
-    "fecha": "2026-05-27 08:40:32"
+    "transID": "260501761835",
+    "fecha": "2026-05-27 20:09:41"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:38.379Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:38.379Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -225,19 +294,25 @@
   "monto": 100
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:38.614Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:38.614Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706351",
-    "fecha": "2026-05-27 08:40:35"
+    "transID": "260501761844",
+    "fecha": "2026-05-27 20:09:47"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:42.893Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:42.893Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -246,19 +321,25 @@
   "monto": 260
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:43.235Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:43.235Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706366",
-    "fecha": "2026-05-27 08:40:44"
+    "transID": "260501761850",
+    "fecha": "2026-05-27 20:09:52"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:48.532Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:48.532Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -267,19 +348,25 @@
   "monto": 131
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:48.798Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:48.798Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706378",
-    "fecha": "2026-05-27 08:40:53"
+    "transID": "260501761852",
+    "fecha": "2026-05-27 20:09:58"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:52.118Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:52.118Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -288,19 +375,25 @@
   "monto": 103
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:52.383Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:52.383Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706396",
-    "fecha": "2026-05-27 08:41:03"
+    "transID": "260501761856",
+    "fecha": "2026-05-27 20:10:01"
   },
   "extra": null
 }
 
-==== REQUEST a /requestTXN ====
+[2026-05-28T02:09:58.681Z]
+==== REQUEST a /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:58.681Z
+Parametros enviados:
 {
   "key": "I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ",
   "nip": "07328698c645cd0860372b8efa18be9aVmYC5HgwuJ",
@@ -309,14 +402,17 @@
   "monto": 177
 }
 
-==== RESPONSE de /requestTXN ====
+[2026-05-28T02:09:58.949Z]
+==== RESPONSE de /RequestTXN ====
+Fecha y hora: 2026-05-28T02:09:58.949Z
+Respuesta recibida:
 {
   "success": true,
   "error": 0,
   "message": "Consulta Exitosa",
   "data": {
-    "transID": "260501706405",
-    "fecha": "2026-05-27 08:41:10"
+    "transID": "260501761864",
+    "fecha": "2026-05-27 20:10:08"
   },
   "extra": null
 }
