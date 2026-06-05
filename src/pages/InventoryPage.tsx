@@ -18,6 +18,7 @@ export default function InventoryPage() {
   const [editPrice, setEditPrice] = useState<string>('');
   const [editStock, setEditStock] = useState<string>('');
   const [newBarcode, setNewBarcode] = useState<string>('');
+  const [editBarcodes, setEditBarcodes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   // Detectar escáner para buscar o editar rápidamente
@@ -70,11 +71,13 @@ export default function InventoryPage() {
     setEditingId(product.id);
     setEditPrice(product.price.toString());
     setEditStock(product.stock.toString());
+    setEditBarcodes([...(product.barcodes || [])]);
     setNewBarcode('');
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setEditBarcodes([]);
   };
 
   const handleSaveEdit = async (productId: number) => {
@@ -88,17 +91,46 @@ export default function InventoryPage() {
 
     try {
       setSaving(true);
+
+      // 1. Guardar precio y stock
       const result = await updateProduct(productId, newPrice, newStock);
-      
-      if (result.ok) {
-        // Actualizar el estado local sin recargar todo
-        setProducts(products.map(p => 
-          p.id === productId ? { ...p, price: newPrice, stock: newStock } : p
-        ));
-        setEditingId(null);
-      } else {
-        alert(result.message || 'Error al guardar');
+      if (!result.ok) {
+        alert(result.message || 'Error al guardar cambios de precio y stock');
+        setSaving(false);
+        return;
       }
+
+      // 2. Procesar cambios de códigos de barras
+      const originalProduct = products.find(p => p.id === productId);
+      const originalBarcodes = originalProduct?.barcodes || [];
+
+      const toAdd = editBarcodes.filter(b => !originalBarcodes.includes(b));
+      const toRemove = originalBarcodes.filter(b => !editBarcodes.includes(b));
+
+      let barcodeErrors: string[] = [];
+
+      for (const barcode of toAdd) {
+        const addResult = await addProductBarcode(productId, barcode);
+        if (!addResult.ok) {
+          barcodeErrors.push(`No se pudo agregar "${barcode}": ${addResult.message || 'Error'}`);
+        }
+      }
+
+      for (const barcode of toRemove) {
+        const removeResult = await removeProductBarcode(barcode);
+        if (!removeResult.ok) {
+          barcodeErrors.push(`No se pudo eliminar "${barcode}": ${removeResult.message || 'Error'}`);
+        }
+      }
+
+      if (barcodeErrors.length > 0) {
+        alert('Se actualizó el producto, pero ocurrieron algunos problemas con los códigos de barras:\n' + barcodeErrors.join('\n'));
+      }
+
+      // 3. Recargar productos para reflejar el estado real de la BD
+      await loadProducts();
+      setEditingId(null);
+      setEditBarcodes([]);
     } catch (err) {
       console.error(err);
       alert('Error de conexión al guardar');
@@ -107,37 +139,19 @@ export default function InventoryPage() {
     }
   };
 
-  const handleAddBarcode = async (productId: number) => {
-    if (!newBarcode.trim()) return;
-    setSaving(true);
-    const result = await addProductBarcode(productId, newBarcode.trim());
-    if (result.ok) {
-      setProducts(products.map(p => 
-        p.id === productId 
-          ? { ...p, barcodes: [...(p.barcodes || []), newBarcode.trim()] } 
-          : p
-      ));
-      setNewBarcode('');
-    } else {
-      alert(result.message || 'Error al agregar código de barras');
+  const handleAddBarcodeTemp = () => {
+    const trimmed = newBarcode.trim();
+    if (!trimmed) return;
+    if (editBarcodes.includes(trimmed)) {
+      alert('Este código de barras ya está en la lista temporal');
+      return;
     }
-    setSaving(false);
+    setEditBarcodes([...editBarcodes, trimmed]);
+    setNewBarcode('');
   };
 
-  const handleRemoveBarcode = async (productId: number, barcode: string) => {
-    if (!window.confirm('¿Eliminar este código de barras?')) return;
-    setSaving(true);
-    const result = await removeProductBarcode(barcode);
-    if (result.ok) {
-      setProducts(products.map(p => 
-        p.id === productId 
-          ? { ...p, barcodes: (p.barcodes || []).filter(b => b !== barcode) } 
-          : p
-      ));
-    } else {
-      alert(result.message || 'Error al eliminar código de barras');
-    }
-    setSaving(false);
+  const handleRemoveBarcodeTemp = (barcode: string) => {
+    setEditBarcodes(editBarcodes.filter(b => b !== barcode));
   };
 
   const filteredProducts = products.filter((p) => {
@@ -150,7 +164,7 @@ export default function InventoryPage() {
       p.id.toString() === term ||
       (p as any).barcode === term ||
       ((p as any).sku && (p as any).sku.toLowerCase() === term) ||
-      (p.barcodes && p.barcodes.some(b => b.toLowerCase() === term))
+      (p.barcodes && p.barcodes.some(b => b.toLowerCase().includes(term)))
     );
   });
 
@@ -235,6 +249,15 @@ export default function InventoryPage() {
                     </div>
                     <h3 className="inv-card-name">{product.name}</h3>
                     
+                    {/* Visualización de códigos de barras en la tarjeta */}
+                    <div className="inv-card-barcodes">
+                      {(product.barcodes || []).map(b => (
+                        <span key={b} className="inv-barcode-badge">
+                          {b}
+                        </span>
+                      ))}
+                    </div>
+                    
                     <div className="inv-card-actions">
                       {isEditing ? (
                         <div className="inv-edit-form">
@@ -264,15 +287,15 @@ export default function InventoryPage() {
                           <div className="inv-edit-group" style={{ gridColumn: '1 / -1' }}>
                             <label>Códigos de barras</label>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                              {(product.barcodes || []).map(b => (
+                              {editBarcodes.map(b => (
                                 <span key={b} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
                                   {b}
-                                  <button type="button" onClick={() => handleRemoveBarcode(product.id, b)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', color: 'var(--color-danger)' }}>
+                                  <button type="button" onClick={() => handleRemoveBarcodeTemp(b)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', color: 'var(--color-danger)' }}>
                                     <X size={14} />
                                   </button>
                                 </span>
                               ))}
-                              {(!product.barcodes || product.barcodes.length === 0) && (
+                              {editBarcodes.length === 0 && (
                                 <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Sin códigos</span>
                               )}
                             </div>
@@ -283,12 +306,12 @@ export default function InventoryPage() {
                                 className="inv-edit-input"
                                 value={newBarcode}
                                 onChange={(e) => setNewBarcode(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddBarcode(product.id)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddBarcodeTemp()}
                               />
                               <button 
                                 type="button"
                                 className="inv-action-btn"
-                                onClick={() => handleAddBarcode(product.id)}
+                                onClick={handleAddBarcodeTemp}
                                 disabled={saving || !newBarcode.trim()}
                               >
                                 Añadir
