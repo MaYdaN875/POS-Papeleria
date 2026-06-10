@@ -1,4 +1,25 @@
 /* ---- Payment Page ---- */
+.payment-success-banner {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #059669;
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+  animation: paymentSuccessIn 0.3s ease;
+}
+
+@keyframes paymentSuccessIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 .payment-page {
   width: 100vw;
   height: 100vh;
@@ -248,8 +269,15 @@
   color: var(--color-text-muted);
 }
 
-.payment-cash-value {
+.payment-cash-value-input {
   flex: 1;
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  outline: none;
+  width: 100%;
 }
 
 /* Change Card */

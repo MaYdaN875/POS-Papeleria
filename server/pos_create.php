@@ -17,19 +17,31 @@ adminRequireMethod('POST');
 
 try {
   $pdo = adminGetPdo();
-  $adminSession = adminRequireSession($pdo);
-  
-  // Extraemos el ID correcto del cajero.
-  // IMPORTANTE: En tu sistema, 'id' es el ID de la sesión, y 'admin_user_id' es el ID del usuario real.
-  $adminId = 0;
-  if (is_array($adminSession)) {
-      $adminId = (int)($adminSession['admin_user_id'] ?? $adminSession['id'] ?? 0);
-  } else {
-      $adminId = (int)$adminSession;
+
+  // Validación de sesión compatible con Hostinger (columna token_hash)
+  $headers = function_exists('getallheaders') ? getallheaders() : [];
+  $auth = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+  $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
+
+  if ($token === '') {
+    adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
   }
 
+  $sessionCols = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
+  $tokenCol = in_array('token_hash', $sessionCols, true) ? 'token_hash' : 'token';
+
+  $sessionStmt = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$tokenCol} = ? AND expires_at > NOW() LIMIT 1");
+  $sessionStmt->execute([$token]);
+  $sessionData = $sessionStmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!$sessionData) {
+    adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+  }
+
+  $adminId = (int)$sessionData['admin_user_id'];
+
   if ($adminId === 0) {
-      adminJsonResponse(400, ['ok' => false, 'message' => 'No se pudo identificar al usuario de la sesión.']);
+    adminJsonResponse(400, ['ok' => false, 'message' => 'No se pudo identificar al usuario de la sesión.']);
   }
 
   $data = adminReadJsonBody();
@@ -80,9 +92,21 @@ try {
       VALUES (:sale_id, :product_id, :product_name, :quantity, :unit_price, :total_price)
     ');
 
-    $updateStockStmt = $pdo->prepare('
-      UPDATE products SET stock = GREATEST(stock - :qty, 0) WHERE id = :product_id
-    ');
+    // Descontar stock en todas las columnas que existan
+    $productCols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+    $hasStock = in_array('stock', $productCols, true);
+    $hasStockQty = in_array('stock_quantity', $productCols, true);
+
+    $stockSets = [];
+    if ($hasStock) $stockSets[] = 'stock = GREATEST(COALESCE(stock, 0) - :qty, 0)';
+    if ($hasStockQty) $stockSets[] = 'stock_quantity = GREATEST(COALESCE(stock_quantity, 0) - :qty, 0)';
+
+    $updateStockStmt = null;
+    if (!empty($stockSets)) {
+      $updateStockStmt = $pdo->prepare(
+        'UPDATE products SET ' . implode(', ', $stockSets) . ' WHERE id = :product_id'
+      );
+    }
 
     foreach ($items as $item) {
       $productId = (int)($item['product_id'] ?? 0);
@@ -102,10 +126,12 @@ try {
       ]);
 
       // Descontar stock del producto
-      $updateStockStmt->execute([
-        'qty'        => $quantity,
-        'product_id' => $productId,
-      ]);
+      if ($updateStockStmt) {
+        $updateStockStmt->execute([
+          'qty'        => $quantity,
+          'product_id' => $productId,
+        ]);
+      }
     }
 
     $pdo->commit();

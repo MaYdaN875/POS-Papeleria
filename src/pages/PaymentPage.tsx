@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
+import { logout } from '../services/authService';
 import { createSale } from '../services/salesService';
 import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
 import { playCashSound } from '../utils/sounds';
@@ -34,13 +35,16 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<number | null>(null);
 
-  // Initialize cashReceived based on total only when total changes initially
+  // Inicializar cashReceived con el total SOLO una vez al cargar
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
-    if (cashReceived === '0' && total > 0) {
-      setCashReceived(total.toString());
+    if (!initialized && total > 0) {
+      setCashReceived(total.toFixed(2));
+      setInitialized(true);
     }
-  }, [total, cashReceived]);
+  }, [total, initialized]);
 
   // Cargar ajustes globales
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function PaymentPage() {
 
   const handleKeyPress = (key: string) => {
     if (key === 'backspace') {
-      setCashReceived((prev) => prev.slice(0, -1) || '0');
+      setCashReceived((prev) => prev.length <= 1 ? '0' : prev.slice(0, -1));
     } else if (key === '.') {
       if (!cashReceived.includes('.')) {
         setCashReceived((prev) => prev + '.');
@@ -70,7 +74,7 @@ export default function PaymentPage() {
     } else if (key === 'clear') {
       setCashReceived('0');
     } else {
-      setCashReceived((prev) => (prev === '0' && key !== '.' ? key : prev + key));
+      setCashReceived((prev) => (prev === '0' ? key : prev + key));
     }
   };
 
@@ -85,11 +89,12 @@ export default function PaymentPage() {
 
     const parsedCash = paymentMethod === 'cash' ? parseFloat(cashReceived) : undefined;
     
-    const result = await createSale(cart, paymentMethod, parsedCash);
+    const result = await createSale(cart, paymentMethod, parsedCash, taxRate);
     
     setLoading(false);
 
     if (result.ok) {
+      setPaymentSuccess(result.saleId ?? 0);
       playCashSound();
       // Preparar los datos del ticket para impresión
       const cashierName = localStorage.getItem('pos_user_name') || 'Cajero';
@@ -110,14 +115,19 @@ export default function PaymentPage() {
         date: new Date().toISOString(),
       };
       if (settings && settings.autoPrintTicket === false) {
-        // Si la impresión automática está apagada, solo limpiar e ir a ventas
-        alert(`¡Pago procesado exitosamente!\nTicket #${result.saleId}`);
-        clearCart();
-        navigate('/sales');
+        setTimeout(() => {
+          clearCart();
+          navigate('/sales');
+        }, 1500);
       } else {
-        // Renderizar el ticket, TicketPrint se encargará de imprimir y llamar a handlePrintDone
         setTicketData(ticket);
       }
+    } else if (result.sessionExpired) {
+      const errorMsg = 'Tu sesión expiró. Vuelve a iniciar sesión para cobrar.';
+      setError(errorMsg);
+      alert(errorMsg);
+      await logout();
+      navigate('/');
     } else {
       const errorMsg = result.message || 'Error al procesar el pago';
       setError(errorMsg);
@@ -136,6 +146,12 @@ export default function PaymentPage() {
 
   return (
     <div className="payment-page">
+      {paymentSuccess !== null && !ticketData && (
+        <div className="payment-success-banner">
+          ¡Compra realizada con éxito! Ticket #{paymentSuccess}
+        </div>
+      )}
+
       {/* Header */}
       <header className="payment-header">
         <button className="payment-back-btn" onClick={() => navigate('/sales')} disabled={loading}>
@@ -241,12 +257,28 @@ export default function PaymentPage() {
                 <span className="payment-cash-label">EFECTIVO RECIBIDO</span>
                 <div className="payment-cash-input">
                   <span className="payment-cash-symbol">$</span>
-                  <span className="payment-cash-value">
-                    {parseFloat(cashReceived || '0').toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
+                  <input
+                    type="text"
+                    className="payment-cash-value-input"
+                    value={cashReceived}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Solo permitir números y un punto decimal
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setCashReceived(val);
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // Al hacer click, si es '0', limpiarlo para que escriba libremente
+                      if (e.target.value === '0' || e.target.value === total.toFixed(2)) {
+                        setCashReceived('');
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (!e.target.value) setCashReceived('0');
+                    }}
+                    autoFocus
+                  />
                 </div>
               </div>
 

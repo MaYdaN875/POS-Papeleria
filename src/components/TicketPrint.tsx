@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GlobalSettings } from '../services/settingsService';
 import { Printer, X } from 'lucide-react';
@@ -46,9 +46,22 @@ function formatMoney(amount: number): string {
 
 export default function TicketPrint({ data, settings, onPrintDone }: TicketPrintProps) {
   const storeInfo = (settings || STORE_INFO) as any;
+  const finishingRef = useRef(false);
 
-  // Manejar impresión real
+  const finishAndReturn = useCallback(() => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+    onPrintDone();
+  }, [onPrintDone]);
+
   const handlePrint = () => {
+    const onAfterPrint = () => {
+      window.removeEventListener('afterprint', onAfterPrint);
+      // Pequeña pausa para que el navegador cierre el diálogo de impresión
+      setTimeout(finishAndReturn, 300);
+    };
+
+    window.addEventListener('afterprint', onAfterPrint);
     window.print();
   };
 
@@ -68,7 +81,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
 
   return createPortal(
     <div className="ticket-preview-modal">
-      <div className="ticket-preview-overlay" onClick={onPrintDone} />
+      <div className="ticket-preview-overlay" onClick={finishAndReturn} />
       
       <div className="ticket-preview-container">
         <div className="ticket-preview-header">
@@ -78,7 +91,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
               <Printer size={18} />
               Imprimir
             </button>
-            <button className="btn-close-preview" onClick={onPrintDone}>
+            <button className="btn-close-preview" onClick={finishAndReturn}>
               <X size={18} />
             </button>
           </div>
@@ -184,7 +197,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
         </div>
         
         <div className="ticket-preview-hint">
-          * Esta es una vista previa visual. Presiona "Imprimir" para enviarlo a la impresora.
+          Presiona "Imprimir" y al terminar volverás automáticamente a ventas.
         </div>
       </div>
     </div>,
