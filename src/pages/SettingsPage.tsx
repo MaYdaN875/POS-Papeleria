@@ -12,6 +12,7 @@ import {
   Percent
 } from 'lucide-react';
 import { getGlobalSettings, saveGlobalSettings, GlobalSettings } from '../services/settingsService';
+import { listPrinters, type PrinterInfo } from '../utils/thermalPrint';
 import TicketPrint from '../components/TicketPrint';
 import '../styles/SettingsPage.css';
 
@@ -22,9 +23,11 @@ export default function SettingsPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [activeTab, setActiveTab] = useState<'general' | 'ticket' | 'system' | 'appearance'>('general');
+  const [printers, setPrinters] = useState<PrinterInfo[]>([]);
 
   useEffect(() => {
     loadSettings();
+    listPrinters().then(setPrinters);
     
     // Al desmontar, restaurar el tema a lo que esté en el servidor
     // por si el usuario cambió el switch pero no le dio a guardar
@@ -57,7 +60,7 @@ export default function SettingsPage() {
     }
   }, [settings?.theme]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
     if (!settings) return;
@@ -247,15 +250,32 @@ export default function SettingsPage() {
                 </div>
                 <div className="settings-field">
                   <label>Tamaño de Impresora</label>
-                  <select 
-                    name="printerSize" 
-                    value={settings.printerSize} 
+                  <select
+                    name="printerSize"
+                    value={settings.printerSize}
                     onChange={(e) => setSettings({ ...settings, printerSize: e.target.value as '80mm' | '58mm' })}
                     className="settings-select"
                   >
+                    <option value="58mm">58mm (POS58D / térmica pequeña)</option>
                     <option value="80mm">80mm (Estándar grande)</option>
-                    <option value="58mm">58mm (Pequeña)</option>
                   </select>
+                </div>
+                <div className="settings-field settings-field--full">
+                  <label>Impresora de tickets (Windows)</label>
+                  <select
+                    name="printerName"
+                    value={settings.printerName || ''}
+                    onChange={handleChange}
+                    className="settings-select"
+                  >
+                    <option value="">Predeterminada de Windows</option>
+                    {printers.map((p) => (
+                      <option key={p.name} value={p.name}>
+                        {p.name}{p.isDefault ? ' (predeterminada)' : ''}
+                      </option>
+                    ))}
+                  </select>
+
                 </div>
               </div>
               

@@ -1,6 +1,15 @@
-import { ipcRenderer, contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
-// --------- Expose some API to the Renderer process ---------
+contextBridge.exposeInMainWorld('__POS_IS_ELECTRON__', true)
+
+contextBridge.exposeInMainWorld('posPrinter', {
+  getPrinters: () => ipcRenderer.invoke('get-printers'),
+  printVisibleWindow: (options: { printerName?: string; printerSize?: '58mm' | '80mm' }) =>
+    ipcRenderer.invoke('print-visible-window', options),
+  printEscPosTicket: (payload: Record<string, unknown>) =>
+    ipcRenderer.invoke('print-escpos-ticket', payload),
+})
+
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
     const [channel, listener] = args
@@ -18,7 +27,4 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
-
-  // You can expose other APTs you need here.
-  // ...
 })

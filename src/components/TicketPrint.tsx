@@ -1,6 +1,7 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GlobalSettings } from '../services/settingsService';
+import { printEscPosTicket } from '../utils/thermalPrint';
 import { Printer, X } from 'lucide-react';
 import '../styles/TicketPrint.css';
 
@@ -45,8 +46,25 @@ function formatMoney(amount: number): string {
 }
 
 export default function TicketPrint({ data, settings, onPrintDone }: TicketPrintProps) {
-  const storeInfo = (settings || STORE_INFO) as any;
+  const storeInfo = (settings || STORE_INFO) as GlobalSettings & typeof STORE_INFO;
+  const printerSize = settings?.printerSize === '80mm' ? '80mm' : '58mm';
+  const printClass = printerSize === '58mm' ? 'print-58mm' : 'print-80mm';
+  const dividerLen = printerSize === '58mm' ? 24 : 32;
   const finishingRef = useRef(false);
+
+  useEffect(() => {
+    const styleId = 'ticket-dynamic-page-size';
+    let el = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = styleId;
+      document.head.appendChild(el);
+    }
+    el.textContent = `@media print { @page { size: ${printerSize} auto; margin: 0; } }`;
+    return () => {
+      el?.remove();
+    };
+  }, [printerSize]);
 
   const finishAndReturn = useCallback(() => {
     if (finishingRef.current) return;
@@ -54,15 +72,40 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
     onPrintDone();
   }, [onPrintDone]);
 
-  const handlePrint = () => {
-    const onAfterPrint = () => {
-      window.removeEventListener('afterprint', onAfterPrint);
-      // Pequeña pausa para que el navegador cierre el diálogo de impresión
-      setTimeout(finishAndReturn, 300);
-    };
+  const buildEscPosPayload = () => ({
+    saleId: data.saleId,
+    items: data.items,
+    subtotal: data.subtotal,
+    total: data.total,
+    taxRate: settings?.taxRate,
+    paymentMethod: data.paymentMethod,
+    cashReceived: data.cashReceived,
+    change: data.change,
+    cashierName: data.cashierName,
+    date: data.date,
+    printerName: settings?.printerName?.trim() || undefined,
+    printerSize: printerSize as '58mm' | '80mm',
+    storeName: storeInfo.storeName || storeInfo.name,
+    storeAddress: storeInfo.storeAddress || storeInfo.address,
+    storeCity: storeInfo.storeCity || storeInfo.city,
+    storePhone: storeInfo.storePhone || storeInfo.phone,
+    storeWebsite: storeInfo.storeWebsite || storeInfo.website,
+    storeWebsiteUrl: storeInfo.storeWebsiteUrl || storeInfo.websiteUrl,
+    ticketThanksMessage: storeInfo.ticketThanksMessage,
+  });
 
-    window.addEventListener('afterprint', onAfterPrint);
-    window.print();
+  const handlePrint = async () => {
+    try {
+      const result = await printEscPosTicket(buildEscPosPayload());
+      if (!result.ok) {
+        alert(result.message || 'No se pudo imprimir el ticket.');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al imprimir. Intenta de nuevo.';
+      alert(msg);
+    } finally {
+      setTimeout(finishAndReturn, 300);
+    }
   };
 
   const dateObj = new Date(data.date);
@@ -77,12 +120,12 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
   });
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(storeInfo.storeWebsiteUrl || storeInfo.websiteUrl)}`;
-  const printerClass = storeInfo.printerSize === '58mm' ? 'ticket ticket--58mm' : 'ticket';
+  const ticketClass = printerSize === '58mm' ? 'ticket ticket--58mm' : 'ticket';
 
   return createPortal(
     <div className="ticket-preview-modal">
       <div className="ticket-preview-overlay" onClick={finishAndReturn} />
-      
+
       <div className="ticket-preview-container">
         <div className="ticket-preview-header">
           <h3>Vista Previa de Ticket</h3>
@@ -98,8 +141,8 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
         </div>
 
         <div className="ticket-preview-content">
-          <div className="ticket-print-overlay" id="ticket-print-area">
-            <div className={printerClass}>
+          <div className={`ticket-print-overlay ${printClass}`} id="ticket-print-area">
+            <div className={ticketClass}>
               <div className="ticket-header">
                 <h1 className="ticket-store-name">{storeInfo.storeName || storeInfo.name}</h1>
                 <p className="ticket-store-address">{storeInfo.storeAddress || storeInfo.address}</p>
@@ -107,7 +150,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
                 <p className="ticket-store-phone">Tel: {storeInfo.storePhone || storeInfo.phone}</p>
               </div>
 
-              <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-divider">{'─'.repeat(dividerLen)}</div>
 
               <div className="ticket-info">
                 <p>Ticket: #{data.saleId}</p>
@@ -116,29 +159,24 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
                 <p>Cajero: {data.cashierName}</p>
               </div>
 
-              <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-divider">{'─'.repeat(dividerLen)}</div>
 
               <div className="ticket-items">
-                <div className="ticket-item-header">
-                  <span className="col-qty">Cant</span>
-                  <span className="col-desc">Descripción</span>
-                  <span className="col-total">Total</span>
-                </div>
                 {data.items.map((item, idx) => (
                   <div key={idx} className="ticket-item">
-                    <div className="ticket-item-row">
-                      <span className="col-qty">{item.quantity}</span>
-                      <span className="col-desc">{item.name}</span>
-                      <span className="col-total">{formatMoney(item.totalPrice)}</span>
+                    <div className="ticket-item-line1">
+                      <span className="ticket-item-qty">{item.quantity}x</span>
+                      <span className="ticket-item-name">{item.name}</span>
+                      <span className="ticket-item-price">{formatMoney(item.totalPrice)}</span>
                     </div>
-                    <div className="ticket-item-details">
+                    <div className="ticket-item-line2">
                       {item.quantity} x {formatMoney(item.unitPrice)}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-divider">{'─'.repeat(dividerLen)}</div>
 
               <div className="ticket-totals">
                 <div className="ticket-total-row">
@@ -157,7 +195,7 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
                 </div>
               </div>
 
-              <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-divider">{'─'.repeat(dividerLen)}</div>
 
               <div className="ticket-payment">
                 <div className="ticket-total-row">
@@ -178,16 +216,14 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
                 )}
               </div>
 
-              <div className="ticket-divider">{'━'.repeat(32)}</div>
+              <div className="ticket-divider">{'─'.repeat(dividerLen)}</div>
 
               <div className="ticket-footer">
                 <p className="thanks-msg">{storeInfo.ticketThanksMessage || '¡Gracias por su compra!'}</p>
-                <img 
+                <img
                   className="ticket-qr"
                   src={qrUrl}
                   alt="QR Página Web"
-                  width={120}
-                  height={120}
                 />
                 <p className="ticket-footer-website">{storeInfo.storeWebsite || storeInfo.website}</p>
                 <p className="ticket-footer-phone">Atención al cliente: {storeInfo.storePhone || storeInfo.phone}</p>
@@ -195,9 +231,9 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
             </div>
           </div>
         </div>
-        
+
         <div className="ticket-preview-hint">
-          Presiona "Imprimir" y al terminar volverás automáticamente a ventas.
+          Impresion directa ESC/POS ({printerSize}). Si falla, revisa Ajustes y reinicia la app.
         </div>
       </div>
     </div>,

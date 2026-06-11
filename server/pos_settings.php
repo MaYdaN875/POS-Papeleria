@@ -34,7 +34,8 @@ $defaultSettings = [
     'lowStockThreshold' => 5,
     'theme' => 'light',
     'enableSounds' => true,
-    'printerSize' => '80mm',
+    'printerSize' => '58mm',
+    'printerName' => '',
     'taxRate' => 0
 ];
 

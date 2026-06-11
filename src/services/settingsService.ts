@@ -13,6 +13,7 @@ export interface GlobalSettings {
   theme: 'light' | 'dark';
   enableSounds: boolean;
   printerSize: '80mm' | '58mm';
+  printerName?: string;
   taxRate: number;
 }
 
@@ -34,7 +35,8 @@ const DEFAULT_SETTINGS: GlobalSettings = {
   lowStockThreshold: 5,
   theme: 'light',
   enableSounds: true,
-  printerSize: '80mm',
+  printerSize: '58mm',
+  printerName: '',
   taxRate: 0,
 };
 
