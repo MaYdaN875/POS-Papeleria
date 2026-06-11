@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { 
-  Save, 
-  Store, 
-  Receipt, 
-  Settings as SettingsIcon,
-  RefreshCw,
+import {
   AlertTriangle,
-  Printer,
   Moon,
-  Volume2,
-  Percent
+  Percent,
+  Printer,
+  Receipt,
+  RefreshCw,
+  Save,
+  Settings as SettingsIcon,
+  Store,
+  Volume2
 } from 'lucide-react';
-import { getGlobalSettings, saveGlobalSettings, GlobalSettings } from '../services/settingsService';
-import { listPrinters, type PrinterInfo } from '../utils/thermalPrint';
+import { useEffect, useState } from 'react';
 import TicketPrint from '../components/TicketPrint';
+import { getGlobalSettings, GlobalSettings, saveGlobalSettings } from '../services/settingsService';
 import '../styles/SettingsPage.css';
+import { listPrinters, type PrinterInfo } from '../utils/thermalPrint';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                       </option>
                     ))}
                   </select>
-
+                  
                 </div>
               </div>
               

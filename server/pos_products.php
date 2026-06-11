@@ -7,36 +7,24 @@
  */
 
 require_once __DIR__ . '/../../_admin_common.php';
+require_once __DIR__ . '/pos_auth.php';
 
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
 
 try {
     $pdo = adminGetPdo();
+    posValidateSession($pdo);
 
-    $headers = function_exists('getallheaders') ? getallheaders() : [];
-    $auth = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
-    $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
+    $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+    $hasPosPrice = in_array('pos_price', $cols, true);
 
-    if ($token === '') {
-        adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
-    }
-
-    $sessionCols = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
-    $tokenCol = in_array('token_hash', $sessionCols, true) ? 'token_hash' : 'token';
-
-    $sessionStmt = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$tokenCol} = ? AND expires_at > NOW() LIMIT 1");
-    $sessionStmt->execute([$token]);
-    if (!$sessionStmt->fetch(PDO::FETCH_ASSOC)) {
-        adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
-    }
-
-    $hasPosPrice = false;
-    try {
-        $cols = $pdo->query("SHOW COLUMNS FROM products")->fetchAll(PDO::FETCH_COLUMN);
-        $hasPosPrice = in_array('pos_price', $cols, true);
-    } catch (Throwable $e) {
-        $hasPosPrice = false;
+    $imageSelect = "'' AS image";
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imageCol) {
+        if (in_array($imageCol, $cols, true)) {
+            $imageSelect = "p.$imageCol AS image";
+            break;
+        }
     }
 
     $posPriceSelect = $hasPosPrice ? 'p.pos_price' : 'NULL AS pos_price';
@@ -47,7 +35,7 @@ try {
             p.name,
             p.brand,
             p.description,
-            p.image,
+            $imageSelect,
             p.price,
             $posPriceSelect,
             COALESCE(p.stock, p.stock_quantity, 0) AS stock,

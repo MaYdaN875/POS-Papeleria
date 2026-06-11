@@ -9,7 +9,7 @@ import {
     RefreshCw,
     Wifi,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
@@ -21,11 +21,19 @@ import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';
 
+/** Impresora fisica POS58D — cobro siempre en 58mm */
+const PAYMENT_TICKET_SIZE = '58mm' as const;
+
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
   
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
+
+  const ticketPrintSettings = useMemo(
+    () => (settings ? { ...settings, printerSize: PAYMENT_TICKET_SIZE } : null),
+    [settings]
+  );
   
   const taxRate = settings?.taxRate || 0;
   const total = subtotal + (subtotal * taxRate / 100);
@@ -344,7 +352,7 @@ export default function PaymentPage() {
 
       {/* Componente de Ticket (invisible en pantalla, visible al imprimir) */}
       {ticketData && (
-        <TicketPrint data={ticketData} settings={settings} onPrintDone={handlePrintDone} />
+        <TicketPrint data={ticketData} settings={ticketPrintSettings} onPrintDone={handlePrintDone} />
       )}
     </div>
   );

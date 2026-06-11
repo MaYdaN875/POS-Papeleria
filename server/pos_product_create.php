@@ -7,31 +7,19 @@
  */
 
 require_once __DIR__ . '/../../_admin_common.php';
+require_once __DIR__ . '/pos_auth.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');
 
 try {
     $pdo = adminGetPdo();
+    posValidateSession($pdo);
 
-    $headers = function_exists('getallheaders') ? getallheaders() : [];
-    $auth = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
-    $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
-
-    if ($token === '') {
-        adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+    $data = posGetJsonBody();
+    if ($data === []) {
+        $data = adminReadJsonBody();
     }
-
-    $sessionCols = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
-    $tokenCol = in_array('token_hash', $sessionCols, true) ? 'token_hash' : 'token';
-
-    $sessionStmt = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$tokenCol} = ? AND expires_at > NOW() LIMIT 1");
-    $sessionStmt->execute([$token]);
-    if (!$sessionStmt->fetch(PDO::FETCH_ASSOC)) {
-        adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
-    }
-
-    $data = adminReadJsonBody();
 
     $name = trim((string)($data['name'] ?? ''));
     $brand = trim((string)($data['brand'] ?? ''));
@@ -63,51 +51,60 @@ try {
     }
 
     $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
-    $hasPosPrice = in_array('pos_price', $cols, true);
-    $hasStockQty = in_array('stock_quantity', $cols, true);
-    $hasIsActive = in_array('is_active', $cols, true);
 
-    $fields = ['name', 'brand', 'description', 'price', 'image', 'category_id'];
-    $values = [':name', ':brand', ':description', ':price', ':image', ':category_id'];
-    $params = [
-        'name'        => $name,
-        'brand'       => $brand,
-        'description' => $description,
-        'price'       => $webPrice,
-        'image'       => $image ?: '/images/boligrafos.jpg',
-        'category_id' => $categoryId,
-    ];
+    $fields = [];
+    $placeholders = [];
+    $params = [];
 
-    if (in_array('stock', $cols, true)) {
-        $fields[] = 'stock';
-        $values[] = ':stock';
-        $params['stock'] = $stock;
+    $addField = function (string $col, $value, bool $usePlaceholder = true) use (&$fields, &$placeholders, &$params, $cols) {
+        if (!in_array($col, $cols, true)) {
+            return;
+        }
+        $fields[] = $col;
+        if ($usePlaceholder) {
+            $placeholders[] = ':' . $col;
+            $params[$col] = $value;
+        } else {
+            $placeholders[] = is_numeric($value) ? (string)$value : "'" . addslashes((string)$value) . "'";
+        }
+    };
+
+    $addField('name', $name);
+    $addField('brand', $brand);
+    $addField('description', $description);
+    $addField('price', $webPrice);
+
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imageCol) {
+        if (in_array($imageCol, $cols, true)) {
+            $addField($imageCol, $image ?: '/images/boligrafos.jpg');
+            break;
+        }
     }
 
-    if ($hasStockQty) {
-        $fields[] = 'stock_quantity';
-        $values[] = ':stock_quantity';
-        $params['stock_quantity'] = $stock;
+    $addField('category_id', $categoryId);
+    $addField('stock', $stock);
+    $addField('stock_quantity', $stock);
+
+    if (in_array('pos_price', $cols, true)) {
+        $addField('pos_price', $posPrice !== null ? $posPrice : $webPrice);
     }
 
-    if ($hasPosPrice) {
-        $fields[] = 'pos_price';
-        $values[] = ':pos_price';
-        $params['pos_price'] = $posPrice !== null ? $posPrice : $webPrice;
-    }
-
-    if ($hasIsActive) {
+    if (in_array('is_active', $cols, true)) {
         $fields[] = 'is_active';
-        $values[] = '1';
+        $placeholders[] = '1';
     }
 
-    $sql = 'INSERT INTO products (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $values) . ')';
+    if (empty($fields)) {
+        adminJsonResponse(500, ['ok' => false, 'message' => 'No se encontraron columnas válidas en products']);
+    }
+
+    $sql = 'INSERT INTO products (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')';
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
     $productId = (int)$pdo->lastInsertId();
 
-  $barcode = trim((string)($data['barcode'] ?? ''));
+    $barcode = trim((string)($data['barcode'] ?? ''));
     if ($barcode !== '') {
         try {
             $pdo->prepare('INSERT INTO product_barcodes (product_id, barcode) VALUES (?, ?)')
@@ -124,7 +121,7 @@ try {
     ]);
 } catch (PDOException $e) {
     error_log('pos_product_create.php DB error: ' . $e->getMessage());
-    adminJsonResponse(500, ['ok' => false, 'message' => 'DB Error: ' . $e->getMessage()]);
+    adminJsonResponse(500, ['ok' => false, 'message' => 'Error al crear producto. Revisa la base de datos.']);
 } catch (Throwable $e) {
     error_log('pos_product_create.php error: ' . $e->getMessage());
     adminJsonResponse(500, ['ok' => false, 'message' => $e->getMessage()]);

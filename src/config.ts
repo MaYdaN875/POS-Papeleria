@@ -8,7 +8,7 @@ export const API_BASE_URL = 'https://godart-papelería.com/api';
 // Endpoints existentes (de la tienda web)
 export const ENDPOINTS = {
   // Auth
-  LOGIN:          `${API_BASE_URL}/admin/auth/pos_login.php`,
+  LOGIN:          `${API_BASE_URL}/admin/auth/login.php`,
   LOGOUT:         `${API_BASE_URL}/admin/auth/logout.php`,
 
   // Productos (público, sin auth)
@@ -24,6 +24,7 @@ export const ENDPOINTS = {
   POS_INVENTORY_UPDATE: `${API_BASE_URL}/admin/sales/pos_inventory_update.php`,
   POS_PRODUCTS:       `${API_BASE_URL}/admin/sales/pos_products.php`,
   POS_PRODUCT_CREATE: `${API_BASE_URL}/admin/sales/pos_product_create.php`,
+  POS_PRODUCT_DELETE: `${API_BASE_URL}/admin/sales/pos_product_delete.php`,
   POS_PRODUCT_BARCODES: `${API_BASE_URL}/admin/sales/pos_product_barcodes.php`,
   POS_CASH_CLOSE:    `${API_BASE_URL}/admin/sales/pos_cash_close.php`,
   POS_SALES_HISTORY: `${API_BASE_URL}/admin/sales/pos_sales_history.php`,

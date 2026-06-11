@@ -1,10 +1,13 @@
-import { Check, Edit2, Loader2, Search, X } from 'lucide-react';
+import { Check, Edit2, Loader2, Search, Trash2, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
+import { logout } from '../services/authService';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import {
   addProductBarcode,
   createProduct,
+  deleteProduct,
   getProductCategories,
   getProducts,
   removeProductBarcode,
@@ -27,6 +30,7 @@ const EMPTY_FORM = {
 };
 
 export default function InventoryPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +44,14 @@ export default function InventoryPage() {
   const [newBarcode, setNewBarcode] = useState<string>('');
   const [editBarcodes, setEditBarcodes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
 
   useBarcodeScanner({
+    enabled: !showNewModal && editingId === null,
     onScan: (code) => {
       setSearchTerm(code);
 
@@ -89,6 +95,12 @@ export default function InventoryPage() {
     }
   }
 
+  async function handleSessionExpired(message?: string) {
+    alert(message || 'Tu sesión expiró. Vuelve a iniciar sesión.');
+    await logout();
+    navigate('/');
+  }
+
   const handleEditClick = (product: Product) => {
     setEditingId(product.id);
     setEditPosPrice((product.posPrice ?? product.price).toString());
@@ -116,6 +128,10 @@ export default function InventoryPage() {
 
       const result = await updateProduct(productId, newPosPrice, newStock);
       if (!result.ok) {
+        if (result.sessionExpired) {
+          await handleSessionExpired(result.message);
+          return;
+        }
         alert(result.message || 'Error al guardar cambios de precio y stock');
         setSaving(false);
         return;
@@ -158,6 +174,34 @@ export default function InventoryPage() {
       alert('Error de conexión al guardar');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    const confirmed = window.confirm(
+      `¿Eliminar "${product.name}" del inventario?\n\nEsta acción no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      const result = await deleteProduct(product.id);
+
+      if (!result.ok) {
+        if (result.sessionExpired) {
+          await handleSessionExpired(result.message);
+          return;
+        }
+        alert(result.message || 'Error al eliminar el producto');
+        return;
+      }
+
+      setEditingId(null);
+      setEditBarcodes([]);
+      await loadProducts();
+      alert(result.message || 'Producto eliminado');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -218,6 +262,8 @@ export default function InventoryPage() {
       setNewForm(EMPTY_FORM);
       await loadProducts();
       alert('Producto creado exitosamente');
+    } else if (result.sessionExpired) {
+      await handleSessionExpired(result.message);
     } else {
       alert(result.message || 'Error al crear el producto');
     }
@@ -417,10 +463,28 @@ export default function InventoryPage() {
 
                           <div className="inv-edit-buttons">
                             <button
+                              className="inv-action-btn inv-action-btn--delete"
+                              title="Eliminar producto"
+                              onClick={() => handleDeleteProduct(product)}
+                              disabled={saving || deleting}
+                              style={{
+                                marginRight: 'auto',
+                                background: '#fee2e2',
+                                color: '#dc2626',
+                                borderColor: '#fecaca',
+                              }}
+                            >
+                              {deleting ? (
+                                <Loader2 size={18} className="inventory-spinner" />
+                              ) : (
+                                <Trash2 size={18} />
+                              )}
+                            </button>
+                            <button
                               className="inv-action-btn inv-action-btn--cancel"
                               title="Cancelar"
                               onClick={handleCancelEdit}
-                              disabled={saving}
+                              disabled={saving || deleting}
                             >
                               <X size={18} />
                             </button>
@@ -428,7 +492,7 @@ export default function InventoryPage() {
                               className="inv-action-btn inv-action-btn--save"
                               title="Guardar"
                               onClick={() => handleSaveEdit(product.id)}
-                              disabled={saving}
+                              disabled={saving || deleting}
                             >
                               {saving ? (
                                 <Loader2 size={18} className="inventory-spinner" />

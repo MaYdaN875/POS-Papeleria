@@ -2,108 +2,132 @@
 /**
  * POS Inventory Update Endpoint
  * Actualiza precio POS (sin tocar precio web) y stock.
+ *
+ * SUBIR A: api/admin/sales/pos_inventory_update.php en Hostinger
  */
-
-error_reporting(0);
-ini_set('display_errors', 0);
-
-header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-
-if (empty($authHeader) && function_exists('getallheaders')) {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (empty($authHeader) && function_exists('apache_request_headers')) {
-    $headers = apache_request_headers();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-    $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-}
-
-if (empty($authHeader) || strpos($authHeader, 'Bearer pos_auth_') === false) {
-    http_response_code(401);
-    echo json_encode(["ok" => false, "message" => "No autorizado o token inválido"]);
-    exit();
-}
 
 require_once __DIR__ . '/../../_admin_common.php';
 
+adminHandleCors(['POST']);
+adminRequireMethod('POST');
+
+function posInventoryResolveToken(): string
+{
+    if (!empty($_POST['access_token'])) {
+        return trim((string)$_POST['access_token']);
+    }
+
+    $auth = $_SERVER['HTTP_AUTHORIZATION']
+        ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+        ?? '';
+
+    if ($auth === '' && function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $auth = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
+    return preg_replace('/^Bearer\s+/i', '', trim($auth));
+}
+
+function posInventoryValidateSession(PDO $pdo): void
+{
+    $token = posInventoryResolveToken();
+
+    if ($token === '') {
+        adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+    }
+
+    $sessionCols = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
+    $colsToTry = [];
+
+    if (in_array('token_hash', $sessionCols, true)) {
+        $colsToTry[] = 'token_hash';
+    }
+    if (in_array('token', $sessionCols, true)) {
+        $colsToTry[] = 'token';
+    }
+
+    $candidates = array_values(array_unique([
+        $token,
+        hash('sha256', $token),
+        hash('sha256', 'pos:' . $token),
+    ]));
+
+    foreach ($colsToTry as $col) {
+        foreach ($candidates as $candidate) {
+            $stmt = $pdo->prepare(
+                "SELECT admin_user_id FROM admin_sessions WHERE {$col} = ? AND expires_at > NOW() LIMIT 1"
+            );
+            $stmt->execute([$candidate]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                return;
+            }
+        }
+    }
+
+    adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+}
+
 try {
     $pdo = adminGetPdo();
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(["ok" => false, "message" => "Error de conexión: " . $e->getMessage()]);
-    exit();
-}
+    posInventoryValidateSession($pdo);
 
-$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-$new_pos_price = isset($_POST['pos_price']) ? floatval($_POST['pos_price']) : -1;
-$new_stock = isset($_POST['stock']) ? intval($_POST['stock']) : -1;
+    $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+    $newPosPrice = isset($_POST['pos_price']) ? (float)$_POST['pos_price'] : -1;
+    $newStock = isset($_POST['stock']) ? (int)$_POST['stock'] : -1;
 
-// Compatibilidad con versiones anteriores que enviaban "price"
-if ($new_pos_price < 0 && isset($_POST['price'])) {
-    $new_pos_price = floatval($_POST['price']);
-}
+    if ($newPosPrice < 0 && isset($_POST['price'])) {
+        $newPosPrice = (float)$_POST['price'];
+    }
 
-if ($product_id <= 0 || $new_pos_price < 0 || $new_stock < 0) {
-    http_response_code(400);
-    echo json_encode(["ok" => false, "message" => "Datos inválidos"]);
-    exit();
-}
+    if ($productId <= 0 || $newPosPrice < 0 || $newStock < 0) {
+        adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos']);
+    }
 
-$cols = $pdo->query("SHOW COLUMNS FROM products")->fetchAll(PDO::FETCH_COLUMN);
-$hasPosPrice = in_array('pos_price', $cols, true);
-$hasStock = in_array('stock', $cols, true);
-$hasStockQty = in_array('stock_quantity', $cols, true);
+    $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+    $hasPosPrice = in_array('pos_price', $cols, true);
+    $hasStock = in_array('stock', $cols, true);
+    $hasStockQty = in_array('stock_quantity', $cols, true);
 
-$sets = [];
-$params = [];
+    $sets = [];
+    $params = [];
 
-if ($hasPosPrice) {
-    $sets[] = 'pos_price = ?';
-    $params[] = $new_pos_price;
-} elseif (in_array('price', $cols, true)) {
-    // Fallback si aún no existe la columna pos_price
-    $sets[] = 'price = ?';
-    $params[] = $new_pos_price;
-}
+    if ($hasPosPrice) {
+        $sets[] = 'pos_price = ?';
+        $params[] = $newPosPrice;
+    } elseif (in_array('price', $cols, true)) {
+        $sets[] = 'price = ?';
+        $params[] = $newPosPrice;
+    }
 
-if ($hasStock) {
-    $sets[] = 'stock = ?';
-    $params[] = $new_stock;
-}
+    if ($hasStock) {
+        $sets[] = 'stock = ?';
+        $params[] = $newStock;
+    }
 
-if ($hasStockQty) {
-    $sets[] = 'stock_quantity = ?';
-    $params[] = $new_stock;
-}
+    if ($hasStockQty) {
+        $sets[] = 'stock_quantity = ?';
+        $params[] = $newStock;
+    }
 
-if (empty($sets)) {
-    http_response_code(500);
-    echo json_encode(["ok" => false, "message" => "No se encontraron columnas actualizables"]);
-    exit();
-}
+    if (empty($sets)) {
+        adminJsonResponse(500, ['ok' => false, 'message' => 'No se encontraron columnas actualizables']);
+    }
 
-$params[] = $product_id;
-$sql = 'UPDATE products SET ' . implode(', ', $sets) . ' WHERE id = ?';
-$stmt = $pdo->prepare($sql);
+    $params[] = $productId;
+    $sql = 'UPDATE products SET ' . implode(', ', $sets) . ' WHERE id = ?';
+    $stmt = $pdo->prepare($sql);
 
-if ($stmt->execute($params)) {
-    echo json_encode(["ok" => true, "message" => "Producto actualizado"]);
-} else {
-    http_response_code(500);
-    echo json_encode(["ok" => false, "message" => "Error al ejecutar la actualización"]);
+    if ($stmt->execute($params)) {
+        adminJsonResponse(200, ['ok' => true, 'message' => 'Producto actualizado']);
+    }
+
+    adminJsonResponse(500, ['ok' => false, 'message' => 'Error al ejecutar la actualización']);
+} catch (PDOException $e) {
+    error_log('pos_inventory_update.php DB error: ' . $e->getMessage());
+    adminJsonResponse(500, ['ok' => false, 'message' => 'Error de base de datos']);
+} catch (Throwable $e) {
+    error_log('pos_inventory_update.php error: ' . $e->getMessage());
+    adminJsonResponse(500, ['ok' => false, 'message' => $e->getMessage()]);
 }

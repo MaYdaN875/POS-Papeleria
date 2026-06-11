@@ -140,7 +140,7 @@ export async function updateProduct(
   id: number,
   posPrice: number,
   stock: number
-): Promise<{ ok: boolean; message?: string }> {
+): Promise<{ ok: boolean; message?: string; sessionExpired?: boolean }> {
   try {
     const token = localStorage.getItem('pos_token');
 
@@ -152,24 +152,96 @@ export async function updateProduct(
     formData.append('product_id', id.toString());
     formData.append('pos_price', posPrice.toString());
     formData.append('stock', stock.toString());
+    formData.append('access_token', token);
 
+    // Sin header Authorization: evita bloqueo CORS en Hostinger.
+    // El token va en access_token dentro del formulario POST.
     const response = await fetch(ENDPOINTS.POS_INVENTORY_UPDATE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Bearer ${token}`,
       },
       body: formData.toString(),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const rawText = await response.text();
+    let data: Record<string, unknown> = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      return {
+        ok: false,
+        message: `Respuesta inválida del servidor (${response.status}). Revisa pos_inventory_update.php en Hostinger.`,
+      };
     }
 
-    return await response.json();
+    if (!response.ok || !data.ok) {
+      return {
+        ok: false,
+        message: String(data.message || `Error al actualizar (${response.status})`),
+        sessionExpired: response.status === 401,
+      };
+    }
+
+    return { ok: true, message: String(data.message || '') };
   } catch (error) {
     console.error('Error updating product:', error);
-    return { ok: false, message: 'Error de red al actualizar' };
+    const detail = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      message: `No se pudo contactar al servidor: ${detail}. Sube pos_inventory_update.php actualizado a Hostinger.`,
+    };
+  }
+}
+
+/**
+ * Elimina (o desactiva) un producto del inventario.
+ */
+export async function deleteProduct(
+  id: number
+): Promise<{ ok: boolean; message?: string; sessionExpired?: boolean }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const formData = new URLSearchParams();
+    formData.append('product_id', id.toString());
+    formData.append('access_token', token);
+
+    // Token en el cuerpo (sin header Authorization) para evitar bloqueo CORS en Hostinger
+    const response = await fetch(ENDPOINTS.POS_PRODUCT_DELETE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    });
+
+    const rawText = await response.text();
+    let data: Record<string, unknown> = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      return {
+        ok: false,
+        message: `Respuesta inválida del servidor (${response.status}). Sube pos_product_delete.php a Hostinger.`,
+      };
+    }
+
+    if (!response.ok || !data.ok) {
+      return {
+        ok: false,
+        message: String(data.message || `Error al eliminar (${response.status})`),
+        sessionExpired: response.status === 401,
+      };
+    }
+
+    return { ok: true, message: String(data.message || '') };
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    const detail = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      message: `No se pudo contactar al servidor: ${detail}. Sube pos_product_delete.php a Hostinger.`,
+    };
   }
 }
 
@@ -178,7 +250,7 @@ export async function updateProduct(
  */
 export async function createProduct(
   payload: CreateProductPayload
-): Promise<{ ok: boolean; message?: string; productId?: number }> {
+): Promise<{ ok: boolean; message?: string; productId?: number; sessionExpired?: boolean }> {
   try {
     const token = localStorage.getItem('pos_token');
     if (!token) return { ok: false, message: 'No hay sesión iniciada' };
@@ -189,14 +261,18 @@ export async function createProduct(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, access_token: token }),
     });
 
     const data = await res.json();
     if (data.ok) {
       return { ok: true, productId: data.product_id, message: data.message };
     }
-    return { ok: false, message: data.message || 'Error al crear producto' };
+    return {
+      ok: false,
+      message: data.message || 'Error al crear producto',
+      sessionExpired: res.status === 401,
+    };
   } catch (error) {
     console.error('Error creating product:', error);
     return { ok: false, message: 'Error de red al crear producto' };
