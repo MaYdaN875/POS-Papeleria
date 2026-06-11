@@ -80,30 +80,52 @@ function mapProduct(p: Record<string, unknown>): Product {
  * Usa el endpoint POS si hay sesión, con fallback a la API pública.
  */
 export async function getProducts(): Promise<Product[]> {
-  const token = localStorage.getItem('pos_token');
+  // POS: precios físicos, stock y códigos de barras.
+  // Pública: imágenes y categorías (las guarda en otra tabla que el POS no ve).
+  const [posData, pubData] = await Promise.all([
+    fetch(`${ENDPOINTS.POS_PRODUCTS}?t=${Date.now()}`)
+      .then((r) => r.json())
+      .catch(() => null),
+    fetch(ENDPOINTS.PRODUCTS)
+      .then((r) => r.json())
+      .catch(() => null),
+  ]);
 
-  if (token) {
-    try {
-      const res = await fetch(ENDPOINTS.POS_PRODUCTS, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.ok && data.products) {
-        return data.products.map(mapProduct);
-      }
-    } catch (err) {
-      console.warn('POS products endpoint no disponible, usando API pública:', err);
+  const pubProducts: Record<string, unknown>[] =
+    pubData?.ok && Array.isArray(pubData.products) ? pubData.products : [];
+
+  if (posData?.ok && Array.isArray(posData.products)) {
+    const pubById = new Map<number, Record<string, unknown>>();
+    for (const p of pubProducts) {
+      pubById.set(Number(p.id), p);
     }
+
+    const mergedProducts: Product[] = posData.products.map((p: Record<string, unknown>) => {
+      const pub = pubById.get(Number(p.id));
+      if (!pub) return mapProduct(p);
+
+      const merged = { ...p };
+      const posImage = String(p.image || '');
+      if (!posImage || posImage === '/images/boligrafos.jpg') {
+        merged.image = pub.image;
+      }
+      if (!p.category || p.category === 'General') {
+        merged.category = pub.category ?? p.category;
+        merged.category_slug = pub.category_slug ?? p.category_slug;
+        merged.parent_category = pub.parent_category ?? p.parent_category;
+      }
+      return mapProduct(merged);
+    });
+
+    // Mismo orden que siempre: productos más recientes primero
+    return mergedProducts.sort((a, b) => b.id - a.id);
   }
 
-  const res = await fetch(ENDPOINTS.PRODUCTS);
-  const data = await res.json();
-
-  if (!data.ok || !data.products) {
-    throw new Error(data.message || 'Error al cargar productos');
+  if (pubProducts.length > 0) {
+    return pubProducts.map(mapProduct);
   }
 
-  return data.products.map(mapProduct);
+  throw new Error('Error al cargar productos');
 }
 
 /**

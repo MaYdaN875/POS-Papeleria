@@ -87,6 +87,17 @@ try {
 
     $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
     $hasPosPrice = in_array('pos_price', $cols, true);
+
+    // Crear la columna pos_price si no existe (evita pisar el precio web)
+    if (!$hasPosPrice) {
+        try {
+            $pdo->exec('ALTER TABLE products ADD COLUMN pos_price DECIMAL(10,2) NULL DEFAULT NULL');
+            $hasPosPrice = true;
+        } catch (Throwable $e) {
+            error_log('pos_inventory_update.php: no se pudo crear pos_price: ' . $e->getMessage());
+        }
+    }
+
     $hasStock = in_array('stock', $cols, true);
     $hasStockQty = in_array('stock_quantity', $cols, true);
 
