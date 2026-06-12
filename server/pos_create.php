@@ -18,21 +18,55 @@ adminRequireMethod('POST');
 try {
   $pdo = adminGetPdo();
 
-  // Validación de sesión compatible con Hostinger (columna token_hash)
-  $headers = function_exists('getallheaders') ? getallheaders() : [];
-  $auth = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
-  $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
+  $rawBody = file_get_contents('php://input') ?: '';
+  $data = json_decode($rawBody, true);
+  if (!is_array($data)) {
+    $data = [];
+  }
+
+  // Token: del cuerpo JSON (Hostinger pierde el header Authorization) o del header
+  $token = '';
+  if (!empty($data['access_token'])) {
+    $token = trim((string)$data['access_token']);
+  }
+
+  if ($token === '') {
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $auth = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+    $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
+  }
 
   if ($token === '') {
     adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
   }
 
   $sessionCols = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
-  $tokenCol = in_array('token_hash', $sessionCols, true) ? 'token_hash' : 'token';
+  $colsToTry = [];
+  if (in_array('token_hash', $sessionCols, true)) {
+    $colsToTry[] = 'token_hash';
+  }
+  if (in_array('token', $sessionCols, true)) {
+    $colsToTry[] = 'token';
+  }
 
-  $sessionStmt = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$tokenCol} = ? AND expires_at > NOW() LIMIT 1");
-  $sessionStmt->execute([$token]);
-  $sessionData = $sessionStmt->fetch(PDO::FETCH_ASSOC);
+  // El login de la web puede guardar el token directo o hasheado
+  $candidates = array_values(array_unique([
+    $token,
+    hash('sha256', $token),
+    hash('sha256', 'pos:' . $token),
+  ]));
+
+  $sessionData = false;
+  foreach ($colsToTry as $tokenCol) {
+    foreach ($candidates as $candidate) {
+      $sessionStmt = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$tokenCol} = ? AND expires_at > NOW() LIMIT 1");
+      $sessionStmt->execute([$candidate]);
+      $sessionData = $sessionStmt->fetch(PDO::FETCH_ASSOC);
+      if ($sessionData) {
+        break 2;
+      }
+    }
+  }
 
   if (!$sessionData) {
     adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
@@ -43,8 +77,6 @@ try {
   if ($adminId === 0) {
     adminJsonResponse(400, ['ok' => false, 'message' => 'No se pudo identificar al usuario de la sesión.']);
   }
-
-  $data = adminReadJsonBody();
 
   // Validar datos requeridos
   $items = $data['items'] ?? [];

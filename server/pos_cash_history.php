@@ -19,14 +19,46 @@ adminRequireMethod('GET');
 try {
   $pdo = adminGetPdo();
   
-  // FIX: Validación manual para usar 'token_hash' de Hostinger
-  $headers = getallheaders();
-  $auth = $headers['Authorization'] ?? '';
-  $token = str_replace('Bearer ', '', $auth);
-  $session = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE token_hash = ? AND expires_at > NOW() LIMIT 1");
-  $session->execute([$token]);
-  $sessionData = $session->fetch();
-  
+  // Validación de sesión: token por URL, cuerpo o header; directo o hasheado
+  $token = '';
+  if (!empty($_GET['access_token'])) {
+    $token = trim((string)$_GET['access_token']);
+  } elseif (!empty($_POST['access_token'])) {
+    $token = trim((string)$_POST['access_token']);
+  }
+  if ($token === '') {
+    $jsonBodyAuth = json_decode(file_get_contents('php://input') ?: '', true);
+    if (is_array($jsonBodyAuth) && !empty($jsonBodyAuth['access_token'])) {
+      $token = trim((string)$jsonBodyAuth['access_token']);
+    }
+  }
+  if ($token === '') {
+    $headersAuth = function_exists('getallheaders') ? getallheaders() : [];
+    $auth = $headersAuth['Authorization'] ?? $headersAuth['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+    $token = preg_replace('/^Bearer\s+/i', '', trim($auth));
+  }
+
+  if ($token === '') {
+    adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
+  }
+
+  $sessionColsAuth = $pdo->query('SHOW COLUMNS FROM admin_sessions')->fetchAll(PDO::FETCH_COLUMN);
+  $colsToTryAuth = [];
+  if (in_array('token_hash', $sessionColsAuth, true)) $colsToTryAuth[] = 'token_hash';
+  if (in_array('token', $sessionColsAuth, true)) $colsToTryAuth[] = 'token';
+
+  $candidatesAuth = array_values(array_unique([$token, hash('sha256', $token), hash('sha256', 'pos:' . $token)]));
+
+  $sessionData = false;
+  foreach ($colsToTryAuth as $colAuth) {
+    foreach ($candidatesAuth as $candidateAuth) {
+      $stmtAuth = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE {$colAuth} = ? AND expires_at > NOW() LIMIT 1");
+      $stmtAuth->execute([$candidateAuth]);
+      $sessionData = $stmtAuth->fetch();
+      if ($sessionData) break 2;
+    }
+  }
+
   if (!$sessionData) {
       adminJsonResponse(401, ['ok' => false, 'message' => 'Sesión inválida o expirada']);
   }

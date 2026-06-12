@@ -27,6 +27,7 @@ export interface CreateSalePayload {
   total: number;
   cash_received?: number;
   change_amount?: number;
+  access_token?: string;
 }
 
 /**
@@ -60,6 +61,12 @@ export async function createSale(
   if (paymentMethod === 'cash' && cashReceived !== undefined) {
     payload.cash_received = cashReceived;
     payload.change_amount = cashReceived - total;
+  }
+
+  // Token también en el cuerpo: Hostinger pierde el header Authorization
+  const token = localStorage.getItem('pos_token');
+  if (token) {
+    payload.access_token = token;
   }
 
   try {

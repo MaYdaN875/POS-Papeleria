@@ -116,13 +116,16 @@ export function getAdminId(): number | null {
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const headers = new Headers(options.headers || {});
+  let finalUrl = url;
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
+    // También por URL: Hostinger pierde el header Authorization en algunas peticiones
+    finalUrl += (url.includes('?') ? '&' : '?') + 'access_token=' + encodeURIComponent(token);
   }
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  return fetch(url, { ...options, headers });
+  return fetch(finalUrl, { ...options, headers });
 }
 
 /**

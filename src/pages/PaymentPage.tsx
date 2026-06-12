@@ -328,7 +328,7 @@ export default function PaymentPage() {
               <p className="payment-other-method-text">
                 {paymentMethod === 'card'
                   ? 'Pase la tarjeta por el terminal'
-                  : 'Esperando confirmación de transferencia'}
+                  : 'Verifica la transferencia y pulsa Confirmar Pago: se registra la venta y se imprime el ticket.'}
               </p>
             </div>
           )}
