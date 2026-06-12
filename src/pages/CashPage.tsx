@@ -134,13 +134,15 @@ export default function CashPage() {
                 <div className="cash-input-wrapper">
                   <span className="cash-currency-symbol">$</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     className="cash-input"
                     value={countedCash}
-                    onChange={(e) => setCountedCash(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      if (/^\d*\.?\d*$/.test(val)) setCountedCash(val);
+                    }}
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
                   />
                 </div>
               </div>
@@ -150,13 +152,15 @@ export default function CashPage() {
                 <div className="cash-input-wrapper">
                   <span className="cash-currency-symbol">$</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     className="cash-input"
                     value={countedCard}
-                    onChange={(e) => setCountedCard(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      if (/^\d*\.?\d*$/.test(val)) setCountedCard(val);
+                    }}
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
                   />
                 </div>
               </div>
