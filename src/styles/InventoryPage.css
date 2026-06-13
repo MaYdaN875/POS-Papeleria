@@ -364,12 +364,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-sm);
 }
 
 .inv-edit-group label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* Sección de códigos de barras: apilada en vertical */
+.inv-edit-group--barcodes {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .inv-edit-input {
@@ -385,6 +394,24 @@
 }
 
 .inv-edit-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(13, 71, 161, 0.1);
+}
+
+/* Input para agregar código de barras: ocupa el ancho disponible */
+.inv-barcode-add-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  outline: none;
+  font-family: inherit;
+  background: var(--color-bg-main);
+}
+
+.inv-barcode-add-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(13, 71, 161, 0.1);
 }
@@ -406,9 +433,12 @@
   transition: all var(--transition-fast);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-weight: 600;
   font-size: var(--font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .inv-action-btn:hover {

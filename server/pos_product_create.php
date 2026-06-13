@@ -12,6 +12,24 @@ require_once __DIR__ . '/pos_auth.php';
 adminHandleCors(['POST']);
 adminRequireMethod('POST');
 
+function posSlugify(string $text): string
+{
+    $text = trim($text);
+    if (function_exists('iconv')) {
+        $converted = @iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+        if ($converted !== false) {
+            $text = $converted;
+        }
+    }
+    $text = strtolower($text);
+    $text = preg_replace('/[^a-z0-9]+/', '-', $text);
+    $text = trim($text, '-');
+    if ($text === '') {
+        $text = 'producto';
+    }
+    return substr($text, 0, 80) . '-' . substr(uniqid(), -6);
+}
+
 try {
     $pdo = adminGetPdo();
     posValidateSession($pdo);
@@ -35,68 +53,105 @@ try {
     if ($name === '') {
         adminJsonResponse(400, ['ok' => false, 'message' => 'El nombre del producto es obligatorio']);
     }
-
     if ($webPrice < 0) {
         adminJsonResponse(400, ['ok' => false, 'message' => 'El precio web debe ser mayor o igual a 0']);
     }
-
     if ($stock < 0) {
         adminJsonResponse(400, ['ok' => false, 'message' => 'El stock debe ser mayor o igual a 0']);
     }
 
-    if ($categoryId <= 0) {
-        $catStmt = $pdo->query('SELECT id FROM categories ORDER BY id ASC LIMIT 1');
-        $firstCat = $catStmt->fetch(PDO::FETCH_ASSOC);
-        $categoryId = $firstCat ? (int)$firstCat['id'] : 1;
+    // Información completa de columnas: Field, Type, Null, Key, Default, Extra
+    $columnsInfo = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_ASSOC);
+    $cols = [];
+    $colMeta = [];
+    foreach ($columnsInfo as $info) {
+        $cols[] = $info['Field'];
+        $colMeta[$info['Field']] = $info;
     }
 
-    $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+    // Categoría válida (si la tabla la requiere)
+    if ($categoryId <= 0 && in_array('category_id', $cols, true)) {
+        try {
+            $catStmt = $pdo->query('SELECT id FROM categories ORDER BY id ASC LIMIT 1');
+            $firstCat = $catStmt->fetch(PDO::FETCH_ASSOC);
+            $categoryId = $firstCat ? (int)$firstCat['id'] : 1;
+        } catch (Throwable $e) {
+            $categoryId = 1;
+        }
+    }
 
-    $fields = [];
-    $placeholders = [];
     $params = [];
 
-    $addField = function (string $col, $value, bool $usePlaceholder = true) use (&$fields, &$placeholders, &$params, $cols) {
-        if (!in_array($col, $cols, true)) {
-            return;
-        }
-        $fields[] = $col;
-        if ($usePlaceholder) {
-            $placeholders[] = ':' . $col;
+    $setField = function (string $col, $value) use (&$params, $cols) {
+        if (in_array($col, $cols, true) && !array_key_exists($col, $params)) {
             $params[$col] = $value;
-        } else {
-            $placeholders[] = is_numeric($value) ? (string)$value : "'" . addslashes((string)$value) . "'";
         }
     };
 
-    $addField('name', $name);
-    $addField('brand', $brand);
-    $addField('description', $description);
-    $addField('price', $webPrice);
+    $setField('name', $name);
+    $setField('brand', $brand);
+    $setField('description', $description);
+    $setField('price', $webPrice);
+    $setField('category_id', $categoryId);
+    $setField('stock', $stock);
+    $setField('stock_quantity', $stock);
 
     foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imageCol) {
         if (in_array($imageCol, $cols, true)) {
-            $addField($imageCol, $image ?: '/images/boligrafos.jpg');
+            $setField($imageCol, $image !== '' ? $image : '/images/boligrafos.jpg');
             break;
         }
     }
 
-    $addField('category_id', $categoryId);
-    $addField('stock', $stock);
-    $addField('stock_quantity', $stock);
-
     if (in_array('pos_price', $cols, true)) {
-        $addField('pos_price', $posPrice !== null ? $posPrice : $webPrice);
+        $setField('pos_price', $posPrice !== null ? $posPrice : $webPrice);
     }
-
+    if (in_array('slug', $cols, true)) {
+        $setField('slug', posSlugify($name));
+    }
     if (in_array('is_active', $cols, true)) {
-        $fields[] = 'is_active';
-        $placeholders[] = '1';
+        $setField('is_active', 1);
+    }
+    if (in_array('active', $cols, true)) {
+        $setField('active', 1);
     }
 
-    if (empty($fields)) {
+    // Rellenar columnas NOT NULL sin valor por defecto que aún no tengan valor
+    foreach ($columnsInfo as $info) {
+        $field = $info['Field'];
+        $isAutoIncrement = stripos($info['Extra'] ?? '', 'auto_increment') !== false;
+        $allowsNull = ($info['Null'] ?? 'YES') === 'YES';
+        $hasDefault = $info['Default'] !== null;
+        $isGenerated = stripos($info['Extra'] ?? '', 'GENERATED') !== false;
+
+        if ($isAutoIncrement || $isGenerated || array_key_exists($field, $params)) {
+            continue;
+        }
+        if ($allowsNull || $hasDefault) {
+            continue;
+        }
+
+        // Columna obligatoria sin valor: asignar un valor seguro según el tipo
+        $type = strtolower($info['Type'] ?? '');
+        if (preg_match('/int|decimal|float|double|numeric|bit/', $type)) {
+            $params[$field] = 0;
+        } elseif (preg_match('/datetime|timestamp/', $type)) {
+            $params[$field] = date('Y-m-d H:i:s');
+        } elseif (preg_match('/date/', $type)) {
+            $params[$field] = date('Y-m-d');
+        } elseif (strpos($field, 'slug') !== false) {
+            $params[$field] = posSlugify($name);
+        } else {
+            $params[$field] = '';
+        }
+    }
+
+    if (empty($params)) {
         adminJsonResponse(500, ['ok' => false, 'message' => 'No se encontraron columnas válidas en products']);
     }
+
+    $fields = array_keys($params);
+    $placeholders = array_map(fn ($f) => ':' . $f, $fields);
 
     $sql = 'INSERT INTO products (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')';
     $stmt = $pdo->prepare($sql);
@@ -121,7 +176,8 @@ try {
     ]);
 } catch (PDOException $e) {
     error_log('pos_product_create.php DB error: ' . $e->getMessage());
-    adminJsonResponse(500, ['ok' => false, 'message' => 'Error al crear producto. Revisa la base de datos.']);
+    // Mostrar el error real ayuda a diagnosticar columnas faltantes
+    adminJsonResponse(500, ['ok' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
 } catch (Throwable $e) {
     error_log('pos_product_create.php error: ' . $e->getMessage());
     adminJsonResponse(500, ['ok' => false, 'message' => $e->getMessage()]);

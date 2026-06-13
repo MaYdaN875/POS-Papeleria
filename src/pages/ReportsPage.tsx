@@ -85,8 +85,139 @@ export function ReportsPage() {
     }
   };
 
+  const escapeHtml = (value: unknown) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const periodLabel =
+    dateRange === 'today'
+      ? 'Hoy'
+      : dateRange === 'week'
+        ? 'Últimos 7 días'
+        : dateRange === 'month'
+          ? 'Último mes'
+          : 'Historial completo';
+
+  const buildPrintBody = () => {
+    const header = `
+      <div class="ph">
+        <h1>Papelería Godart</h1>
+        <h2>${activeTab === 'sales' ? 'Reporte de Ventas' : 'Reporte de Cortes de Caja'}</h2>
+        <p>Periodo: ${escapeHtml(periodLabel)}</p>
+        <p>Emisión: ${escapeHtml(new Date().toLocaleString('es-MX'))}</p>
+      </div>`;
+
+    if (activeTab === 'sales') {
+      const sales = salesData?.sales || [];
+      if (sales.length === 0) {
+        return header + '<p class="empty">No hay ventas registradas en este periodo.</p>';
+      }
+      const rows = sales
+        .map(
+          (s) => `
+        <tr>
+          <td>#${String(s.id).padStart(6, '0')}</td>
+          <td>${escapeHtml(formatDate(s.created_at))}</td>
+          <td>${escapeHtml(s.cashier_name || 'Admin')}</td>
+          <td>${escapeHtml(translatePaymentMethod(s.payment_method))}</td>
+          <td class="right">${escapeHtml(formatCurrency(Number(s.total)))}</td>
+        </tr>`
+        )
+        .join('');
+      return `
+        ${header}
+        <div class="summary">
+          <div><span>Ingresos del periodo</span><strong>${escapeHtml(formatCurrency(salesData?.summary?.total_revenue || 0))}</strong></div>
+          <div><span>Total de ventas</span><strong>${escapeHtml(String(salesData?.summary?.total_orders || sales.length))}</strong></div>
+        </div>
+        <table>
+          <thead><tr><th>Ticket</th><th>Fecha y hora</th><th>Cajero</th><th>Método</th><th class="right">Total</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    const sessions = cashData?.sessions || [];
+    if (sessions.length === 0) {
+      return header + '<p class="empty">No hay cortes de caja registrados en este periodo.</p>';
+    }
+    const rows = sessions
+      .map((session) => {
+        const expected =
+          (Number.parseFloat(session.expected_cash) || 0) + (Number.parseFloat(session.expected_card) || 0);
+        const counted =
+          (Number.parseFloat(session.counted_cash) || 0) + (Number.parseFloat(session.counted_card) || 0);
+        const difference = Number.parseFloat(session.difference) || 0;
+        return `
+        <tr>
+          <td>${escapeHtml(formatDate(session.created_at))}</td>
+          <td>${escapeHtml(session.cashier_name)}</td>
+          <td class="right">${escapeHtml(formatCurrency(expected))}</td>
+          <td class="right">${escapeHtml(formatCurrency(counted))}</td>
+          <td class="right">${difference > 0 ? '+' : ''}${escapeHtml(formatCurrency(difference))}</td>
+          <td>${escapeHtml(String(session.status).toUpperCase())}</td>
+        </tr>`;
+      })
+      .join('');
+    return `
+      ${header}
+      <table>
+        <thead><tr><th>Fecha y hora</th><th>Cajero</th><th class="right">Esperado</th><th class="right">Contado</th><th class="right">Diferencia</th><th>Estado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  };
+
   const handlePrint = () => {
-    window.print();
+    const styles = `
+      * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
+      body { margin: 24px; color: #111; }
+      .ph { text-align: center; margin-bottom: 20px; }
+      .ph h1 { margin: 0; font-size: 22px; }
+      .ph h2 { margin: 4px 0; font-size: 16px; font-weight: 600; color: #444; }
+      .ph p { margin: 2px 0; font-size: 12px; color: #555; }
+      .summary { display: flex; gap: 16px; margin-bottom: 16px; }
+      .summary div { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; }
+      .summary span { display: block; font-size: 11px; text-transform: uppercase; color: #666; }
+      .summary strong { font-size: 18px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th, td { border: 1px solid #ddd; padding: 7px 9px; text-align: left; }
+      th { background: #f3f4f6; }
+      .right { text-align: right; }
+      .empty { text-align: center; color: #666; margin-top: 40px; }
+      @page { margin: 12mm; }
+    `;
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${styles}</style></head><body>${buildPrintBody()}</body></html>`;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return;
+    }
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const win = iframe.contentWindow;
+    if (!win) {
+      document.body.removeChild(iframe);
+      return;
+    }
+    setTimeout(() => {
+      win.focus();
+      win.print();
+      setTimeout(() => document.body.removeChild(iframe), 1500);
+    }, 300);
   };
 
   const formatCurrency = (amount: number) => {
@@ -143,7 +274,7 @@ export function ReportsPage() {
           </div>
           <button className="reports-print-btn" onClick={handlePrint}>
             <Printer size={18} />
-            <span>Imprimir PDF</span>
+            <span>Imprimir {activeTab === 'sales' ? 'ventas' : 'cortes'}</span>
           </button>
         </div>
       </div>

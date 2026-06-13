@@ -382,27 +382,31 @@ export default function InventoryPage() {
                           <div className="inv-edit-group">
                             <label>Precio físico (POS) ($)</label>
                             <input
-                              type="number"
-                              step="0.01"
-                              min="0"
+                              type="text"
+                              inputMode="decimal"
                               className="inv-edit-input"
                               value={editPosPrice}
-                              onChange={(e) => setEditPosPrice(e.target.value)}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(',', '.');
+                                if (/^\d*\.?\d*$/.test(val)) setEditPosPrice(val);
+                              }}
                             />
                           </div>
                           <div className="inv-edit-group">
                             <label>Stock (u.)</label>
                             <input
-                              type="number"
-                              step="1"
-                              min="0"
+                              type="text"
+                              inputMode="numeric"
                               className="inv-edit-input"
                               value={editStock}
-                              onChange={(e) => setEditStock(e.target.value)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (/^\d*$/.test(val)) setEditStock(val);
+                              }}
                             />
                           </div>
 
-                          <div className="inv-edit-group" style={{ gridColumn: '1 / -1' }}>
+                          <div className="inv-edit-group inv-edit-group--barcodes">
                             <label>Códigos de barras</label>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
                               {editBarcodes.map((b) => (
@@ -445,7 +449,7 @@ export default function InventoryPage() {
                               <input
                                 type="text"
                                 placeholder="Nuevo código..."
-                                className="inv-edit-input"
+                                className="inv-barcode-add-input"
                                 value={newBarcode}
                                 onChange={(e) => setNewBarcode(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddBarcodeTemp()}
@@ -593,12 +597,14 @@ export default function InventoryPage() {
               <div className="inv-form-group">
                 <label>Precio web ($) *</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   required
                   value={newForm.webPrice}
-                  onChange={(e) => setNewForm({ ...newForm, webPrice: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(',', '.');
+                    if (/^\d*\.?\d*$/.test(val)) setNewForm({ ...newForm, webPrice: val });
+                  }}
                   placeholder="0.00"
                 />
               </div>
@@ -606,11 +612,13 @@ export default function InventoryPage() {
               <div className="inv-form-group">
                 <label>Precio físico (POS) ($)</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   value={newForm.posPrice}
-                  onChange={(e) => setNewForm({ ...newForm, posPrice: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(',', '.');
+                    if (/^\d*\.?\d*$/.test(val)) setNewForm({ ...newForm, posPrice: val });
+                  }}
                   placeholder="Tienda física; vacío = igual al web"
                 />
               </div>
@@ -618,12 +626,14 @@ export default function InventoryPage() {
               <div className="inv-form-group">
                 <label>Stock inicial *</label>
                 <input
-                  type="number"
-                  step="1"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   required
                   value={newForm.stock}
-                  onChange={(e) => setNewForm({ ...newForm, stock: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d*$/.test(val)) setNewForm({ ...newForm, stock: val });
+                  }}
                   placeholder="0"
                 />
               </div>
