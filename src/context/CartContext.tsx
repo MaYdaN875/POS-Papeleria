@@ -23,14 +23,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = (product: Product): boolean => {
     if (product.stock <= 0) return false;
 
-    let added = false;
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      const currentQty = existing?.quantity ?? 0;
-      if (currentQty >= product.stock) return prev;
+    // Decidir con el estado actual para devolver un resultado confiable
+    const existing = cart.find((item) => item.product.id === product.id);
+    const currentQty = existing?.quantity ?? 0;
+    if (currentQty >= product.stock) return false;
 
-      added = true;
-      if (existing) {
+    setCart((prev) => {
+      const ex = prev.find((item) => item.product.id === product.id);
+      if (ex) {
+        if (ex.quantity >= product.stock) return prev;
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -39,28 +40,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { product, quantity: 1 }];
     });
-    return added;
+    return true;
   };
 
   const updateQuantity = (productId: number, delta: number): boolean => {
-    let updated = false;
-    setCart((prev) => {
-      const item = prev.find((i) => i.product.id === productId);
-      if (!item) return prev;
+    const item = cart.find((i) => i.product.id === productId);
+    if (!item) return false;
 
-      const newQty = item.quantity + delta;
-      if (newQty > item.product.stock) return prev;
+    const newQty = item.quantity + delta;
+    if (newQty > item.product.stock) return false;
 
-      updated = true;
-      return prev
+    setCart((prev) =>
+      prev
         .map((i) =>
           i.product.id === productId
-            ? { ...i, quantity: Math.max(0, newQty) }
+            ? { ...i, quantity: Math.max(0, i.quantity + delta) }
             : i
         )
-        .filter((i) => i.quantity > 0);
-    });
-    return updated;
+        .filter((i) => i.quantity > 0)
+    );
+    return true;
   };
 
   const removeFromCart = (productId: number) => {
