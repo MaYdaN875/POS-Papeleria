@@ -1,5 +1,5 @@
 import { Check, Edit2, Loader2, Search, Trash2, X } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import { logout } from '../services/authService';
@@ -45,6 +45,25 @@ export default function InventoryPage() {
   const [editBarcodes, setEditBarcodes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const editPriceInputRef = useRef<HTMLInputElement>(null);
+
+  // Al entrar en modo edición, enfocar el campo de precio.
+  // Esto evita el bug de Electron donde el teclado no responde hasta cambiar de ventana.
+  useEffect(() => {
+    if (editingId === null) return;
+    const focusInput = () => {
+      const input = editPriceInputRef.current;
+      if (!input) return;
+      input.focus();
+      input.select();
+    };
+    const t1 = setTimeout(focusInput, 60);
+    const t2 = setTimeout(focusInput, 250);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [editingId]);
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState(EMPTY_FORM);
@@ -382,6 +401,7 @@ export default function InventoryPage() {
                           <div className="inv-edit-group">
                             <label>Precio físico (POS) ($)</label>
                             <input
+                              ref={editPriceInputRef}
                               type="text"
                               inputMode="decimal"
                               className="inv-edit-input"

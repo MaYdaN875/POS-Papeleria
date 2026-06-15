@@ -47,6 +47,17 @@ function createWindow() {
 
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString())
+    win?.webContents.focus()
+  })
+
+  // Asegura que el teclado siempre llegue a la página (evita inputs "bugueados"
+  // donde no se puede escribir hasta cambiar de ventana y volver)
+  win.on('focus', () => {
+    win?.webContents.focus()
+  })
+
+  win.on('show', () => {
+    win?.webContents.focus()
   })
 
   win.on('unresponsive', () => {
