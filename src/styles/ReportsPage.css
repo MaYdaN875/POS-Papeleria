@@ -322,6 +322,77 @@
 }
 
 /* ==========================================================================
+   VISTA PREVIA DE IMPRESIÓN
+   ========================================================================== */
+.reports-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.reports-preview-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 820px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.reports-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.reports-preview-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+}
+
+.reports-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reports-preview-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.reports-preview-close:hover {
+  background: #eee;
+  color: #111;
+}
+
+.reports-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* ==========================================================================
    PRINT STYLES
    ========================================================================== */
 .print-only {
