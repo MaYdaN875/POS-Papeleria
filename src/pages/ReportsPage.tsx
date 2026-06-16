@@ -1,6 +1,6 @@
 import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printer, Vault, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { CashHistoryResponse, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
+import { CashHistoryResponse, CashSession, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
 import '../styles/ReportsPage.css';
 
 export function ReportsPage() {
@@ -14,6 +14,8 @@ export function ReportsPage() {
   const [saleDetails, setSaleDetails] = useState<Record<number, any>>({});
   const [loadingDetails, setLoadingDetails] = useState<number | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  // Si está definido, la vista previa imprime solo ese corte de caja individual
+  const [previewCashSession, setPreviewCashSession] = useState<CashSession | null>(null);
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -171,6 +173,37 @@ export function ReportsPage() {
       </table>`;
   };
 
+  const buildSingleCashBody = (session: CashSession) => {
+    const expectedCash = Number.parseFloat(session.expected_cash) || 0;
+    const expectedCard = Number.parseFloat(session.expected_card) || 0;
+    const countedCash = Number.parseFloat(session.counted_cash) || 0;
+    const countedCard = Number.parseFloat(session.counted_card) || 0;
+    const expectedTotal = expectedCash + expectedCard;
+    const countedTotal = countedCash + countedCard;
+    const difference = Number.parseFloat(session.difference) || 0;
+
+    return `
+      <div class="ph">
+        <h1>Papelería Godart</h1>
+        <h2>Corte de Caja</h2>
+        <p>Cajero: ${escapeHtml(session.cashier_name)}</p>
+        <p>Fecha: ${escapeHtml(formatDate(session.created_at))}</p>
+        <p>Emisión: ${escapeHtml(new Date().toLocaleString('es-MX'))}</p>
+      </div>
+      <table>
+        <thead><tr><th>Concepto</th><th class="right">Esperado</th><th class="right">Contado</th></tr></thead>
+        <tbody>
+          <tr><td>Efectivo</td><td class="right">${escapeHtml(formatCurrency(expectedCash))}</td><td class="right">${escapeHtml(formatCurrency(countedCash))}</td></tr>
+          <tr><td>Tarjeta / Vouchers</td><td class="right">${escapeHtml(formatCurrency(expectedCard))}</td><td class="right">${escapeHtml(formatCurrency(countedCard))}</td></tr>
+          <tr><td><strong>Total</strong></td><td class="right"><strong>${escapeHtml(formatCurrency(expectedTotal))}</strong></td><td class="right"><strong>${escapeHtml(formatCurrency(countedTotal))}</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="summary" style="margin-top:16px;">
+        <div><span>Diferencia</span><strong>${difference > 0 ? '+' : ''}${escapeHtml(formatCurrency(difference))}</strong></div>
+        <div><span>Estado</span><strong>${escapeHtml(String(session.status).toUpperCase())}</strong></div>
+      </div>`;
+  };
+
   const printStyles = `
     * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
     body { margin: 24px; color: #111; }
@@ -190,8 +223,10 @@ export function ReportsPage() {
     @page { margin: 12mm; }
   `;
 
-  const getPrintHtml = () =>
-    `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${printStyles}</style></head><body>${buildPrintBody()}</body></html>`;
+  const getPrintHtml = () => {
+    const body = previewCashSession ? buildSingleCashBody(previewCashSession) : buildPrintBody();
+    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${printStyles}</style></head><body>${body}</body></html>`;
+  };
 
   // Escribe el documento en el iframe de vista previa cuando se abre
   useEffect(() => {
@@ -203,7 +238,22 @@ export function ReportsPage() {
     doc.write(getPrintHtml());
     doc.close();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPreview, activeTab, dateRange, salesData, cashData]);
+  }, [showPreview, activeTab, dateRange, salesData, cashData, previewCashSession]);
+
+  const openFullPreview = () => {
+    setPreviewCashSession(null);
+    setShowPreview(true);
+  };
+
+  const openCashSessionPreview = (session: CashSession) => {
+    setPreviewCashSession(session);
+    setShowPreview(true);
+  };
+
+  const closePreview = () => {
+    setShowPreview(false);
+    setPreviewCashSession(null);
+  };
 
   const handlePrintFromPreview = () => {
     const win = previewIframeRef.current?.contentWindow;
@@ -264,7 +314,7 @@ export function ReportsPage() {
               <option value="all">Todo el historial</option>
             </select>
           </div>
-          <button className="reports-print-btn" onClick={() => setShowPreview(true)}>
+          <button className="reports-print-btn" onClick={openFullPreview}>
             <Printer size={18} />
             <span>Imprimir {activeTab === 'sales' ? 'ventas' : 'cortes'}</span>
           </button>
@@ -456,6 +506,7 @@ export function ReportsPage() {
                       <th>Físico Contado</th>
                       <th>Diferencia</th>
                       <th>Estado</th>
+                      <th className="no-print">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -478,6 +529,15 @@ export function ReportsPage() {
                               {session.status.toUpperCase()}
                             </span>
                           </td>
+                          <td className="no-print">
+                            <button
+                              className="reports-expand-btn"
+                              onClick={() => openCashSessionPreview(session)}
+                              title="Imprimir este corte"
+                            >
+                              <Printer size={18} />
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -490,10 +550,10 @@ export function ReportsPage() {
       </div>
 
       {showPreview && (
-        <div className="reports-preview-overlay" onClick={() => setShowPreview(false)}>
+        <div className="reports-preview-overlay" onClick={closePreview}>
           <div className="reports-preview-modal" onClick={(e) => e.stopPropagation()}>
             <div className="reports-preview-header">
-              <h3>Vista previa — {activeTab === 'sales' ? 'Ventas' : 'Cortes de caja'}</h3>
+              <h3>Vista previa — {previewCashSession ? `Corte de ${previewCashSession.cashier_name}` : activeTab === 'sales' ? 'Ventas' : 'Cortes de caja'}</h3>
               <div className="reports-preview-actions">
                 <button className="reports-print-btn" onClick={handlePrintFromPreview}>
                   <Printer size={18} />
@@ -501,7 +561,7 @@ export function ReportsPage() {
                 </button>
                 <button
                   className="reports-preview-close"
-                  onClick={() => setShowPreview(false)}
+                  onClick={closePreview}
                   aria-label="Cerrar vista previa"
                   title="Cerrar"
                 >
