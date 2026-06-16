@@ -1,5 +1,5 @@
-import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printer, Vault } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printer, Vault, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CashHistoryResponse, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
 import '../styles/ReportsPage.css';
 
@@ -13,6 +13,8 @@ export function ReportsPage() {
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
   const [saleDetails, setSaleDetails] = useState<Record<number, any>>({});
   const [loadingDetails, setLoadingDetails] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     fetchSales();
@@ -169,55 +171,45 @@ export function ReportsPage() {
       </table>`;
   };
 
-  const handlePrint = () => {
-    const styles = `
-      * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
-      body { margin: 24px; color: #111; }
-      .ph { text-align: center; margin-bottom: 20px; }
-      .ph h1 { margin: 0; font-size: 22px; }
-      .ph h2 { margin: 4px 0; font-size: 16px; font-weight: 600; color: #444; }
-      .ph p { margin: 2px 0; font-size: 12px; color: #555; }
-      .summary { display: flex; gap: 16px; margin-bottom: 16px; }
-      .summary div { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; }
-      .summary span { display: block; font-size: 11px; text-transform: uppercase; color: #666; }
-      .summary strong { font-size: 18px; }
-      table { width: 100%; border-collapse: collapse; font-size: 12px; }
-      th, td { border: 1px solid #ddd; padding: 7px 9px; text-align: left; }
-      th { background: #f3f4f6; }
-      .right { text-align: right; }
-      .empty { text-align: center; color: #666; margin-top: 40px; }
-      @page { margin: 12mm; }
-    `;
-    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${styles}</style></head><body>${buildPrintBody()}</body></html>`;
+  const printStyles = `
+    * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
+    body { margin: 24px; color: #111; }
+    .ph { text-align: center; margin-bottom: 20px; }
+    .ph h1 { margin: 0; font-size: 22px; }
+    .ph h2 { margin: 4px 0; font-size: 16px; font-weight: 600; color: #444; }
+    .ph p { margin: 2px 0; font-size: 12px; color: #555; }
+    .summary { display: flex; gap: 16px; margin-bottom: 16px; }
+    .summary div { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; }
+    .summary span { display: block; font-size: 11px; text-transform: uppercase; color: #666; }
+    .summary strong { font-size: 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #ddd; padding: 7px 9px; text-align: left; }
+    th { background: #f3f4f6; }
+    .right { text-align: right; }
+    .empty { text-align: center; color: #666; margin-top: 40px; }
+    @page { margin: 12mm; }
+  `;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
+  const getPrintHtml = () =>
+    `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${printStyles}</style></head><body>${buildPrintBody()}</body></html>`;
 
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
-      document.body.removeChild(iframe);
-      return;
-    }
+  // Escribe el documento en el iframe de vista previa cuando se abre
+  useEffect(() => {
+    if (!showPreview) return;
+    const iframe = previewIframeRef.current;
+    const doc = iframe?.contentWindow?.document;
+    if (!doc) return;
     doc.open();
-    doc.write(html);
+    doc.write(getPrintHtml());
     doc.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPreview, activeTab, dateRange, salesData, cashData]);
 
-    const win = iframe.contentWindow;
-    if (!win) {
-      document.body.removeChild(iframe);
-      return;
-    }
-    setTimeout(() => {
-      win.focus();
-      win.print();
-      setTimeout(() => document.body.removeChild(iframe), 1500);
-    }, 300);
+  const handlePrintFromPreview = () => {
+    const win = previewIframeRef.current?.contentWindow;
+    if (!win) return;
+    win.focus();
+    win.print();
   };
 
   const formatCurrency = (amount: number) => {
@@ -272,7 +264,7 @@ export function ReportsPage() {
               <option value="all">Todo el historial</option>
             </select>
           </div>
-          <button className="reports-print-btn" onClick={handlePrint}>
+          <button className="reports-print-btn" onClick={() => setShowPreview(true)}>
             <Printer size={18} />
             <span>Imprimir {activeTab === 'sales' ? 'ventas' : 'cortes'}</span>
           </button>
@@ -496,6 +488,35 @@ export function ReportsPage() {
           </>
         )}
       </div>
+
+      {showPreview && (
+        <div className="reports-preview-overlay" onClick={() => setShowPreview(false)}>
+          <div className="reports-preview-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="reports-preview-header">
+              <h3>Vista previa — {activeTab === 'sales' ? 'Ventas' : 'Cortes de caja'}</h3>
+              <div className="reports-preview-actions">
+                <button className="reports-print-btn" onClick={handlePrintFromPreview}>
+                  <Printer size={18} />
+                  <span>Imprimir</span>
+                </button>
+                <button
+                  className="reports-preview-close"
+                  onClick={() => setShowPreview(false)}
+                  aria-label="Cerrar vista previa"
+                  title="Cerrar"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <iframe
+              ref={previewIframeRef}
+              className="reports-preview-frame"
+              title="Vista previa del reporte"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
