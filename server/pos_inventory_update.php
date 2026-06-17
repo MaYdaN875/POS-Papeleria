@@ -19,33 +19,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// 1. Verificación básica de Token
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-
-if (empty($authHeader) && function_exists('getallheaders')) {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (empty($authHeader) && function_exists('apache_request_headers')) {
-    $headers = apache_request_headers();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-    $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-}
-
-if (empty($authHeader) || strpos($authHeader, 'Bearer pos_auth_') === false) {
-    http_response_code(401);
-    echo json_encode(["ok" => false, "message" => "No autorizado o token inválido"]);
-    exit();
-}
-
 require_once __DIR__ . '/../../_admin_common.php';
 
 try {
     $pdo = adminGetPdo();
+
+    // 1. Verificación de Token
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+
+    if (empty($authHeader) && function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
+    if (empty($authHeader) && function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
+    if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
+    $token = str_replace('Bearer ', '', $authHeader);
+    $token = trim($token);
+
+    if (empty($token)) {
+        http_response_code(401);
+        echo json_encode(["ok" => false, "message" => "Sesión no autorizada"]);
+        exit();
+    }
+
+    // 2. Validar sesión
+    $session = $pdo->prepare("SELECT admin_user_id FROM admin_sessions WHERE token_hash = ? AND expires_at > NOW() LIMIT 1");
+    $session->execute([$token]);
+    $sessionData = $session->fetch();
+
+    if (!$sessionData) {
+        http_response_code(401);
+        echo json_encode(["ok" => false, "message" => "Sesión inválida o expirada"]);
+        exit();
+    }
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["ok" => false, "message" => "Error de conexión: " . $e->getMessage()]);
@@ -64,7 +78,7 @@ if ($product_id <= 0 || $new_price < 0 || $new_stock < 0) {
 }
 
 // 4. Actualizar el producto
-$stmt = $pdo->prepare("UPDATE products SET price = ?, stock_quantity = ? WHERE id = ?");
+$stmt = $pdo->prepare("UPDATE products SET price = ?, stock = ? WHERE id = ?");
 
 if ($stmt->execute([$new_price, $new_stock, $product_id])) {
     if ($stmt->rowCount() > 0 || $stmt->errorCode() == "00000") {

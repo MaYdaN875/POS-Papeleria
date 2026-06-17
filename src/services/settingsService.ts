@@ -1,4 +1,6 @@
 import { ENDPOINTS } from '../config';
+import { InvoiceFactory } from './invoicing/InvoiceFactory';
+import { InvoiceService } from './invoicing/InvoiceService';
 
 export interface GlobalSettings {
   storeName: string;
@@ -14,6 +16,12 @@ export interface GlobalSettings {
   enableSounds: boolean;
   printerSize: '80mm' | '58mm';
   taxRate: number;
+  // Invoicing Configurations
+  invoiceEnabled: boolean;
+  invoiceProvider: 'mock' | 'facturacom';
+  facturacomApiKey: string;
+  facturacomSecretKey: string;
+  facturacomSandbox: boolean;
 }
 
 export interface SettingsResponse {
@@ -36,6 +44,11 @@ const DEFAULT_SETTINGS: GlobalSettings = {
   enableSounds: true,
   printerSize: '80mm',
   taxRate: 0,
+  invoiceEnabled: false,
+  invoiceProvider: 'mock',
+  facturacomApiKey: '',
+  facturacomSecretKey: '',
+  facturacomSandbox: true,
 };
 
 function getAuthToken(): string {
@@ -62,12 +75,28 @@ export async function getGlobalSettings(): Promise<SettingsResponse> {
 
     const data = await res.json();
     if (data.ok && data.settings) {
-      return { ok: true, settings: data.settings };
+      // Mezclar con valores por defecto por si faltan campos en settings.json
+      const settings = { ...DEFAULT_SETTINGS, ...data.settings };
+      
+      // Inicializar / Inyectar la estrategia activa de facturación
+      try {
+        const provider = InvoiceFactory.createProvider(settings);
+        InvoiceService.setProvider(provider);
+      } catch (err) {
+        console.error('Error al instanciar el proveedor de facturas:', err);
+      }
+
+      return { ok: true, settings };
     }
     
+    // Si no tiene éxito la respuesta del servidor, usamos locales
+    const provider = InvoiceFactory.createProvider(DEFAULT_SETTINGS);
+    InvoiceService.setProvider(provider);
     return { ok: false, message: data.message || 'Error al obtener ajustes' };
   } catch (error: any) {
     console.warn('Falló la carga de ajustes globales, usando por defecto.', error);
+    const provider = InvoiceFactory.createProvider(DEFAULT_SETTINGS);
+    InvoiceService.setProvider(provider);
     return { ok: true, settings: DEFAULT_SETTINGS };
   }
 }
@@ -92,9 +121,21 @@ export async function saveGlobalSettings(settings: GlobalSettings): Promise<Sett
     });
 
     const data = await res.json();
+    
+    if (data.ok && data.settings) {
+      // Re-inicializar / Re-inyectar la estrategia activa con los nuevos datos
+      try {
+        const provider = InvoiceFactory.createProvider(data.settings);
+        InvoiceService.setProvider(provider);
+      } catch (err) {
+        console.error('Error al actualizar el proveedor de facturas:', err);
+      }
+    }
+
     return data;
   } catch (error: any) {
     console.error('Error al guardar ajustes:', error);
     return { ok: false, message: error.message || 'Error de conexión' };
   }
 }
+

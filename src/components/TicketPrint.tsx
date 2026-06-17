@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GlobalSettings } from '../services/settingsService';
 import { Printer, X } from 'lucide-react';

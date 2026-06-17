@@ -9,7 +9,8 @@ import {
   Printer,
   Moon,
   Volume2,
-  Percent
+  Percent,
+  FileText
 } from 'lucide-react';
 import { getGlobalSettings, saveGlobalSettings, GlobalSettings } from '../services/settingsService';
 import TicketPrint from '../components/TicketPrint';
@@ -21,7 +22,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
-  const [activeTab, setActiveTab] = useState<'general' | 'ticket' | 'system' | 'appearance'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'ticket' | 'system' | 'appearance' | 'invoicing'>('general');
 
   useEffect(() => {
     loadSettings();
@@ -148,6 +149,13 @@ export default function SettingsPage() {
           >
             <Moon size={18} />
             Apariencia y Sonidos
+          </button>
+          <button 
+            className={`settings-nav-btn ${activeTab === 'invoicing' ? 'active' : ''}`}
+            onClick={() => setActiveTab('invoicing')}
+          >
+            <FileText size={18} />
+            Facturación
           </button>
           <button 
             className={`settings-nav-btn ${activeTab === 'system' ? 'active' : ''}`}
@@ -403,6 +411,97 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* TAB: INVOICING */}
+          {activeTab === 'invoicing' && (
+            <div className="settings-section animate-fade-in">
+              <h2 className="settings-section-title">Configuración de Facturación</h2>
+              
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <FileText size={24} className="settings-card-icon" />
+                  <div>
+                    <h3>Activar Facturación</h3>
+                    <p>Permite a los cajeros emitir facturas CFDI al finalizar las ventas o desde el historial de ventas.</p>
+                  </div>
+                  <label className="settings-switch">
+                    <input 
+                      type="checkbox" 
+                      name="invoiceEnabled"
+                      checked={settings.invoiceEnabled}
+                      onChange={handleChange}
+                    />
+                    <span className="settings-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              {settings.invoiceEnabled && (
+                <div className="settings-card animate-fade-in" style={{ display: 'block', padding: '20px' }}>
+                  <div className="settings-field" style={{ marginBottom: '1.5rem' }}>
+                    <label>Proveedor de Facturación</label>
+                    <select 
+                      name="invoiceProvider" 
+                      value={settings.invoiceProvider} 
+                      onChange={(e) => setSettings({ ...settings, invoiceProvider: e.target.value as 'mock' | 'facturacom' })}
+                      className="settings-select"
+                      style={{ width: '100%', marginTop: '0.5rem' }}
+                    >
+                      <option value="mock">Simulador (Mock Mode - Sin costo/Pruebas)</option>
+                      <option value="facturacom">Factura.com (CFDI 4.0 Real / Sandbox)</option>
+                    </select>
+                  </div>
+
+                  {settings.invoiceProvider === 'facturacom' && (
+                    <div className="settings-grid" style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+                      <div className="settings-field">
+                        <label>API Key de Factura.com</label>
+                        <input 
+                          type="text" 
+                          name="facturacomApiKey" 
+                          value={settings.facturacomApiKey} 
+                          onChange={handleChange}
+                          placeholder="F-Api-Key de tu panel de Factura.com"
+                          style={{ marginTop: '0.5rem' }}
+                        />
+                      </div>
+                      <div className="settings-field">
+                        <label>Secret Key de Factura.com</label>
+                        <input 
+                          type="password" 
+                          name="facturacomSecretKey" 
+                          value={settings.facturacomSecretKey} 
+                          onChange={handleChange}
+                          placeholder="F-Secret-Key de tu panel de Factura.com"
+                          style={{ marginTop: '0.5rem' }}
+                        />
+                      </div>
+
+                      <div className="settings-field settings-field--full" style={{ marginTop: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.02)', padding: '12px 16px', borderRadius: '8px' }}>
+                          <div>
+                            <h4 style={{ margin: 0, fontWeight: 600 }}>Modo Sandbox (Entorno de Pruebas)</h4>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                              Realiza timbrados de prueba sin validez fiscal utilizando la URL de Sandbox. Desmárcalo para producción.
+                            </p>
+                          </div>
+                          <label className="settings-switch">
+                            <input 
+                              type="checkbox" 
+                              name="facturacomSandbox"
+                              checked={settings.facturacomSandbox}
+                              onChange={handleChange}
+                            />
+                            <span className="settings-slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

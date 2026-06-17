@@ -1,0 +1,22 @@
+# Tareas de Implementación: Facturación POS (Strategy + DI)
+
+- [x] Creación de Modelos e Interfaces (Strategy Pattern)
+  - [x] Crear `src/types/invoicing.ts` (Modelos fiscales y firma de `InvoiceProvider`)
+  - [x] Crear `src/services/invoicing/MockProvider.ts` (Estrategia simulada)
+  - [x] Crear `src/services/invoicing/FacturaComProvider.ts` (Estrategia Factura.com API v4)
+  - [x] Crear `src/services/invoicing/InvoiceService.ts` (Inyector de dependencia/Contenedor)
+  - [x] Crear `src/services/invoicing/InvoiceFactory.ts` (Creador dinámico de proveedor)
+- [x] Configuración del Sistema (Settings)
+  - [x] Modificar `src/services/settingsService.ts` (Añadir parámetros de facturación a `GlobalSettings`)
+  - [x] Modificar `server/pos_settings.php` (Soporte backend para persistir parámetros)
+  - [x] Modificar `src/pages/SettingsPage.tsx` (Agregar panel de facturación)
+- [x] Base de Datos y Endpoints de Backend
+  - [x] Modificar `server/pos_tables.sql` (Esquema de la tabla `pos_invoices`)
+  - [x] Crear `server/pos_invoices.php` (CRUD backend para facturas timbradas)
+  - [x] Crear `src/services/invoicing/backendService.ts` (Comunicación del cliente con el nuevo endpoint de facturas)
+- [x] Integración en Pantalla de Pago
+  - [x] Modificar `src/pages/PaymentPage.tsx` (Formulario de RFC, Régimen, Uso CFDI, timbrado al pagar)
+- [x] Integración en Pantalla de Historial/Reportes
+  - [x] Modificar `src/pages/ReportsPage.tsx` (Visualización de XML/PDF y opción de facturar ventas pasadas en modal)
+- [x] Verificación y Compilación
+  - [x] Correr verificación de tipos
