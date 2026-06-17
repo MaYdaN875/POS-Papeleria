@@ -35,3 +35,22 @@ CREATE TABLE IF NOT EXISTS pos_sale_items (
   CONSTRAINT fk_pos_sale_items_product FOREIGN KEY (product_id)
     REFERENCES products(id)
 );
+
+-- =============================================================================
+-- Tabla para guardar los CFDIs timbrados asociados a las ventas
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS pos_invoices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pos_sale_id INT NOT NULL,
+  uuid VARCHAR(100) NOT NULL,
+  invoice_number VARCHAR(50) NOT NULL,
+  customer_rfc VARCHAR(13) NOT NULL,
+  customer_name VARCHAR(200) NOT NULL,
+  pdf_url VARCHAR(500) NULL,
+  xml_url VARCHAR(500) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_invoices_pos_sale FOREIGN KEY (pos_sale_id) REFERENCES pos_sales(id) ON DELETE CASCADE,
+  INDEX idx_invoices_sale (pos_sale_id)
+);
+

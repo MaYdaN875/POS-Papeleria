@@ -36,7 +36,12 @@ $defaultSettings = [
     'enableSounds' => true,
     'printerSize' => '58mm',
     'printerName' => '',
-    'taxRate' => 0
+    'taxRate' => 0,
+    'invoiceEnabled' => false,
+    'invoiceProvider' => 'mock',
+    'facturacomApiKey' => '',
+    'facturacomSecretKey' => '',
+    'facturacomSandbox' => true
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
