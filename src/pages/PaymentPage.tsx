@@ -11,13 +11,14 @@ import {
     FileText,
     CheckCircle2
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer, InvoiceResponse } from '../types/invoicing';
 import { InvoiceService } from '../services/invoicing/InvoiceService';
 import { saveInvoiceToBackend } from '../services/invoicing/backendService';
 import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
+import { logout } from '../services/authService';
 import { createSale } from '../services/salesService';
 import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
 import { playCashSound } from '../utils/sounds';
@@ -25,11 +26,19 @@ import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';
 
+/** Impresora fisica POS58D — cobro siempre en 58mm */
+const PAYMENT_TICKET_SIZE = '58mm' as const;
+
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
   
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
+
+  const ticketPrintSettings = useMemo(
+    () => (settings ? { ...settings, printerSize: PAYMENT_TICKET_SIZE } : null),
+    [settings]
+  );
   
   const taxRate = settings?.taxRate || 0;
   const total = subtotal + (subtotal * taxRate / 100);
@@ -39,6 +48,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<number | null>(null);
 
   // Invoicing states
   const [wantsInvoice, setWantsInvoice] = useState(false);
@@ -53,12 +63,14 @@ export default function PaymentPage() {
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<InvoiceResponse | null>(null);
 
-  // Initialize cashReceived based on total only when total changes initially
+  // Inicializar cashReceived con el total SOLO una vez al cargar
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
-    if (cashReceived === '0' && total > 0) {
-      setCashReceived(total.toString());
+    if (!initialized && total > 0) {
+      setCashReceived(total.toFixed(2));
+      setInitialized(true);
     }
-  }, [total, cashReceived]);
+  }, [total, initialized]);
 
   // Cargar ajustes globales
   useEffect(() => {
@@ -80,7 +92,7 @@ export default function PaymentPage() {
 
   const handleKeyPress = (key: string) => {
     if (key === 'backspace') {
-      setCashReceived((prev) => prev.slice(0, -1) || '0');
+      setCashReceived((prev) => prev.length <= 1 ? '0' : prev.slice(0, -1));
     } else if (key === '.') {
       if (!cashReceived.includes('.')) {
         setCashReceived((prev) => prev + '.');
@@ -88,7 +100,7 @@ export default function PaymentPage() {
     } else if (key === 'clear') {
       setCashReceived('0');
     } else {
-      setCashReceived((prev) => (prev === '0' && key !== '.' ? key : prev + key));
+      setCashReceived((prev) => (prev === '0' ? key : prev + key));
     }
   };
 
@@ -121,11 +133,12 @@ export default function PaymentPage() {
 
     const parsedCash = paymentMethod === 'cash' ? parseFloat(cashReceived) : undefined;
     
-    const result = await createSale(cart, paymentMethod, parsedCash);
+    const result = await createSale(cart, paymentMethod, parsedCash, taxRate);
     
     setLoading(false);
 
     if (result.ok) {
+      setPaymentSuccess(result.saleId ?? 0);
       playCashSound();
       const saleId = result.saleId || 0;
       
@@ -201,20 +214,24 @@ export default function PaymentPage() {
         cashierName: cashierName,
         date: new Date().toISOString(),
       };
-
       if (invoiceCreatedSuccessfully && tempInvoiceResult) {
         setInvoiceResult(tempInvoiceResult);
       } else {
         if (settings && settings.autoPrintTicket === false) {
-          // Si la impresión automática está apagada, solo limpiar e ir a ventas
-          alert(`¡Pago procesado exitosamente!\nTicket #${saleId}`);
-          clearCart();
-          navigate('/sales');
+          setTimeout(() => {
+            clearCart();
+            navigate('/sales');
+          }, 1500);
         } else {
-          // Renderizar el ticket, TicketPrint se encargará de imprimir y llamar a handlePrintDone
           setTicketData(ticket);
         }
       }
+    } else if (result.sessionExpired) {
+      const errorMsg = 'Tu sesión expiró. Vuelve a iniciar sesión para cobrar.';
+      setError(errorMsg);
+      alert(errorMsg);
+      await logout();
+      navigate('/');
     } else {
       const errorMsg = result.message || 'Error al procesar el pago';
       setError(errorMsg);
@@ -307,6 +324,11 @@ export default function PaymentPage() {
           <Loader2 size={48} className="settings-spinner" style={{ animation: 'spin 1.5s linear infinite', marginBottom: '16px' }} />
           <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Timbrando factura ante el SAT...</h3>
           <p style={{ fontSize: '14px', opacity: 0.8, marginTop: '8px' }}>Por favor espere, esto puede tomar unos segundos.</p>
+        </div>
+      )}
+      {paymentSuccess !== null && !ticketData && (
+        <div className="payment-success-banner">
+          ¡Compra realizada con éxito! Ticket #{paymentSuccess}
         </div>
       )}
       {/* Header */}
@@ -510,12 +532,28 @@ export default function PaymentPage() {
                 <span className="payment-cash-label">EFECTIVO RECIBIDO</span>
                 <div className="payment-cash-input">
                   <span className="payment-cash-symbol">$</span>
-                  <span className="payment-cash-value">
-                    {parseFloat(cashReceived || '0').toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
+                  <input
+                    type="text"
+                    className="payment-cash-value-input"
+                    value={cashReceived}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Solo permitir números y un punto decimal
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setCashReceived(val);
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // Al hacer click, si es '0', limpiarlo para que escriba libremente
+                      if (e.target.value === '0' || e.target.value === total.toFixed(2)) {
+                        setCashReceived('');
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (!e.target.value) setCashReceived('0');
+                    }}
+                    autoFocus
+                  />
                 </div>
               </div>
 
@@ -557,7 +595,7 @@ export default function PaymentPage() {
               <p className="payment-other-method-text">
                 {paymentMethod === 'card'
                   ? 'Pase la tarjeta por el terminal'
-                  : 'Esperando confirmación de transferencia'}
+                  : 'Verifica la transferencia y pulsa Confirmar Pago: se registra la venta y se imprime el ticket.'}
               </p>
             </div>
           )}
@@ -581,7 +619,7 @@ export default function PaymentPage() {
 
       {/* Componente de Ticket (invisible en pantalla, visible al imprimir) */}
       {ticketData && (
-        <TicketPrint data={ticketData} settings={settings} onPrintDone={handlePrintDone} />
+        <TicketPrint data={ticketData} settings={ticketPrintSettings} onPrintDone={handlePrintDone} />
       )}
     </div>
   );

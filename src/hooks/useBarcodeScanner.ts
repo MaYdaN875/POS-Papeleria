@@ -3,14 +3,15 @@ import { playBeep } from '../utils/sounds';
 
 interface UseBarcodeScannerOptions {
   onScan: (code: string) => void;
-  threshold?: number; // tiempo máximo entre teclas en ms
+  threshold?: number;
+  enabled?: boolean;
 }
 
 /**
  * Hook para detectar la entrada de un lector de código de barras.
- * El lector de código de barras simula un teclado muy rápido, seguido de la tecla Enter.
+ * El lector simula teclado rápido + Enter. No intercepta cuando escribes en inputs.
  */
-export function useBarcodeScanner({ onScan, threshold = 50 }: UseBarcodeScannerOptions) {
+export function useBarcodeScanner({ onScan, threshold = 50, enabled = true }: UseBarcodeScannerOptions) {
   const barcode = useRef('');
   const lastKeyTime = useRef(Date.now());
   const savedOnScan = useRef(onScan);
@@ -21,12 +22,18 @@ export function useBarcodeScanner({ onScan, threshold = 50 }: UseBarcodeScannerO
   }, [onScan]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si se usan teclas modificadoras
       if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-      // Ignorar si el usuario está escribiendo en un input, a menos que queramos capturarlo de todas formas
-      // Pero para un escáner suele ser útil capturarlo siempre.
+      const target = e.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) {
+          return;
+        }
+      }
 
       const currentTime = Date.now();
       
@@ -57,5 +64,5 @@ export function useBarcodeScanner({ onScan, threshold = 50 }: UseBarcodeScannerO
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [threshold]);
+  }, [threshold, enabled]);
 }

@@ -35,12 +35,17 @@ export async function login(identifier: string, password: string): Promise<Login
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(ADMIN_ID_KEY, String(data.adminId));
       localStorage.setItem(EXPIRES_KEY, data.expiresAt);
-      localStorage.setItem(NAME_KEY, data.name || 'Caja 01');
-      
-      const role = data.role || (data.adminId === 1 ? 'admin' : 'cashier');
+      localStorage.setItem(NAME_KEY, data.name || identifier || 'Administrador');
+
+      const role = data.role || (Number(data.adminId) === 1 ? 'admin' : 'cashier');
       localStorage.setItem(ROLE_KEY, role);
 
-      return { ok: true, token: data.token, adminId: data.adminId, name: data.name };
+      return {
+        ok: true,
+        token: data.token,
+        adminId: data.adminId,
+        name: data.name || identifier,
+      };
     }
 
     return { ok: false, message: data.message || 'Credenciales incorrectas' };
@@ -111,13 +116,16 @@ export function getAdminId(): number | null {
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const headers = new Headers(options.headers || {});
+  let finalUrl = url;
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
+    // También por URL: Hostinger pierde el header Authorization en algunas peticiones
+    finalUrl += (url.includes('?') ? '&' : '?') + 'access_token=' + encodeURIComponent(token);
   }
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  return fetch(url, { ...options, headers });
+  return fetch(finalUrl, { ...options, headers });
 }
 
 /**

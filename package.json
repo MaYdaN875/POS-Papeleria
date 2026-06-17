@@ -4,13 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "taskkill /F /IM electron.exe >nul 2>&1 || exit 0",
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@grandchef/node-printer": "^0.8.0",
+    "@mapbox/node-pre-gyp": "^2.0.3",
     "lucide-react": "^1.8.0",
+    "node-thermal-printer": "^4.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.14.1",

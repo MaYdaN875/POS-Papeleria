@@ -1,11 +1,13 @@
 import { Search, Bell, Wifi, RefreshCw, LogOut, AlertTriangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logout, authService } from '../services/authService';
+import { useCart } from '../context/CartContext';
 import { useState } from 'react';
 import '../styles/TopBar.css';
 
 export default function TopBar() {
   const navigate = useNavigate();
+  const { clearCart } = useCart();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const userName = authService.getName();
@@ -41,7 +43,10 @@ export default function TopBar() {
 
           <button
             className="topbar-new-sale-btn"
-            onClick={() => navigate('/sales')}
+            onClick={() => {
+              clearCart();
+              navigate('/sales');
+            }}
           >
             Nueva Venta
           </button>

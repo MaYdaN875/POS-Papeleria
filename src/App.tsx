@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { useEffect } from 'react';
 import { getGlobalSettings } from './services/settingsService';
+import ElectronBanner from './components/ElectronBanner';
 
 export default function App() {
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function App() {
 
   return (
     <HashRouter>
+      <ElectronBanner />
       <CartProvider>
         <Routes>
           {/* Login - sin sidebar/topbar */}

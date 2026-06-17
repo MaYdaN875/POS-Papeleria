@@ -8,8 +8,8 @@ import type { CartItem, Product } from '../services/productService';
 
 interface CartContextValue {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  updateQuantity: (productId: number, delta: number) => void;
+  addToCart: (product: Product) => boolean;
+  updateQuantity: (productId: number, delta: number) => boolean;
   removeFromCart: (productId: number) => void;
   clearCart: () => void;
   subtotal: number;
@@ -20,10 +20,18 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product): boolean => {
+    if (product.stock <= 0) return false;
+
+    // Decidir con el estado actual para devolver un resultado confiable
+    const existing = cart.find((item) => item.product.id === product.id);
+    const currentQty = existing?.quantity ?? 0;
+    if (currentQty >= product.stock) return false;
+
     setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
+      const ex = prev.find((item) => item.product.id === product.id);
+      if (ex) {
+        if (ex.quantity >= product.stock) return prev;
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -32,18 +40,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { product, quantity: 1 }];
     });
+    return true;
   };
 
-  const updateQuantity = (productId: number, delta: number) => {
+  const updateQuantity = (productId: number, delta: number): boolean => {
+    const item = cart.find((i) => i.product.id === productId);
+    if (!item) return false;
+
+    const newQty = item.quantity + delta;
+    if (newQty > item.product.stock) return false;
+
     setCart((prev) =>
       prev
-        .map((item) =>
-          item.product.id === productId
-            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-            : item
+        .map((i) =>
+          i.product.id === productId
+            ? { ...i, quantity: Math.max(0, i.quantity + delta) }
+            : i
         )
-        .filter((item) => item.quantity > 0)
+        .filter((i) => i.quantity > 0)
     );
+    return true;
   };
 
   const removeFromCart = (productId: number) => {

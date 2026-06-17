@@ -32,32 +32,41 @@ export default function SalesPage() {
       );
 
       if (product) {
-        addToCart(product);
-        // Limpiamos el buscador si el usuario estaba escribiendo
-        setSearchTerm('');
+        if (!addToCart(product)) {
+          alert(`Sin stock disponible para: ${product.name}`);
+        } else {
+          setSearchTerm('');
+        }
       } else {
         alert(`Producto no encontrado para el código: ${code}`);
       }
     },
   });
 
-  // Cargar productos de la API
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true);
-        const prods = await getProducts();
-        setProducts(prods);
-        setCategories(getCategories(prods));
-        setError('');
-      } catch (err) {
-        console.error(err);
-        setError('No se pudieron cargar los productos');
-      } finally {
-        setLoading(false);
-      }
+  async function loadProducts() {
+    try {
+      setLoading(true);
+      const prods = await getProducts();
+      setProducts(prods);
+      setCategories(getCategories(prods));
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('No se pudieron cargar los productos');
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadProducts();
+  }, []);
+
+  // Refrescar stock al volver de un pago
+  useEffect(() => {
+    const onFocus = () => loadProducts();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   // Filtrar productos por categoría y búsqueda
@@ -139,7 +148,16 @@ export default function SalesPage() {
               <div
                 className="sales-product-card"
                 key={product.id}
-                onClick={() => addToCart(product)}
+                onClick={() => {
+                  if (product.stock <= 0) {
+                    alert('Producto agotado');
+                    return;
+                  }
+                  if (!addToCart(product)) {
+                    alert(`Stock máximo alcanzado para: ${product.name}`);
+                  }
+                }}
+                style={{ opacity: product.stock <= 0 ? 0.5 : 1, cursor: product.stock <= 0 ? 'not-allowed' : 'pointer' }}
               >
                 <div className="sales-product-image">
                   <img
@@ -229,7 +247,11 @@ export default function SalesPage() {
                     </span>
                     <button
                       className="sales-cart-qty-btn"
-                      onClick={() => updateQuantity(item.product.id, 1)}
+                      onClick={() => {
+                        if (!updateQuantity(item.product.id, 1)) {
+                          alert(`Stock máximo alcanzado para: ${item.product.name}`);
+                        }
+                      }}
                     >
                       <Plus size={14} />
                     </button>

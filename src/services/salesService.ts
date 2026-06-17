@@ -12,6 +12,7 @@ export interface SaleResult {
   message?: string;
   saleId?: number;
   total?: number;
+  sessionExpired?: boolean;
 }
 
 export interface CreateSalePayload {
@@ -26,6 +27,7 @@ export interface CreateSalePayload {
   total: number;
   cash_received?: number;
   change_amount?: number;
+  access_token?: string;
 }
 
 /**
@@ -34,13 +36,15 @@ export interface CreateSalePayload {
 export async function createSale(
   cart: CartItem[],
   paymentMethod: 'cash' | 'card' | 'transfer',
-  cashReceived?: number
+  cashReceived?: number,
+  taxRate: number = 0
 ): Promise<SaleResult> {
   const subtotal = cart.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
-  const total = subtotal; // Sin IVA, lo manejan los jefes
+  const taxAmount = subtotal * (taxRate / 100);
+  const total = subtotal + taxAmount;
 
   const payload: CreateSalePayload = {
     items: cart.map((item) => ({
@@ -59,6 +63,12 @@ export async function createSale(
     payload.change_amount = cashReceived - total;
   }
 
+  // Token también en el cuerpo: Hostinger pierde el header Authorization
+  const token = localStorage.getItem('pos_token');
+  if (token) {
+    payload.access_token = token;
+  }
+
   try {
     const res = await authFetch(ENDPOINTS.POS_SALE_CREATE, {
       method: 'POST',
@@ -66,7 +76,7 @@ export async function createSale(
     });
 
     const text = await res.text();
-    
+
     try {
       const data = JSON.parse(text);
       if (data.ok) {
@@ -76,15 +86,20 @@ export async function createSale(
           total: data.total,
         };
       }
-      return { ok: false, message: data.message || 'Error al registrar la venta' };
-    } catch (parseError) {
+      const msg = data.message || 'Error al registrar la venta';
+      const sessionExpired =
+        res.status === 401 ||
+        msg.toLowerCase().includes('sesión') ||
+        msg.toLowerCase().includes('sesion');
+      return { ok: false, message: msg, sessionExpired };
+    } catch {
       console.error('Server returned non-JSON response:', text);
-      // Extraemos el texto del error PHP (normalmente viene después de <b>Warning</b> o <b>Fatal error</b>)
       const cleanError = text.replace(/<[^>]*>?/gm, '').trim().substring(0, 150);
       return { ok: false, message: 'Error interno del servidor: ' + cleanError };
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Sale creation error:', err);
-    return { ok: false, message: 'Error de red: ' + (err.message || 'Desconocido') };
+    const message = err instanceof Error ? err.message : 'Desconocido';
+    return { ok: false, message: 'Error de red: ' + message };
   }
 }

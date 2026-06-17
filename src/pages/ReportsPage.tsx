@@ -1,6 +1,6 @@
-import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printer, Vault } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { CashHistoryResponse, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
+import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printer, Vault, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { CashHistoryResponse, CashSession, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
 import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
 import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer } from '../types/invoicing';
 import { InvoiceService } from '../services/invoicing/InvoiceService';
@@ -17,6 +17,10 @@ export function ReportsPage() {
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
   const [saleDetails, setSaleDetails] = useState<Record<number, any>>({});
   const [loadingDetails, setLoadingDetails] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  // Si está definido, la vista previa imprime solo ese corte de caja individual
+  const [previewCashSession, setPreviewCashSession] = useState<CashSession | null>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [invoices, setInvoices] = useState<Record<number, BackendInvoice | null>>({});
@@ -143,8 +147,177 @@ export function ReportsPage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const escapeHtml = (value: unknown) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const periodLabel =
+    dateRange === 'today'
+      ? 'Hoy'
+      : dateRange === 'week'
+        ? 'Últimos 7 días'
+        : dateRange === 'month'
+          ? 'Último mes'
+          : 'Historial completo';
+
+  const buildPrintBody = () => {
+    const header = `
+      <div class="ph">
+        <h1>Papelería Godart</h1>
+        <h2>${activeTab === 'sales' ? 'Reporte de Ventas' : 'Reporte de Cortes de Caja'}</h2>
+        <p>Periodo: ${escapeHtml(periodLabel)}</p>
+        <p>Emisión: ${escapeHtml(new Date().toLocaleString('es-MX'))}</p>
+      </div>`;
+
+    if (activeTab === 'sales') {
+      const sales = salesData?.sales || [];
+      if (sales.length === 0) {
+        return header + '<p class="empty">No hay ventas registradas en este periodo.</p>';
+      }
+      const rows = sales
+        .map(
+          (s) => `
+        <tr>
+          <td>#${String(s.id).padStart(6, '0')}</td>
+          <td>${escapeHtml(formatDate(s.created_at))}</td>
+          <td>${escapeHtml(s.cashier_name || 'Admin')}</td>
+          <td>${escapeHtml(translatePaymentMethod(s.payment_method))}</td>
+          <td class="right">${escapeHtml(formatCurrency(Number(s.total)))}</td>
+        </tr>`
+        )
+        .join('');
+      return `
+        ${header}
+        <div class="summary">
+          <div><span>Ingresos del periodo</span><strong>${escapeHtml(formatCurrency(salesData?.summary?.total_revenue || 0))}</strong></div>
+          <div><span>Total de ventas</span><strong>${escapeHtml(String(salesData?.summary?.total_orders || sales.length))}</strong></div>
+        </div>
+        <table>
+          <thead><tr><th>Ticket</th><th>Fecha y hora</th><th>Cajero</th><th>Método</th><th class="right">Total</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    const sessions = cashData?.sessions || [];
+    if (sessions.length === 0) {
+      return header + '<p class="empty">No hay cortes de caja registrados en este periodo.</p>';
+    }
+    const rows = sessions
+      .map((session) => {
+        const expected =
+          (Number.parseFloat(session.expected_cash) || 0) + (Number.parseFloat(session.expected_card) || 0);
+        const counted =
+          (Number.parseFloat(session.counted_cash) || 0) + (Number.parseFloat(session.counted_card) || 0);
+        const difference = Number.parseFloat(session.difference) || 0;
+        return `
+        <tr>
+          <td>${escapeHtml(formatDate(session.created_at))}</td>
+          <td>${escapeHtml(session.cashier_name)}</td>
+          <td class="right">${escapeHtml(formatCurrency(expected))}</td>
+          <td class="right">${escapeHtml(formatCurrency(counted))}</td>
+          <td class="right">${difference > 0 ? '+' : ''}${escapeHtml(formatCurrency(difference))}</td>
+          <td>${escapeHtml(String(session.status).toUpperCase())}</td>
+        </tr>`;
+      })
+      .join('');
+    return `
+      ${header}
+      <table>
+        <thead><tr><th>Fecha y hora</th><th>Cajero</th><th class="right">Esperado</th><th class="right">Contado</th><th class="right">Diferencia</th><th>Estado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  };
+
+  const buildSingleCashBody = (session: CashSession) => {
+    const expectedCash = Number.parseFloat(session.expected_cash) || 0;
+    const expectedCard = Number.parseFloat(session.expected_card) || 0;
+    const countedCash = Number.parseFloat(session.counted_cash) || 0;
+    const countedCard = Number.parseFloat(session.counted_card) || 0;
+    const expectedTotal = expectedCash + expectedCard;
+    const countedTotal = countedCash + countedCard;
+    const difference = Number.parseFloat(session.difference) || 0;
+
+    return `
+      <div class="ph">
+        <h1>Papelería Godart</h1>
+        <h2>Corte de Caja</h2>
+        <p>Cajero: ${escapeHtml(session.cashier_name)}</p>
+        <p>Fecha: ${escapeHtml(formatDate(session.created_at))}</p>
+        <p>Emisión: ${escapeHtml(new Date().toLocaleString('es-MX'))}</p>
+      </div>
+      <table>
+        <thead><tr><th>Concepto</th><th class="right">Esperado</th><th class="right">Contado</th></tr></thead>
+        <tbody>
+          <tr><td>Efectivo</td><td class="right">${escapeHtml(formatCurrency(expectedCash))}</td><td class="right">${escapeHtml(formatCurrency(countedCash))}</td></tr>
+          <tr><td>Tarjeta / Vouchers</td><td class="right">${escapeHtml(formatCurrency(expectedCard))}</td><td class="right">${escapeHtml(formatCurrency(countedCard))}</td></tr>
+          <tr><td><strong>Total</strong></td><td class="right"><strong>${escapeHtml(formatCurrency(expectedTotal))}</strong></td><td class="right"><strong>${escapeHtml(formatCurrency(countedTotal))}</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="summary" style="margin-top:16px;">
+        <div><span>Diferencia</span><strong>${difference > 0 ? '+' : ''}${escapeHtml(formatCurrency(difference))}</strong></div>
+        <div><span>Estado</span><strong>${escapeHtml(String(session.status).toUpperCase())}</strong></div>
+      </div>`;
+  };
+
+  const printStyles = `
+    * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
+    body { margin: 24px; color: #111; }
+    .ph { text-align: center; margin-bottom: 20px; }
+    .ph h1 { margin: 0; font-size: 22px; }
+    .ph h2 { margin: 4px 0; font-size: 16px; font-weight: 600; color: #444; }
+    .ph p { margin: 2px 0; font-size: 12px; color: #555; }
+    .summary { display: flex; gap: 16px; margin-bottom: 16px; }
+    .summary div { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; }
+    .summary span { display: block; font-size: 11px; text-transform: uppercase; color: #666; }
+    .summary strong { font-size: 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #ddd; padding: 7px 9px; text-align: left; }
+    th { background: #f3f4f6; }
+    .right { text-align: right; }
+    .empty { text-align: center; color: #666; margin-top: 40px; }
+    @page { margin: 12mm; }
+  `;
+
+  const getPrintHtml = () => {
+    const body = previewCashSession ? buildSingleCashBody(previewCashSession) : buildPrintBody();
+    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte</title><style>${printStyles}</style></head><body>${body}</body></html>`;
+  };
+
+  // Escribe el documento en el iframe de vista previa cuando se abre
+  useEffect(() => {
+    if (!showPreview) return;
+    const iframe = previewIframeRef.current;
+    const doc = iframe?.contentWindow?.document;
+    if (!doc) return;
+    doc.open();
+    doc.write(getPrintHtml());
+    doc.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPreview, activeTab, dateRange, salesData, cashData, previewCashSession]);
+
+  const openFullPreview = () => {
+    setPreviewCashSession(null);
+    setShowPreview(true);
+  };
+
+  const openCashSessionPreview = (session: CashSession) => {
+    setPreviewCashSession(session);
+    setShowPreview(true);
+  };
+
+  const closePreview = () => {
+    setShowPreview(false);
+    setPreviewCashSession(null);
+  };
+
+  const handlePrintFromPreview = () => {
+    const win = previewIframeRef.current?.contentWindow;
+    if (!win) return;
+    win.focus();
+    win.print();
   };
 
   const formatCurrency = (amount: number) => {
@@ -199,9 +372,9 @@ export function ReportsPage() {
               <option value="all">Todo el historial</option>
             </select>
           </div>
-          <button className="reports-print-btn" onClick={handlePrint}>
+          <button className="reports-print-btn" onClick={openFullPreview}>
             <Printer size={18} />
-            <span>Imprimir PDF</span>
+            <span>Imprimir {activeTab === 'sales' ? 'ventas' : 'cortes'}</span>
           </button>
         </div>
       </div>
@@ -438,6 +611,7 @@ export function ReportsPage() {
                       <th>Físico Contado</th>
                       <th>Diferencia</th>
                       <th>Estado</th>
+                      <th className="no-print">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -460,18 +634,20 @@ export function ReportsPage() {
                               {session.status.toUpperCase()}
                             </span>
                           </td>
+                          <td className="no-print">
+                            <button
+                              className="reports-expand-btn"
+                              onClick={() => openCashSessionPreview(session)}
+                              title="Imprimir este corte"
+                            >
+                              <Printer size={18} />
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
-      </div>
 
-      {/* MODAL DE FACTURACIÓN POST-VENTA */}
+          {/* MODAL DE FACTURACIÓN POST-VENTA */}
       {showBillingModal && billingSale && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: 'var(--color-bg-card)', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', border: '1px solid var(--border-light)' }} className="no-print">
@@ -662,6 +838,35 @@ export function ReportsPage() {
                 {billingLoading ? 'Timbrando...' : 'Emitir Factura'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPreview && (
+        <div className="reports-preview-overlay" onClick={closePreview}>
+          <div className="reports-preview-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="reports-preview-header">
+              <h3>Vista previa — {previewCashSession ? `Corte de ${previewCashSession.cashier_name}` : activeTab === 'sales' ? 'Ventas' : 'Cortes de caja'}</h3>
+              <div className="reports-preview-actions">
+                <button className="reports-print-btn" onClick={handlePrintFromPreview}>
+                  <Printer size={18} />
+                  <span>Imprimir</span>
+                </button>
+                <button
+                  className="reports-preview-close"
+                  onClick={closePreview}
+                  aria-label="Cerrar vista previa"
+                  title="Cerrar"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <iframe
+              ref={previewIframeRef}
+              className="reports-preview-frame"
+              title="Vista previa del reporte"
+            />
           </div>
         </div>
       )}
