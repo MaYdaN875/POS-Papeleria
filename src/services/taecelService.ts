@@ -1,11 +1,35 @@
 import { TaecelProduct, TaecelTransaction, TaecelBalance } from '../types/taecel';
+import { ENDPOINTS } from '../config';
+import { authFetch } from './authService';
 
-const IS_MOCK_MODE = false; 
+const IS_MOCK_MODE = false;
 
-// Llaves de Prueba (Cámbialas cuando Taecel te dé las de Producción)
-const TAECEL_API_KEY = 'I4NBwuJlqvigHszC5X8gdiDsTa9360415998355b94a36dd5a256ee069X8GIIEqNs2jWLEngXDYpdAvaJLo2pQ'; 
-const TAECEL_API_NIP = '07328698c645cd0860372b8efa18be9aVmYC5HgwuJ';
-const TAECEL_API_URL = 'https://app.taecel.com/api';
+/**
+ * Llama al proxy seguro de Taecel en el servidor (pos_taecel.php).
+ * Las llaves (KEY/NIP) viven en Hostinger, NO en la app.
+ */
+async function callTaecel(action: 'balance' | 'products' | 'transaction', params: Record<string, string> = {}): Promise<any> {
+  const body = new URLSearchParams();
+  body.append('action', action);
+  for (const [k, v] of Object.entries(params)) {
+    body.append(k, v);
+  }
+
+  const response = await authFetch(ENDPOINTS.POS_TAECEL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+
+  let res: any;
+  try {
+    res = await response.json();
+  } catch {
+    throw new Error('Respuesta inválida del servidor de recargas');
+  }
+
+  return res;
+}
 
 /**
  * Consulta el saldo actual disponible
@@ -15,23 +39,13 @@ export const getTaecelBalance = async (): Promise<TaecelBalance> => {
     return { available: 1500.50, last_updated: new Date().toISOString() };
   }
 
-  const body = new URLSearchParams();
-  body.append('key', TAECEL_API_KEY);
-  body.append('nip', TAECEL_API_NIP);
-
-  const response = await fetch(`${TAECEL_API_URL}/getBalance`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-  
-  const res = await response.json();
+  const res = await callTaecel('balance');
   if (!res.success) throw new Error(res.message || 'Error al obtener saldo');
-  
+
   let total = 0;
   if (res.data && Array.isArray(res.data)) {
     for (const b of res.data) {
-      total += parseFloat(b.Saldo.replace(/,/g, ''));
+      total += parseFloat(String(b.Saldo).replace(/,/g, ''));
     }
   }
   return { available: total, last_updated: new Date().toISOString() };
@@ -42,7 +56,7 @@ export const getTaecelBalance = async (): Promise<TaecelBalance> => {
  */
 export const executeTransaction = async (
   productId: string,
-  reference: string, 
+  reference: string,
   amount: number
 ): Promise<TaecelTransaction> => {
   if (IS_MOCK_MODE) {
@@ -57,24 +71,17 @@ export const executeTransaction = async (
     };
   }
 
-  const body = new URLSearchParams();
-  body.append('key', TAECEL_API_KEY);
-  body.append('nip', TAECEL_API_NIP);
-  body.append('producto', productId);
-  body.append('referencia', reference);
-  if (amount > 0) body.append('monto', amount.toString());
+  const params: Record<string, string> = {
+    producto: productId,
+    referencia: reference,
+  };
+  if (amount > 0) params.monto = amount.toString();
 
-  const response = await fetch(`${TAECEL_API_URL}/requestTXN`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-  
-  const res = await response.json();
+  const res = await callTaecel('transaction', params);
   if (!res.success) {
     throw new Error(`${res.message} (Código: ${res.error})`);
   }
-  
+
   return {
     id: res.data?.TransID || res.data?.transID || '',
     date: res.data?.Fecha || res.data?.fecha || new Date().toISOString(),
@@ -96,21 +103,11 @@ export const getProducts = async (): Promise<TaecelProduct[]> => {
     ];
   }
 
-  const body = new URLSearchParams();
-  body.append('key', TAECEL_API_KEY);
-  body.append('nip', TAECEL_API_NIP);
-
-  const response = await fetch(`${TAECEL_API_URL}/getProducts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-  
-  const res = await response.json();
+  const res = await callTaecel('products');
   if (!res.success) throw new Error(res.message || 'Error al obtener productos');
 
   const productosList = res.data[0]?.productos || [];
-  
+
   // Mapear al modelo interno del POS
   return productosList.map((p: any) => ({
     id: p.codigo,
