@@ -104,35 +104,33 @@ export const ServicesPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="carrier-chips">
-                <button
-                  className={`chip ${!selectedCarrier ? 'chip--active' : ''}`}
-                  onClick={() => setSelectedCarrier(null)}
+              <div className="products-filters">
+                <select
+                  className="products-select"
+                  value={selectedCarrier ?? ''}
+                  onChange={(e) => setSelectedCarrier(e.target.value || null)}
+                  aria-label="Filtrar por compañía"
                 >
-                  Todas
-                </button>
-                {carriers.map((c) => (
-                  <button
-                    key={c}
-                    className={`chip ${selectedCarrier === c ? 'chip--active' : ''}`}
-                    onClick={() => setSelectedCarrier(c)}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
+                  <option value="">Todas las compañías ({carriers.length})</option>
+                  {carriers.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
 
-              <input
-                type="text"
-                className="products-search"
-                placeholder="Buscar producto..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+                <input
+                  type="text"
+                  className="products-search"
+                  placeholder="Buscar producto..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
 
               {filteredProducts.length === 0 ? (
                 <p className="products-state">Sin resultados.</p>
               ) : (
+                <>
+                <span className="products-list-count">{filteredProducts.length} productos</span>
                 <div className="products-list">
                   {filteredProducts.map((p) => (
                     <button 
@@ -160,6 +158,7 @@ export const ServicesPage: React.FC = () => {
                     </button>
                   ))}
                 </div>
+                </>
               )}
             </>
           )}
