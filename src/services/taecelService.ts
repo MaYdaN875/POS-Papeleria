@@ -123,11 +123,19 @@ export const getProducts = async (): Promise<TaecelProduct[]> => {
   }
 
   // Mapear al modelo interno del POS (tolerante a distintos nombres de campo)
-  return productosList.map((p: any) => ({
-    id: p.codigo ?? p.Codigo ?? p.producto ?? p.id ?? '',
-    name: p.descripcion ?? p.Descripcion ?? p.nombre ?? p.name ?? 'Producto',
-    type: (p.bolsa === 1 || p.bolsa === '1') ? 'recarga' : 'servicio',
-    carrier: p.carrier ?? p.Carrier ?? p.compania ?? '',
-    logoUrl: p.logo ?? p.Logo ?? undefined
-  }));
+  return productosList.map((p: any) => {
+    const categoria = String(p.Categoria ?? p.categoria ?? p.Bolsa ?? p.bolsa ?? '').toLowerCase();
+    const esServicio = categoria.includes('servicio') || categoria.includes('pago');
+    const monto = Number.parseFloat(String(p.Monto ?? p.monto ?? '0').replace(/,/g, ''));
+
+    return {
+      id: p.Codigo ?? p.codigo ?? p.producto ?? p.id ?? '',
+      name: p.Descripcion ?? p.descripcion ?? p.Nombre ?? p.nombre ?? p.name ?? 'Producto',
+      type: esServicio ? 'servicio' : 'recarga',
+      carrier: p.Carrier ?? p.carrier ?? p.compania ?? '',
+      amount: Number.isFinite(monto) && monto > 0 ? monto : undefined,
+      logoUrl: p.logo ?? p.Logo ?? undefined,
+      raw: p
+    } as TaecelProduct;
+  });
 };

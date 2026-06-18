@@ -4,8 +4,6 @@ import { useTaecelStore } from '../store/taecelStore';
 import { TaecelProduct } from '../types/taecel';
 import '../styles/ServicesPage.css';
 
-const RECARGA_AMOUNTS = [10, 20, 30, 50, 100, 200, 500];
-
 export const ServicesPage: React.FC = () => {
   const { balance, products, fetchBalance, fetchProducts, performTransaction, isLoading, error: storeError, productsLoading, productsError } = useTaecelStore();
   
@@ -33,7 +31,8 @@ export const ServicesPage: React.FC = () => {
   const handleProductSelect = (product: TaecelProduct) => {
     setSelectedProduct(product);
     setReference('');
-    setAmount('');
+    // Si el producto tiene monto fijo, se pone solo y queda bloqueado
+    setAmount(product.amount && product.amount > 0 ? product.amount : '');
     setSuccessMsg('');
     setLocalError('');
   };
@@ -113,10 +112,15 @@ export const ServicesPage: React.FC = () => {
                       className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
                       onClick={() => handleProductSelect(p)}
                     >
-                      <div className="product-icon">
-                        {p.type === 'servicio' ? <Zap size={24} /> : <Smartphone size={24} />}
+                      <div className="product-card-top">
+                        <span className="product-carrier">{p.carrier || 'Otro'}</span>
+                        {p.amount && p.amount > 0 ? (
+                          <span className="product-monto">${p.amount.toFixed(2)}</span>
+                        ) : (
+                          <span className="product-monto product-monto--open">Monto libre</span>
+                        )}
                       </div>
-                      <span>{p.name}</span>
+                      <span className="product-desc">{p.name}</span>
                     </div>
                   ))}
                 </div>
@@ -162,25 +166,19 @@ export const ServicesPage: React.FC = () => {
 
               <div className="form-group">
                 <label>Monto a Cobrar ($)</label>
-                {selectedProduct.type === 'recarga' ? (
-                  <div className="amounts-grid">
-                    {RECARGA_AMOUNTS.map(amt => (
-                      <button 
-                        key={amt}
-                        className={`amount-btn ${amount === amt ? 'selected' : ''}`}
-                        onClick={() => setAmount(amt)}
-                      >
-                        ${amt}
-                      </button>
-                    ))}
-                  </div>
+                {selectedProduct.amount && selectedProduct.amount > 0 ? (
+                  <div className="fixed-amount">${selectedProduct.amount.toFixed(2)}</div>
                 ) : (
                   <input 
-                    type="number" 
+                    type="text"
+                    inputMode="decimal"
                     className="form-input"
                     placeholder="Ej. 250.00"
                     value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(',', '.').replace(/[^0-9.]/g, '');
+                      setAmount(clean === '' ? '' : Number(clean));
+                    }}
                   />
                 )}
               </div>

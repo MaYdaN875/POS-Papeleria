@@ -5,6 +5,7 @@ export interface TaecelProduct {
   carrier: string;
   amount?: number; // Para recargas fijas
   logoUrl?: string;
+  raw?: any; // Datos crudos tal como los manda Taecel (temporal, para diagnóstico)
 }
 
 export interface TaecelTransaction {
