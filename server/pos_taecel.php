@@ -162,6 +162,15 @@ try {
         adminJsonResponse(502, ['success' => false, 'message' => 'No se pudo contactar a Taecel.']);
     }
 
+    if ($action === 'transaction') {
+        error_log(
+            'pos_taecel.php requestTXN sent producto=' . ($fields['producto'] ?? '')
+            . ' referencia=' . ($fields['referencia'] ?? '')
+            . ' monto=' . ($fields['monto'] ?? '(sin monto)')
+        );
+        error_log('pos_taecel.php requestTXN HTTP ' . $httpCode . ' response: ' . substr((string)$response, 0, 1200));
+    }
+
     // Devolver la respuesta de Taecel tal cual (la app ya sabe interpretarla)
     header('Content-Type: application/json; charset=utf-8');
     http_response_code($httpCode > 0 ? $httpCode : 200);

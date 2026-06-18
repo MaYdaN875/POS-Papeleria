@@ -31,6 +31,83 @@ async function callTaecel(action: 'balance' | 'products' | 'transaction', params
   return res;
 }
 
+/** Taecel puede devolver la transacción en distintas formas según producto/estado. */
+function extractTaecelPayload(res: any): Record<string, any> {
+  let data = res?.data;
+
+  if (Array.isArray(data) && data.length > 0) {
+    data = data[0];
+  }
+
+  if (typeof data === 'string' && data.trim()) {
+    return { Folio: data.trim() };
+  }
+
+  if (data && typeof data === 'object') {
+    const nested = (data as Record<string, any>).transaccion
+      ?? (data as Record<string, any>).Transaccion
+      ?? (data as Record<string, any>).txn
+      ?? (data as Record<string, any>).result;
+
+    if (nested && typeof nested === 'object') {
+      return { ...(data as Record<string, any>), ...(nested as Record<string, any>) };
+    }
+
+    return data as Record<string, any>;
+  }
+
+  if (res?.TransID || res?.Folio || res?.transID || res?.folio) {
+    return res as Record<string, any>;
+  }
+
+  return {};
+}
+
+function pickTaecelField(payload: Record<string, any>, keys: string[]): string {
+  for (const key of keys) {
+    const value = payload[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  return '';
+}
+
+function normalizeTaecelText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Solo "Exitosa" cuenta como cobro real; "No Procesada" y "Fracasada" no. */
+function resolveTaecelTransactionStatus(statusRaw: string, resMessage: string): 'success' | 'pending' | 'failed' {
+  const text = normalizeTaecelText(`${statusRaw} ${resMessage}`);
+
+  if (
+    text.includes('fracas')
+    || text.includes('fallid')
+    || text.includes('rechaz')
+    || text.includes('cancel')
+    || text.includes('no proces')
+    || text.includes('sin proces')
+    || text.includes('invalid')
+    || (text.includes('error') && !text.includes('sin error'))
+  ) {
+    return 'failed';
+  }
+
+  if (text.includes('exitos') || text.includes('aprobada') || text.includes('aprobado')) {
+    return 'success';
+  }
+
+  if (text.includes('proceso') || text.includes('pend') || text.includes('espera')) {
+    return 'pending';
+  }
+
+  return 'pending';
+}
+
 /**
  * Consulta el saldo actual disponible
  */
@@ -75,21 +152,70 @@ export const executeTransaction = async (
     producto: productId,
     referencia: reference,
   };
-  if (amount > 0) params.monto = amount.toString();
+  // Igual que la integración original: siempre enviar monto cuando aplique.
+  if (amount > 0) {
+    params.monto = Number.isInteger(amount) ? amount.toFixed(2) : amount.toFixed(2);
+  }
 
   const res = await callTaecel('transaction', params);
-  if (!res.success) {
-    throw new Error(`${res.message} (Código: ${res.error})`);
+  const ok = res.success === true || res.success === 1 || res.success === '1';
+  if (!ok) {
+    const detail = pickTaecelField(extractTaecelPayload(res), ['Mensaje', 'mensaje', 'Message', 'message']);
+    throw new Error(
+      detail
+        || res.message
+        || `Recarga rechazada (Código: ${res.error ?? '?'})`
+    );
+  }
+
+  const payload = extractTaecelPayload(res);
+  const id = pickTaecelField(payload, ['TransID', 'transID', 'transId', 'ID', 'id', 'TransaccionID']);
+  const folio = pickTaecelField(payload, [
+    'Folio',
+    'folio',
+    'Autorizacion',
+    'autorizacion',
+    'Authorization',
+    'authorization',
+    'NumAutorizacion',
+  ]);
+  const statusRaw = pickTaecelField(payload, ['Status', 'status', 'Estatus', 'estatus', 'Estado', 'estado'])
+    || String(res.message || '');
+  const detailMessage = pickTaecelField(payload, ['Mensaje', 'mensaje', 'Message', 'message', 'Descripcion', 'descripcion']);
+  const txStatus = resolveTaecelTransactionStatus(statusRaw, `${res.message || ''} ${detailMessage}`);
+
+  // Folio corto de autorización = recarga real. TransID largo sin folio NO es éxito.
+  const hasAuthFolio = !!folio;
+  const debugInfo = [
+    statusRaw && `Estado: ${statusRaw}`,
+    folio && `Folio: ${folio}`,
+    id && `TransID: ${id}`,
+    detailMessage && `Detalle: ${detailMessage}`,
+  ].filter(Boolean).join(' · ');
+
+  if (txStatus === 'failed' || (!hasAuthFolio && txStatus !== 'success')) {
+    throw new Error(
+      debugInfo
+        || res.message
+        || 'Taecel registró la petición pero no autorizó la recarga (No Procesada / Fracasada).'
+    );
+  }
+
+  if (!hasAuthFolio && txStatus !== 'success') {
+    throw new Error(
+      debugInfo
+        || 'Taecel devolvió ID de solicitud pero sin folio de autorización. La recarga no se completó.'
+    );
   }
 
   return {
-    id: res.data?.TransID || res.data?.transID || '',
-    date: res.data?.Fecha || res.data?.fecha || new Date().toISOString(),
+    id: id || folio,
+    date: pickTaecelField(payload, ['Fecha', 'fecha', 'Date', 'date']) || new Date().toISOString(),
     product_id: productId,
     amount: amount,
     reference: reference,
-    status: res.data?.Status || 'En proceso',
-    authorization_code: res.data?.Folio || ''
+    status: 'success',
+    authorization_code: folio || id,
   };
 };
 
@@ -125,7 +251,12 @@ export const getProducts = async (): Promise<TaecelProduct[]> => {
   // Mapear al modelo interno del POS (tolerante a distintos nombres de campo)
   return productosList.map((p: any) => {
     const categoria = String(p.Categoria ?? p.categoria ?? p.Bolsa ?? p.bolsa ?? '').toLowerCase();
-    const esServicio = categoria.includes('servicio') || categoria.includes('pago');
+    const bolsaId = String(p.BolsaID ?? p.bolsaID ?? p.BolsaId ?? '');
+    const esServicio =
+      bolsaId === '2'
+      || bolsaId === '99'
+      || categoria.includes('servicio')
+      || categoria.includes('pago');
     const monto = Number.parseFloat(String(p.Monto ?? p.monto ?? '0').replace(/,/g, ''));
 
     return {

@@ -41,6 +41,32 @@
   flex-direction: column;
   align-items: flex-end;
   min-width: 180px;
+  position: relative;
+}
+
+.taecel-balance-refresh {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-success-dark);
+  cursor: pointer;
+}
+
+.taecel-balance-refresh:hover:not(:disabled) {
+  background: var(--color-success-bg);
+}
+
+.taecel-balance-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .taecel-balance span {
@@ -416,4 +442,122 @@
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border: 1px solid rgba(220, 38, 38, 0.25);
+}
+
+.message-alert.warning {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+}
+
+.transaction-product-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.transaction-type-badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.transaction-type-badge.recarga {
+  background: rgba(13, 71, 161, 0.12);
+  color: var(--color-primary);
+}
+
+.transaction-type-badge.servicio {
+  background: rgba(234, 88, 12, 0.12);
+  color: #c2410c;
+}
+
+.transaction-product-code {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.form-hint {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.transaction-receipt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.receipt-details {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-row span {
+  color: var(--color-text-secondary);
+}
+
+.receipt-folio {
+  font-family: monospace;
+  color: var(--color-success-dark);
+}
+
+.receipt-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.submit-btn--secondary {
+  background: var(--color-bg-card);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+.submit-btn--secondary:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+}
+
+.products-retry-btn {
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: var(--color-bg-card);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.products-retry-btn:hover:not(:disabled) {
+  background: var(--color-danger-bg);
 }
