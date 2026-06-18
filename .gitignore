@@ -26,3 +26,6 @@ dist-ssr
 release/
 dist-electron/
 server-data
+
+# Llaves reales de Taecel (nunca subir al repo)
+server/taecel_config.php

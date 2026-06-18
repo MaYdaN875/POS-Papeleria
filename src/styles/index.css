@@ -78,6 +78,11 @@
   --font-size-3xl: 2.8rem;
   --font-size-4xl: 3.5rem;
 
+  /* Alias (compatibilidad entre pantallas) */
+  --color-text-main: var(--color-text-primary);
+  --color-bg-panel: var(--color-bg-card);
+  --color-bg-hover: #F3F4F6;
+
   /* Layout */
   --sidebar-width: 240px;
   --topbar-height: 64px;

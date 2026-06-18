@@ -1,8 +1,16 @@
 /* ---- Settings Page ---- */
 .settings-page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding-bottom: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-height) - var(--space-xl) * 2);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .settings-loading {
@@ -39,7 +47,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .settings-title {
@@ -90,9 +102,10 @@
   gap: var(--space-md);
   padding: 16px 20px;
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-xl);
+  margin: var(--space-md) var(--space-lg) 0;
   font-weight: 600;
   animation: slideDown 0.3s ease-out;
+  flex-shrink: 0;
 }
 
 @keyframes slideDown {
@@ -116,7 +129,12 @@
 .settings-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: var(--space-2xl);
+  gap: var(--space-lg);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--space-lg);
+  background: var(--color-bg-main);
 }
 
 /* Nav Sidebar */
@@ -124,6 +142,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm);
+  box-shadow: var(--shadow-sm);
+  align-self: start;
 }
 
 .settings-nav-btn {
@@ -154,11 +178,12 @@
 /* Content Area */
 .settings-content {
   background: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-  padding: var(--space-2xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl);
   box-shadow: var(--shadow-sm);
-  min-height: 400px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .settings-section-title {
