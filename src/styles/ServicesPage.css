@@ -1,7 +1,11 @@
 .services-page {
   padding: 2rem;
   background-color: var(--bg-primary);
-  min-height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .services-header {
@@ -9,6 +13,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-shrink: 0;
 }
 
 .services-header h1 {
@@ -43,6 +48,8 @@
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 2rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .products-container {
@@ -50,12 +57,17 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .products-container h2 {
   font-size: 1.2rem;
   margin-bottom: 1rem;
   color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .products-search {
@@ -67,6 +79,8 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-size: 1rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .products-search:focus {
@@ -89,28 +103,32 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 0.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  align-content: start;
+  padding-right: 0.75rem;
 }
 
-/* Scrollbar visible para la lista de productos */
+/* Scrollbar siempre visible para la lista de productos */
 .products-list::-webkit-scrollbar {
-  width: 10px;
+  width: 14px;
 }
 
 .products-list::-webkit-scrollbar-track {
   background: var(--bg-primary);
   border-radius: 8px;
+  border: 1px solid var(--border-color);
 }
 
 .products-list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--primary-color, #3b82f6);
   border-radius: 8px;
+  border: 3px solid var(--bg-primary);
 }
 
 .products-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--primary-hover, #2563eb);
 }
 
 .product-card {
@@ -161,6 +179,8 @@
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .transaction-panel h2 {
