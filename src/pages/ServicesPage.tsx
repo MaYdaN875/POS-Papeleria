@@ -11,6 +11,7 @@ export const ServicesPage: React.FC = () => {
   const [reference, setReference] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [search, setSearch] = useState('');
+  const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
   
   const [successMsg, setSuccessMsg] = useState('');
   const [localError, setLocalError] = useState('');
@@ -20,13 +21,21 @@ export const ServicesPage: React.FC = () => {
     fetchProducts();
   }, [fetchBalance, fetchProducts]);
 
+  const carriers = Array.from(
+    new Set(products.map((p) => p.carrier).filter((c) => !!c))
+  ).sort((a, b) => a.localeCompare(b));
+
   const term = search.trim().toLowerCase();
-  const filteredProducts = term
-    ? products.filter((p) =>
+  const filteredProducts = products.filter((p) => {
+    if (selectedCarrier && p.carrier !== selectedCarrier) return false;
+    if (term) {
+      return (
         p.name.toLowerCase().includes(term) ||
         (p.carrier || '').toLowerCase().includes(term)
-      )
-    : products;
+      );
+    }
+    return true;
+  });
 
   const handleProductSelect = (product: TaecelProduct) => {
     setSelectedProduct(product);
@@ -95,33 +104,60 @@ export const ServicesPage: React.FC = () => {
             </div>
           ) : (
             <>
+              <div className="carrier-chips">
+                <button
+                  className={`chip ${!selectedCarrier ? 'chip--active' : ''}`}
+                  onClick={() => setSelectedCarrier(null)}
+                >
+                  Todas
+                </button>
+                {carriers.map((c) => (
+                  <button
+                    key={c}
+                    className={`chip ${selectedCarrier === c ? 'chip--active' : ''}`}
+                    onClick={() => setSelectedCarrier(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+
               <input
                 type="text"
                 className="products-search"
-                placeholder="Buscar compañía o producto..."
+                placeholder="Buscar producto..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+
               {filteredProducts.length === 0 ? (
-                <p className="products-state">Sin resultados para "{search}".</p>
+                <p className="products-state">Sin resultados.</p>
               ) : (
                 <div className="products-list">
                   {filteredProducts.map((p) => (
-                    <div 
+                    <button 
                       key={p.id} 
+                      type="button"
                       className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
                       onClick={() => handleProductSelect(p)}
                     >
-                      <div className="product-card-top">
-                        <span className="product-carrier">{p.carrier || 'Otro'}</span>
+                      <div className="product-card-amount">
                         {p.amount && p.amount > 0 ? (
                           <span className="product-monto">${p.amount.toFixed(2)}</span>
                         ) : (
-                          <span className="product-monto product-monto--open">Monto libre</span>
+                          <span className="product-monto product-monto--open">Monto<br/>libre</span>
                         )}
                       </div>
-                      <span className="product-desc">{p.name}</span>
-                    </div>
+                      <div className="product-card-info">
+                        {!selectedCarrier && p.carrier && (
+                          <span className="product-carrier">{p.carrier}</span>
+                        )}
+                        <span className="product-desc">{p.name}</span>
+                        {p.raw?.Vigencia && (
+                          <span className="product-meta">Vigencia: {p.raw.Vigencia}</span>
+                        )}
+                      </div>
+                    </button>
                   ))}
                 </div>
               )}
