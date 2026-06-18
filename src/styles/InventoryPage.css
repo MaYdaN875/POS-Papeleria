@@ -5,7 +5,7 @@
   height: calc(100vh - var(--topbar-height) - var(--space-xl) * 2);
   background: var(--color-bg-card);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
+  border: 1px solid var(--color-border);
   overflow-y: auto;
   overflow-x: hidden;
 }

@@ -1,10 +1,22 @@
 /* ---- Dashboard Page ---- */
 .dashboard {
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-height) - var(--space-xl) * 2);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  max-width: none;
 }
 
 .dashboard-header {
-  margin-bottom: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .dashboard-title {
@@ -25,6 +37,8 @@
   grid-template-columns: 1fr 320px;
   gap: var(--space-lg);
   margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  flex-shrink: 0;
 }
 
 /* Sales Card */
@@ -209,10 +223,14 @@
 
 /* Low Inventory */
 .dashboard-inventory {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-main);
+  border-radius: 0;
+  padding: 0 var(--space-lg) var(--space-lg);
+  border: none;
+  border-top: 1px solid var(--color-border);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .dashboard-inventory-header {
@@ -220,6 +238,7 @@
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-lg);
+  padding-top: var(--space-lg);
 }
 
 .dashboard-inventory-alert {
@@ -267,8 +286,9 @@
 
 .dashboard-inventory-item {
   padding: var(--space-md);
-  background: var(--color-bg-main);
+  background: var(--color-bg-card);
   border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   transition: all var(--transition-fast);
 }
 
