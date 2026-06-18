@@ -147,25 +147,31 @@
 
 .product-card-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
 .product-carrier {
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--primary-color, #3b82f6);
   background: rgba(59, 130, 246, 0.1);
   padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  white-space: nowrap;
+  border-radius: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
 }
 
 .product-monto {
+  flex-shrink: 0;
   font-weight: 800;
   font-size: 1.1rem;
   color: var(--text-primary);
+  text-align: right;
 }
 
 .product-monto--open {
