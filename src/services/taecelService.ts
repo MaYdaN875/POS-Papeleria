@@ -106,14 +106,28 @@ export const getProducts = async (): Promise<TaecelProduct[]> => {
   const res = await callTaecel('products');
   if (!res.success) throw new Error(res.message || 'Error al obtener productos');
 
-  const productosList = res.data[0]?.productos || [];
+  // Taecel puede devolver los productos de distintas formas:
+  //  - data: [{ productos: [...] }, ...]   (agrupados por categoría)
+  //  - data: [ {producto}, {producto}, ... ] (lista plana)
+  //  - data: { productos: [...] }
+  let productosList: any[] = [];
+  const data = res.data;
+  if (Array.isArray(data)) {
+    if (data.length > 0 && Array.isArray(data[0]?.productos)) {
+      productosList = data.flatMap((cat: any) => cat.productos || []);
+    } else {
+      productosList = data;
+    }
+  } else if (data && Array.isArray(data.productos)) {
+    productosList = data.productos;
+  }
 
-  // Mapear al modelo interno del POS
+  // Mapear al modelo interno del POS (tolerante a distintos nombres de campo)
   return productosList.map((p: any) => ({
-    id: p.codigo,
-    name: p.descripcion,
-    type: p.bolsa === 1 ? 'recarga' : 'servicio',
-    carrier: p.carrier,
-    logoUrl: p.logo
+    id: p.codigo ?? p.Codigo ?? p.producto ?? p.id ?? '',
+    name: p.descripcion ?? p.Descripcion ?? p.nombre ?? p.name ?? 'Producto',
+    type: (p.bolsa === 1 || p.bolsa === '1') ? 'recarga' : 'servicio',
+    carrier: p.carrier ?? p.Carrier ?? p.compania ?? '',
+    logoUrl: p.logo ?? p.Logo ?? undefined
   }));
 };

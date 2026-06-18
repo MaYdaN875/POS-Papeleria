@@ -76,20 +76,31 @@ export const ServicesPage: React.FC = () => {
       <div className="services-grid">
         <div className="products-container">
           <h2>1. Selecciona Compañía / Servicio</h2>
-          <div className="products-list">
-            {products.map((p) => (
-              <div 
-                key={p.id} 
-                className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
-                onClick={() => handleProductSelect(p)}
-              >
-                <div className="product-icon">
-                  {p.type === 'servicio' ? <Zap size={24} /> : <Smartphone size={24} />}
+          {isLoading && products.length === 0 ? (
+            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem' }}>
+              <Loader2 className="spinner" size={20} /> Cargando productos...
+            </p>
+          ) : products.length === 0 ? (
+            <div className="message-alert error" style={{ marginTop: '1rem' }}>
+              <XCircle size={20} />
+              {storeError || 'No se cargaron productos de Taecel. Revisa que el archivo taecel_config.php tenga las llaves correctas.'}
+            </div>
+          ) : (
+            <div className="products-list">
+              {products.map((p) => (
+                <div 
+                  key={p.id} 
+                  className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
+                  onClick={() => handleProductSelect(p)}
+                >
+                  <div className="product-icon">
+                    {p.type === 'servicio' ? <Zap size={24} /> : <Smartphone size={24} />}
+                  </div>
+                  <span>{p.name}</span>
                 </div>
-                <span>{p.name}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="transaction-panel">
