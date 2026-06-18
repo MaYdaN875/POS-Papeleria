@@ -7,11 +7,12 @@ import '../styles/ServicesPage.css';
 const RECARGA_AMOUNTS = [10, 20, 30, 50, 100, 200, 500];
 
 export const ServicesPage: React.FC = () => {
-  const { balance, products, fetchBalance, fetchProducts, performTransaction, isLoading, error: storeError } = useTaecelStore();
+  const { balance, products, fetchBalance, fetchProducts, performTransaction, isLoading, error: storeError, productsLoading, productsError } = useTaecelStore();
   
   const [selectedProduct, setSelectedProduct] = useState<TaecelProduct | null>(null);
   const [reference, setReference] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
+  const [search, setSearch] = useState('');
   
   const [successMsg, setSuccessMsg] = useState('');
   const [localError, setLocalError] = useState('');
@@ -20,6 +21,14 @@ export const ServicesPage: React.FC = () => {
     fetchBalance();
     fetchProducts();
   }, [fetchBalance, fetchProducts]);
+
+  const term = search.trim().toLowerCase();
+  const filteredProducts = term
+    ? products.filter((p) =>
+        p.name.toLowerCase().includes(term) ||
+        (p.carrier || '').toLowerCase().includes(term)
+      )
+    : products;
 
   const handleProductSelect = (product: TaecelProduct) => {
     setSelectedProduct(product);
@@ -76,30 +85,43 @@ export const ServicesPage: React.FC = () => {
       <div className="services-grid">
         <div className="products-container">
           <h2>1. Selecciona Compañía / Servicio</h2>
-          {isLoading && products.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem' }}>
+          {productsLoading && products.length === 0 ? (
+            <p className="products-state">
               <Loader2 className="spinner" size={20} /> Cargando productos...
             </p>
           ) : products.length === 0 ? (
-            <div className="message-alert error" style={{ marginTop: '1rem' }}>
+            <div className="message-alert error">
               <XCircle size={20} />
-              {storeError || 'No se cargaron productos de Taecel. Revisa que el archivo taecel_config.php tenga las llaves correctas.'}
+              {productsError || 'No se cargaron productos de Taecel. Revisa que el archivo taecel_config.php tenga las llaves correctas.'}
             </div>
           ) : (
-            <div className="products-list">
-              {products.map((p) => (
-                <div 
-                  key={p.id} 
-                  className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
-                  onClick={() => handleProductSelect(p)}
-                >
-                  <div className="product-icon">
-                    {p.type === 'servicio' ? <Zap size={24} /> : <Smartphone size={24} />}
-                  </div>
-                  <span>{p.name}</span>
+            <>
+              <input
+                type="text"
+                className="products-search"
+                placeholder="Buscar compañía o producto..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {filteredProducts.length === 0 ? (
+                <p className="products-state">Sin resultados para "{search}".</p>
+              ) : (
+                <div className="products-list">
+                  {filteredProducts.map((p) => (
+                    <div 
+                      key={p.id} 
+                      className={`product-card ${selectedProduct?.id === p.id ? 'selected' : ''}`}
+                      onClick={() => handleProductSelect(p)}
+                    >
+                      <div className="product-icon">
+                        {p.type === 'servicio' ? <Zap size={24} /> : <Smartphone size={24} />}
+                      </div>
+                      <span>{p.name}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
 

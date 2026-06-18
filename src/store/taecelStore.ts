@@ -8,6 +8,8 @@ interface TaecelState {
   transactions: TaecelTransaction[];
   isLoading: boolean;
   error: string | null;
+  productsLoading: boolean;
+  productsError: string | null;
   
   fetchBalance: () => Promise<void>;
   fetchProducts: () => Promise<void>;
@@ -20,6 +22,8 @@ export const useTaecelStore = create<TaecelState>((set, get) => ({
   transactions: [],
   isLoading: false,
   error: null,
+  productsLoading: false,
+  productsError: null,
 
   fetchBalance: async () => {
     set({ isLoading: true, error: null });
@@ -32,12 +36,12 @@ export const useTaecelStore = create<TaecelState>((set, get) => ({
   },
 
   fetchProducts: async () => {
-    set({ isLoading: true, error: null });
+    set({ productsLoading: true, productsError: null });
     try {
       const products = await getProducts();
-      set({ products, isLoading: false });
+      set({ products, productsLoading: false });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ productsError: error.message, productsLoading: false });
     }
   },
 
