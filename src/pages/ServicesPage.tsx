@@ -93,6 +93,7 @@ export const ServicesPage: React.FC = () => {
       <div className="services-grid">
         <div className="products-container">
           <h2>1. Selecciona Compañía / Servicio</h2>
+          <div className="products-body">
           {productsLoading && products.length === 0 ? (
             <p className="products-state">
               <Loader2 className="spinner" size={20} /> Cargando productos...
@@ -131,7 +132,8 @@ export const ServicesPage: React.FC = () => {
               ) : (
                 <>
                 <span className="products-list-count">{filteredProducts.length} productos</span>
-                <div className="products-list">
+                <div className="products-list-wrap">
+                  <div className="products-list">
                   {filteredProducts.map((p) => (
                     <button 
                       key={p.id} 
@@ -157,18 +159,20 @@ export const ServicesPage: React.FC = () => {
                       </div>
                     </button>
                   ))}
+                  </div>
                 </div>
                 </>
               )}
             </>
           )}
+          </div>
         </div>
 
         <div className="transaction-panel">
           <h2>2. Detalles del Cobro</h2>
-          
+          <div className="transaction-body">
           {!selectedProduct ? (
-            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem' }}>
+            <p className="transaction-empty">
               Selecciona una opción a la izquierda para continuar.
             </p>
           ) : (
@@ -228,6 +232,7 @@ export const ServicesPage: React.FC = () => {
               </button>
             </>
           )}
+          </div>
         </div>
       </div>
     </div>
