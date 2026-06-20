@@ -82,6 +82,53 @@ function posTaecelValidateSession(PDO $pdo): void
     adminJsonResponse(401, ['success' => false, 'message' => 'Sesión inválida o expirada']);
 }
 
+function posTaecelLogDir(): string
+{
+    $dir = __DIR__ . '/../../logs';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0750, true);
+    }
+    return $dir;
+}
+
+function posTaecelLogFile(): string
+{
+    return posTaecelLogDir() . '/taecel_transactions.jsonl';
+}
+
+/** Guarda request/response de requestTXN (sin key ni nip) para soporte Taecel. */
+function posTaecelAppendTxnLog(array $entry): void
+{
+    $line = json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($line === false) {
+        return;
+    }
+    @file_put_contents(posTaecelLogFile(), $line . PHP_EOL, FILE_APPEND | LOCK_EX);
+}
+
+function posTaecelReadTxnLogs(int $limit = 10): array
+{
+    $file = posTaecelLogFile();
+    if (!is_file($file)) {
+        return [];
+    }
+
+    $lines = @file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!is_array($lines) || count($lines) === 0) {
+        return [];
+    }
+
+    $slice = array_slice($lines, -$limit);
+    $out = [];
+    foreach ($slice as $line) {
+        $decoded = json_decode($line, true);
+        if (is_array($decoded)) {
+            $out[] = $decoded;
+        }
+    }
+    return $out;
+}
+
 try {
     $pdo = adminGetPdo();
     posTaecelValidateSession($pdo);
@@ -137,6 +184,21 @@ try {
             }
             break;
 
+        case 'logs':
+            $limit = (int)($_POST['limit'] ?? 10);
+            if ($limit < 1) {
+                $limit = 10;
+            }
+            if ($limit > 30) {
+                $limit = 30;
+            }
+            adminJsonResponse(200, [
+                'success' => true,
+                'data'    => posTaecelReadTxnLogs($limit),
+                'file'    => 'api/logs/taecel_transactions.jsonl',
+            ]);
+            break;
+
         default:
             adminJsonResponse(400, ['success' => false, 'message' => 'Acción no válida.']);
     }
@@ -163,6 +225,24 @@ try {
     }
 
     if ($action === 'transaction') {
+        $requestLog = [
+            'producto'   => $fields['producto'] ?? '',
+            'referencia' => $fields['referencia'] ?? '',
+        ];
+        if (isset($fields['monto'])) {
+            $requestLog['monto'] = $fields['monto'];
+        }
+
+        $parsed = json_decode((string)$response, true);
+        posTaecelAppendTxnLog([
+            'timestamp'    => gmdate('c'),
+            'endpoint'     => $endpoint,
+            'http_code'    => $httpCode,
+            'request'      => $requestLog,
+            'response_raw' => (string)$response,
+            'response'     => is_array($parsed) ? $parsed : null,
+        ]);
+
         error_log(
             'pos_taecel.php requestTXN sent producto=' . ($fields['producto'] ?? '')
             . ' referencia=' . ($fields['referencia'] ?? '')
