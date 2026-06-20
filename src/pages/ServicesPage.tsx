@@ -329,7 +329,7 @@ export const ServicesPage: React.FC = () => {
                 disabled={isLoading || !reference || !amount}
               >
                 {isLoading ? <Loader2 className="spinner" size={20} /> : <Zap size={20} />}
-                {isLoading ? 'Procesando con Taecel...' : 'Cobrar recarga'}
+                {isLoading ? 'Procesando con Taecel (hasta 1 min)...' : 'Cobrar recarga'}
               </button>
             </>
           ) : null}

@@ -15,10 +15,12 @@ async function callTaecel(action: 'balance' | 'products' | 'transaction', params
     body.append(k, v);
   }
 
+  // Recarga: el servidor puede tardar hasta ~60 s (RequestTXN + ciclo StatusTXN).
   const response = await authFetch(ENDPOINTS.POS_TAECEL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
+    signal: action === 'transaction' ? AbortSignal.timeout(90000) : undefined,
   });
 
   let res: any;
