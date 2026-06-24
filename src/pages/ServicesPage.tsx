@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Smartphone, Zap, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
+import { Smartphone, Zap, CheckCircle, XCircle, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useTaecelStore } from '../store/taecelStore';
 import { TaecelProduct, TaecelTransaction } from '../types/taecel';
 import '../styles/ServicesPage.css';
@@ -33,6 +33,7 @@ export const ServicesPage: React.FC = () => {
   const [lastTx, setLastTx] = useState<TaecelTransaction | null>(null);
   const [lastProductName, setLastProductName] = useState('');
   const [localError, setLocalError] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     fetchBalance();
@@ -75,29 +76,42 @@ export const ServicesPage: React.FC = () => {
     setLocalError('');
   };
 
-  const handleSubmit = async () => {
+  const validateCharge = (): boolean => {
     setLocalError('');
-    setLastTx(null);
 
     if (!selectedProduct) {
       setLocalError('Selecciona una compañía primero.');
-      return;
+      return false;
     }
 
     if (selectedProduct.type === 'recarga' && reference.length !== 10) {
       setLocalError('El celular debe tener exactamente 10 dígitos (sin +52).');
-      return;
+      return false;
     }
 
     if (selectedProduct.type === 'recarga' && reference !== referenceConfirm) {
       setLocalError('Los números no coinciden. Verifica el celular y la confirmación.');
-      return;
+      return false;
     }
 
     if (!amount || amount <= 0) {
       setLocalError('Ingresa un monto válido.');
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const handleOpenConfirm = () => {
+    if (!validateCharge()) return;
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmCharge = async () => {
+    if (!selectedProduct || !validateCharge()) return;
+
+    setShowConfirmModal(false);
+    setLastTx(null);
 
     try {
       const tx = await performTransaction(
@@ -374,8 +388,9 @@ export const ServicesPage: React.FC = () => {
               </div>
 
               <button
+                type="button"
                 className="submit-btn"
-                onClick={handleSubmit}
+                onClick={handleOpenConfirm}
                 disabled={isLoading || !reference || !amount || !phoneReady}
               >
                 {isLoading ? <Loader2 className="spinner" size={20} /> : <Zap size={20} />}
@@ -386,6 +401,74 @@ export const ServicesPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {showConfirmModal && selectedProduct && (
+        <div
+          className="charge-confirm-overlay"
+          onClick={() => !isLoading && setShowConfirmModal(false)}
+        >
+          <div
+            className="charge-confirm-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="charge-confirm-title"
+          >
+            <div className="charge-confirm-icon">
+              <AlertTriangle size={32} />
+            </div>
+            <h2 id="charge-confirm-title" className="charge-confirm-title">
+              ¿Confirmar cobro?
+            </h2>
+            <p className="charge-confirm-text">
+              Revisa que los datos sean correctos. El cargo se aplicará a tu saldo Taecel.
+            </p>
+
+            <div className="charge-confirm-details">
+              <div className="charge-confirm-row">
+                <span>Producto</span>
+                <strong>{selectedProduct.name}</strong>
+              </div>
+              <div className="charge-confirm-row">
+                <span>{isRecarga ? 'Celular' : 'Referencia'}</span>
+                <strong>
+                  {isRecarga ? formatPhoneDisplay(reference) : reference}
+                </strong>
+              </div>
+              <div className="charge-confirm-row">
+                <span>Monto</span>
+                <strong>${Number(amount).toFixed(2)}</strong>
+              </div>
+            </div>
+
+            <div className="charge-confirm-footer">
+              <button
+                type="button"
+                className="charge-confirm-btn charge-confirm-btn--cancel"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="charge-confirm-btn charge-confirm-btn--confirm"
+                onClick={handleConfirmCharge}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="spinner" size={18} />
+                    Procesando...
+                  </>
+                ) : (
+                  'Sí, confirmar cobro'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
