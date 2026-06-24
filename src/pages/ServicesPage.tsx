@@ -26,6 +26,7 @@ export const ServicesPage: React.FC = () => {
 
   const [selectedProduct, setSelectedProduct] = useState<TaecelProduct | null>(null);
   const [reference, setReference] = useState('');
+  const [referenceConfirm, setReferenceConfirm] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [search, setSearch] = useState('');
   const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export const ServicesPage: React.FC = () => {
   const handleProductSelect = (product: TaecelProduct) => {
     setSelectedProduct(product);
     setReference('');
+    setReferenceConfirm('');
     setAmount(product.amount && product.amount > 0 ? product.amount : '');
     setLastTx(null);
     setLocalError('');
@@ -67,6 +69,7 @@ export const ServicesPage: React.FC = () => {
   const handleNewRecharge = () => {
     setSelectedProduct(null);
     setReference('');
+    setReferenceConfirm('');
     setAmount('');
     setLastTx(null);
     setLocalError('');
@@ -86,6 +89,11 @@ export const ServicesPage: React.FC = () => {
       return;
     }
 
+    if (selectedProduct.type === 'recarga' && reference !== referenceConfirm) {
+      setLocalError('Los números no coinciden. Verifica el celular y la confirmación.');
+      return;
+    }
+
     if (!amount || amount <= 0) {
       setLocalError('Ingresa un monto válido.');
       return;
@@ -100,6 +108,7 @@ export const ServicesPage: React.FC = () => {
       setLastTx(tx);
       setLastProductName(selectedProduct.name);
       setReference('');
+      setReferenceConfirm('');
     } catch {
       // El error ya se muestra desde el store
     }
@@ -107,6 +116,14 @@ export const ServicesPage: React.FC = () => {
 
   const isRecarga = selectedProduct?.type === 'recarga';
   const showReceipt = !!lastTx;
+  const phoneMismatch =
+    isRecarga
+    && reference.length > 0
+    && referenceConfirm.length > 0
+    && reference !== referenceConfirm;
+  const phoneReady =
+    !isRecarga
+    || (reference.length === 10 && reference === referenceConfirm);
 
   return (
     <div className="services-page">
@@ -290,12 +307,15 @@ export const ServicesPage: React.FC = () => {
                 <input
                   id="taecel-reference"
                   type="tel"
-                  className="form-input"
+                  className={`form-input${phoneMismatch ? ' form-input--error' : ''}`}
                   placeholder={isRecarga ? 'Ej: 5512345678' : 'Referencia del recibo (agua, luz, etc.)'}
                   value={formatPhoneDisplay(reference)}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, '').slice(0, isRecarga ? 10 : 30);
                     setReference(digits);
+                    if (localError.includes('no coinciden')) {
+                      setLocalError('');
+                    }
                   }}
                   autoComplete="off"
                 />
@@ -303,6 +323,36 @@ export const ServicesPage: React.FC = () => {
                   <span className="form-hint">Solo el número, sin +52 ni espacios al guardar.</span>
                 )}
               </div>
+
+              {isRecarga && (
+                <div className="form-group">
+                  <label htmlFor="taecel-reference-confirm">
+                    Confirmar celular (10 dígitos)
+                  </label>
+                  <input
+                    id="taecel-reference-confirm"
+                    type="tel"
+                    className={`form-input${phoneMismatch ? ' form-input--error' : ''}`}
+                    placeholder="Repite el mismo número"
+                    value={formatPhoneDisplay(referenceConfirm)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setReferenceConfirm(digits);
+                      if (localError.includes('no coinciden')) {
+                        setLocalError('');
+                      }
+                    }}
+                    autoComplete="off"
+                  />
+                  {phoneMismatch ? (
+                    <span className="form-hint form-hint--error">
+                      Los números no coinciden. Revisa ambos campos.
+                    </span>
+                  ) : (
+                    <span className="form-hint">Debe ser idéntico al número de arriba.</span>
+                  )}
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Monto a Cobrar ($)</label>
@@ -326,7 +376,7 @@ export const ServicesPage: React.FC = () => {
               <button
                 className="submit-btn"
                 onClick={handleSubmit}
-                disabled={isLoading || !reference || !amount}
+                disabled={isLoading || !reference || !amount || !phoneReady}
               >
                 {isLoading ? <Loader2 className="spinner" size={20} /> : <Zap size={20} />}
                 {isLoading ? 'Procesando con Taecel (hasta 1 min)...' : 'Cobrar recarga'}

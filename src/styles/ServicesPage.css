@@ -494,6 +494,20 @@
   color: var(--color-text-muted);
 }
 
+.form-hint--error {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.form-input--error {
+  border-color: var(--color-danger);
+}
+
+.form-input--error:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
 .transaction-receipt {
   display: flex;
   flex-direction: column;
