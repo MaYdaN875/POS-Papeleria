@@ -22,6 +22,7 @@ import { logout } from '../services/authService';
 import { createSale } from '../services/salesService';
 import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
 import { playCashSound } from '../utils/sounds';
+import { isElectronEnv } from '../utils/thermalPrint';
 import '../styles/PaymentPage.css';
 
 type PaymentMethod = 'cash' | 'card' | 'transfer';
@@ -249,6 +250,100 @@ export default function PaymentPage() {
   if (cart.length === 0) return null; // Prevenir renderizado fugaz antes del redirect
 
   if (invoiceResult) {
+    if (settings?.invoiceProvider === 'ecofactura') {
+      return (
+        <div className="payment-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--color-bg-app)' }}>
+          <div style={{ background: 'var(--color-bg-card)', padding: '40px', borderRadius: '16px', maxWidth: '500px', width: '90%', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)', border: '1px solid var(--border-light)' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#dcfce7', color: '#166534', width: '64px', height: '64px', borderRadius: '50%', marginBottom: '20px' }}>
+              <CheckCircle2 size={36} />
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 10px 0', color: 'var(--text-main)' }}>¡Venta Completada!</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '0 0 20px 0' }}>
+              La venta se registró correctamente. Este sistema está configurado para la facturación manual mediante <strong>EcoFactura</strong>.
+            </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', textAlign: 'left', marginBottom: '20px', border: '1px solid var(--border-light)', fontSize: '13px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: 'var(--text-muted)' }}>Ticket ID:</span><strong>#{String(invoiceResult.invoiceNumber).replace('FAC-MANUAL-', '')}</strong></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-muted)' }}>Total Venta:</span><strong>${total.toFixed(2)} MXN</strong></div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+              {isElectronEnv() ? (
+                <>
+                  <button 
+                    className="payment-confirm-btn" 
+                    onClick={async () => {
+                      if (window.ipcRenderer) {
+                        await window.ipcRenderer.invoke('open-external-url', 'https://api.ecofactura.mx');
+                      } else {
+                        window.open('https://api.ecofactura.mx', '_blank');
+                      }
+                      clearCart();
+                      navigate('/sales');
+                    }}
+                    style={{ background: 'var(--color-primary)', color: '#fff', padding: '12px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: 600 }}
+                  >
+                    Abrir EcoFactura (Navegador) y Finalizar
+                  </button>
+
+                  <button 
+                    className="payment-confirm-btn" 
+                    onClick={() => {
+                      clearCart();
+                      navigate('/sales');
+                    }}
+                    style={{ background: '#f3f4f6', color: '#374151', border: '1px solid var(--border-light)', padding: '12px', borderRadius: '8px', fontSize: '14px', fontWeight: 600 }}
+                  >
+                    Finalizar sin Abrir
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a 
+                    href="https://api.ecofactura.mx" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="payment-confirm-btn" 
+                    onClick={() => {
+                      setTimeout(() => {
+                        clearCart();
+                        navigate('/sales');
+                      }, 500);
+                    }}
+                    style={{ background: 'var(--color-primary)', color: '#fff', padding: '12px', borderRadius: '8px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: 600 }}
+                  >
+                    Abrir EcoFactura en Nueva Pestaña y Finalizar
+                  </a>
+
+                  <button 
+                    className="payment-confirm-btn" 
+                    onClick={() => {
+                      clearCart();
+                      window.location.href = 'https://api.ecofactura.mx';
+                    }}
+                    style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid rgba(3,105,161,0.2)', padding: '12px', borderRadius: '8px', fontSize: '14px', fontWeight: 600 }}
+                  >
+                    Redireccionar en esta Pestaña
+                  </button>
+
+                  <button 
+                    className="payment-confirm-btn" 
+                    onClick={() => {
+                      clearCart();
+                      navigate('/sales');
+                    }}
+                    style={{ background: '#f3f4f6', color: '#374151', border: '1px solid var(--border-light)', padding: '12px', borderRadius: '8px', fontSize: '14px', fontWeight: 600 }}
+                  >
+                    Finalizar sin Redireccionar
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="payment-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--color-bg-app)' }}>
         <div style={{ background: 'var(--color-bg-card)', padding: '40px', borderRadius: '16px', maxWidth: '500px', width: '90%', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)', border: '1px solid var(--border-light)' }}>
@@ -425,7 +520,7 @@ export default function PaymentPage() {
             <div className="payment-invoice-section" style={{ marginTop: '24px', background: 'var(--color-bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: wantsInvoice ? '16px' : '0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <FileText size={20} style={{ color: 'var(--pos-primary)' }} />
+                  <FileText size={20} style={{ color: 'var(--color-primary)' }} />
                   <span style={{ fontWeight: 600, fontSize: '15px' }}>¿Requiere Factura Fiscal?</span>
                 </div>
                 <label className="settings-switch">

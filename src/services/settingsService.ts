@@ -19,7 +19,7 @@ export interface GlobalSettings {
   taxRate: number;
   // Invoicing Configurations
   invoiceEnabled: boolean;
-  invoiceProvider: 'mock' | 'facturacom';
+  invoiceProvider: 'mock' | 'facturacom' | 'ecofactura';
   facturacomApiKey: string;
   facturacomSecretKey: string;
   facturacomSandbox: boolean;

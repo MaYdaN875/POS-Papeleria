@@ -291,7 +291,7 @@ export default function SettingsPage() {
                 <button 
                   className="settings-action-btn"
                   onClick={() => setShowPreview(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--pos-primary)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--color-primary)' }}
                 >
                   <Printer size={18} />
                   Imprimir Ticket de Prueba
@@ -465,14 +465,23 @@ export default function SettingsPage() {
                     <select 
                       name="invoiceProvider" 
                       value={settings.invoiceProvider} 
-                      onChange={(e) => setSettings({ ...settings, invoiceProvider: e.target.value as 'mock' | 'facturacom' })}
+                      onChange={(e) => setSettings({ ...settings, invoiceProvider: e.target.value as 'mock' | 'facturacom' | 'ecofactura' })}
                       className="settings-select"
                       style={{ width: '100%', marginTop: '0.5rem' }}
                     >
                       <option value="mock">Simulador (Mock Mode - Sin costo/Pruebas)</option>
                       <option value="facturacom">Factura.com (CFDI 4.0 Real / Sandbox)</option>
+                      <option value="ecofactura">EcoFactura (Redirección manual a api.ecofactura.mx)</option>
                     </select>
                   </div>
+
+                  {settings.invoiceProvider === 'ecofactura' && (
+                    <div style={{ marginTop: '1rem', padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', border: '1px solid var(--border-light)', fontSize: '13px' }}>
+                      <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                        <strong>Modo Redirección EcoFactura:</strong> Habilita la facturación manual. Al completar una venta o solicitar facturar desde reportes, el POS registrará la venta como facturada de forma interna y ofrecerá accesos directos y redirección hacia <strong>https://api.ecofactura.mx</strong> para realizar la factura manual en dicho portal.
+                      </p>
+                    </div>
+                  )}
 
                   {settings.invoiceProvider === 'facturacom' && (
                     <div className="settings-grid" style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>

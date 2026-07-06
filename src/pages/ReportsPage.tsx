@@ -5,6 +5,7 @@ import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
 import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer } from '../types/invoicing';
 import { InvoiceService } from '../services/invoicing/InvoiceService';
 import { saveInvoiceToBackend, getInvoiceBySaleId, BackendInvoice } from '../services/invoicing/backendService';
+import { isElectronEnv } from '../utils/thermalPrint';
 import '../styles/ReportsPage.css';
 
 export function ReportsPage() {
@@ -539,7 +540,7 @@ export function ReportsPage() {
                                     ) : invoices[sale.id] ? (
                                       <div style={{ padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
                                         <h5 style={{ margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-                                          <FileText size={18} style={{ color: 'var(--pos-primary)' }} /> Factura Fiscal Emitida
+                                          <FileText size={18} style={{ color: 'var(--color-primary)' }} /> Factura Fiscal Emitida
                                         </h5>
                                         <p style={{ margin: '4px 0', fontSize: '13px' }}><strong>UUID SAT:</strong> <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{invoices[sale.id]?.uuid}</span></p>
                                         <p style={{ margin: '4px 0', fontSize: '13px' }}><strong>Cliente:</strong> {invoices[sale.id]?.customerRfc} - {invoices[sale.id]?.customerName}</p>
@@ -568,7 +569,7 @@ export function ReportsPage() {
                                             setBillingError('');
                                             setShowBillingModal(true);
                                           }}
-                                          style={{ background: 'var(--pos-primary)', color: '#fff', padding: '6px 12px', fontSize: '12px', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          style={{ background: 'var(--color-primary)', color: '#fff', padding: '6px 12px', fontSize: '12px', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}
                                         >
                                           <FileText size={14} />
                                           <span>Facturar Ticket</span>
@@ -666,80 +667,93 @@ export function ReportsPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            {settings?.invoiceProvider === 'ecofactura' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: 'var(--text-main)' }}>
+                <div style={{ padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', border: '1px solid var(--border-light)', lineHeight: '1.6' }}>
+                  <p style={{ margin: '0 0 8px 0' }}>
+                    Esta venta se facturará de forma <strong>manual</strong> en el portal de <strong>EcoFactura</strong>.
+                  </p>
+                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '13px' }}>
+                    Al confirmar, se marcará este ticket como facturado en el POS local y se abrirá <strong>https://api.ecofactura.mx</strong> en una nueva pestaña para realizar el proceso.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>RFC</label>
+                    <input 
+                      type="text" 
+                      placeholder="XAXX010101000" 
+                      value={billingCustomer.rfc} 
+                      onChange={(e) => setBillingCustomer({ ...billingCustomer, rfc: e.target.value.toUpperCase() })} 
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Código Postal</label>
+                    <input 
+                      type="text" 
+                      placeholder="Código Postal" 
+                      maxLength={5}
+                      value={billingCustomer.codigoPostal} 
+                      onChange={(e) => setBillingCustomer({ ...billingCustomer, codigoPostal: e.target.value.replace(/\D/g, '') })} 
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)' }}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>RFC</label>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Nombre o Razón Social</label>
                   <input 
                     type="text" 
-                    placeholder="XAXX010101000" 
-                    value={billingCustomer.rfc} 
-                    onChange={(e) => setBillingCustomer({ ...billingCustomer, rfc: e.target.value.toUpperCase() })} 
+                    placeholder="Tal cual aparece en Constancia Fiscal" 
+                    value={billingCustomer.razonSocial} 
+                    onChange={(e) => setBillingCustomer({ ...billingCustomer, razonSocial: e.target.value.toUpperCase() })} 
                     style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)' }}
                   />
                 </div>
+
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Código Postal</label>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Correo Electrónico</label>
                   <input 
-                    type="text" 
-                    placeholder="Código Postal" 
-                    maxLength={5}
-                    value={billingCustomer.codigoPostal} 
-                    onChange={(e) => setBillingCustomer({ ...billingCustomer, codigoPostal: e.target.value.replace(/\D/g, '') })} 
+                    type="email" 
+                    placeholder="correo@cliente.com" 
+                    value={billingCustomer.email} 
+                    onChange={(e) => setBillingCustomer({ ...billingCustomer, email: e.target.value })} 
                     style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)' }}
                   />
                 </div>
-              </div>
 
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Nombre o Razón Social</label>
-                <input 
-                  type="text" 
-                  placeholder="Tal cual aparece en Constancia Fiscal" 
-                  value={billingCustomer.razonSocial} 
-                  onChange={(e) => setBillingCustomer({ ...billingCustomer, razonSocial: e.target.value.toUpperCase() })} 
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Correo Electrónico</label>
-                <input 
-                  type="email" 
-                  placeholder="correo@cliente.com" 
-                  value={billingCustomer.email} 
-                  onChange={(e) => setBillingCustomer({ ...billingCustomer, email: e.target.value })} 
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Régimen Fiscal</label>
-                  <select 
-                    value={billingCustomer.regimenFiscal} 
-                    onChange={(e) => setBillingCustomer({ ...billingCustomer, regimenFiscal: e.target.value })}
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)', color: 'inherit' }}
-                  >
-                    {REGIMENES_FISCALES.map((r) => (
-                      <option key={r.code} value={r.code}>{r.code} - {r.description}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Uso CFDI</label>
-                  <select 
-                    value={billingUsoCFDI} 
-                    onChange={(e) => setBillingUsoCFDI(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)', color: 'inherit' }}
-                  >
-                    {USOS_CFDI.map((u) => (
-                      <option key={u.code} value={u.code}>{u.code} - {u.description}</option>
-                    ))}
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Régimen Fiscal</label>
+                    <select 
+                      value={billingCustomer.regimenFiscal} 
+                      onChange={(e) => setBillingCustomer({ ...billingCustomer, regimenFiscal: e.target.value })}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                    >
+                      {REGIMENES_FISCALES.map((r) => (
+                        <option key={r.code} value={r.code}>{r.code} - {r.description}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Uso CFDI</label>
+                    <select 
+                      value={billingUsoCFDI} 
+                      onChange={(e) => setBillingUsoCFDI(e.target.value)}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                    >
+                      {USOS_CFDI.map((u) => (
+                        <option key={u.code} value={u.code}>{u.code} - {u.description}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
               <button 
@@ -754,19 +768,23 @@ export function ReportsPage() {
                 className="reports-print-btn" 
                 disabled={billingLoading}
                 onClick={async () => {
-                  const { rfc, razonSocial, codigoPostal, email } = billingCustomer;
-                  if (!rfc || !razonSocial || !codigoPostal || !email) {
-                    setBillingError('Complete todos los campos fiscales del cliente.');
-                    return;
-                  }
-                  const rfcRegex = /^[A-Z&Ñ]{3,4}\d{6}[A-Z\d]{3}$/i;
-                  if (!rfcRegex.test(rfc)) {
-                    setBillingError('Formato de RFC inválido.');
-                    return;
-                  }
-                  if (codigoPostal.length !== 5) {
-                    setBillingError('El código postal debe ser de 5 dígitos.');
-                    return;
+                  const isEco = settings?.invoiceProvider === 'ecofactura';
+
+                  if (!isEco) {
+                    const { rfc, razonSocial, codigoPostal, email } = billingCustomer;
+                    if (!rfc || !razonSocial || !codigoPostal || !email) {
+                      setBillingError('Complete todos los campos fiscales del cliente.');
+                      return;
+                    }
+                    const rfcRegex = /^[A-Z&Ñ]{3,4}\d{6}[A-Z\d]{3}$/i;
+                    if (!rfcRegex.test(rfc)) {
+                      setBillingError('Formato de RFC inválido.');
+                      return;
+                    }
+                    if (codigoPostal.length !== 5) {
+                      setBillingError('El código postal debe ser de 5 dígitos.');
+                      return;
+                    }
                   }
 
                   setBillingLoading(true);
@@ -787,11 +805,21 @@ export function ReportsPage() {
                     const totalVal = parseFloat(billingSale.total);
                     const taxVal = subtotalVal * taxRate / 100;
 
+                    const finalCustomer = isEco ? {
+                      rfc: 'XAXX010101000',
+                      razonSocial: 'CLIENTE ECOFACTURA MANUAL',
+                      regimenFiscal: '616',
+                      codigoPostal: '00000',
+                      email: 'manual@ecofactura.mx'
+                    } : billingCustomer;
+
+                    const finalUsoCFDI = isEco ? 'S01' : billingUsoCFDI;
+
                     const res = await InvoiceService.createInvoice({
                       saleId: billingSale.id,
                       paymentMethod: billingSale.payment_method,
-                      customer: billingCustomer,
-                      usoCFDI: billingUsoCFDI,
+                      customer: finalCustomer,
+                      usoCFDI: finalUsoCFDI,
                       items,
                       subtotal: subtotalVal,
                       taxAmount: taxVal,
@@ -803,8 +831,8 @@ export function ReportsPage() {
                         sale_id: billingSale.id,
                         uuid: res.uuid,
                         invoice_number: res.invoiceNumber || 'CFDI',
-                        customer_rfc: billingCustomer.rfc,
-                        customer_name: billingCustomer.razonSocial,
+                        customer_rfc: finalCustomer.rfc,
+                        customer_name: finalCustomer.razonSocial,
                         pdf_url: res.pdfUrl,
                         xml_url: res.xmlUrl
                       };
@@ -819,8 +847,8 @@ export function ReportsPage() {
                           saleId: billingSale.id,
                           uuid: res.uuid!,
                           invoiceNumber: res.invoiceNumber || 'CFDI',
-                          customerRfc: billingCustomer.rfc,
-                          customerName: billingCustomer.razonSocial,
+                          customerRfc: finalCustomer.rfc,
+                          customerName: finalCustomer.razonSocial,
                           pdfUrl: res.pdfUrl,
                           xmlUrl: res.xmlUrl,
                           status: 'active',
@@ -829,7 +857,16 @@ export function ReportsPage() {
                         return next;
                       });
 
-                      alert('Factura emitida y registrada correctamente.');
+                      if (isEco) {
+                        if (isElectronEnv() && window.ipcRenderer) {
+                          window.ipcRenderer.invoke('open-external-url', 'https://api.ecofactura.mx');
+                        } else {
+                          window.open('https://api.ecofactura.mx', '_blank');
+                        }
+                        alert('Ticket marcado como facturado y redireccionando a EcoFactura.');
+                      } else {
+                        alert('Factura emitida y registrada correctamente.');
+                      }
                       setShowBillingModal(false);
                     } else {
                       setBillingError(res.message || 'Error en timbrado.');
@@ -840,9 +877,9 @@ export function ReportsPage() {
                     setBillingLoading(false);
                   }
                 }}
-                style={{ background: 'var(--pos-primary)', color: '#fff', height: 'auto', padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ background: 'var(--color-primary)', color: '#fff', height: 'auto', padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                {billingLoading ? 'Timbrando...' : 'Emitir Factura'}
+                {billingLoading ? 'Procesando...' : (settings?.invoiceProvider === 'ecofactura' ? 'Confirmar e Ir a EcoFactura' : 'Emitir Factura')}
               </button>
             </div>
           </div>

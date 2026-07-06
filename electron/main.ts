@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron'
+import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { printEscPosTicket, type EscPosTicketPayload } from './thermalTicket'
@@ -177,5 +177,15 @@ function registerPrinterHandlers() {
       }
     }
     return printEscPosTicket(payload, defaultPrinter)
+  })
+
+  ipcMain.handle('open-external-url', async (_event, url: string) => {
+    try {
+      await shell.openExternal(url)
+      return { ok: true }
+    } catch (err: any) {
+      console.error('Failed to open external url:', err)
+      return { ok: false, error: err.message }
+    }
   })
 }
