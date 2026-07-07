@@ -54,3 +54,18 @@ CREATE TABLE IF NOT EXISTS pos_invoices (
   INDEX idx_invoices_sale (pos_sale_id)
 );
 
+-- =============================================================================
+-- Tabla para guardar el catálogo de clientes frecuentes para facturación
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS pos_customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  rfc VARCHAR(13) NOT NULL UNIQUE,
+  razon_social VARCHAR(200) NOT NULL,
+  regimen_fiscal VARCHAR(3) NOT NULL,
+  codigo_postal VARCHAR(5) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_customers_rfc (rfc)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+

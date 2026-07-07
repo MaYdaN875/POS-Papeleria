@@ -2,9 +2,10 @@ import { Calendar, ChevronDown, ChevronUp, DollarSign, FileText, Package, Printe
 import React, { useEffect, useRef, useState } from 'react';
 import { CashHistoryResponse, CashSession, SalesHistoryResponse, getCashHistory, getSalesHistory } from '../services/dashboardService';
 import { getGlobalSettings, GlobalSettings } from '../services/settingsService';
-import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer } from '../types/invoicing';
+import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer, Customer } from '../types/invoicing';
 import { InvoiceService } from '../services/invoicing/InvoiceService';
 import { saveInvoiceToBackend, getInvoiceBySaleId, BackendInvoice } from '../services/invoicing/backendService';
+import { getAllCustomers, saveCustomer } from '../services/invoicing/customerService';
 import { isElectronEnv } from '../utils/thermalPrint';
 import '../styles/ReportsPage.css';
 
@@ -42,13 +43,63 @@ export function ReportsPage() {
   const [billingUsoCFDI, setBillingUsoCFDI] = useState('G03');
   const [billingError, setBillingError] = useState('');
 
+  // Clientes frecuentes
+  const [frequentCustomers, setFrequentCustomers] = useState<Customer[]>([]);
+  const [selectedFrequentClientId, setSelectedFrequentClientId] = useState('');
+  const [saveToFrequent, setSaveToFrequent] = useState(false);
+
   useEffect(() => {
     getGlobalSettings().then(res => {
       if (res.ok && res.settings) {
         setSettings(res.settings);
       }
     });
+    getAllCustomers().then(setFrequentCustomers).catch(console.error);
   }, []);
+
+  const openBillingModal = (sale: any) => {
+    setBillingSale(sale);
+    setBillingSaleDetails(saleDetails[sale.id]);
+    setBillingError('');
+    setSelectedFrequentClientId('');
+    setSaveToFrequent(false);
+    setBillingCustomer({
+      rfc: '',
+      razonSocial: '',
+      regimenFiscal: '601',
+      codigoPostal: '',
+      email: ''
+    });
+    getAllCustomers().then(setFrequentCustomers).catch(console.error);
+    setShowBillingModal(true);
+  };
+
+  const handleSelectFrequentClient = (idStr: string) => {
+    setSelectedFrequentClientId(idStr);
+    if (!idStr) {
+      setBillingCustomer({
+        rfc: '',
+        razonSocial: '',
+        regimenFiscal: '601',
+        codigoPostal: '',
+        email: ''
+      });
+      setSaveToFrequent(false);
+      return;
+    }
+
+    const c = frequentCustomers.find(cust => cust.id === parseInt(idStr));
+    if (c) {
+      setBillingCustomer({
+        rfc: c.rfc,
+        razonSocial: c.razonSocial,
+        regimenFiscal: c.regimenFiscal,
+        codigoPostal: c.codigoPostal,
+        email: c.email
+      });
+      setSaveToFrequent(false);
+    }
+  };
 
   useEffect(() => {
     fetchSales();
@@ -563,12 +614,7 @@ export function ReportsPage() {
                                         <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Esta venta no cuenta con factura emitida.</span>
                                         <button 
                                           className="reports-print-btn"
-                                          onClick={() => {
-                                            setBillingSale(sale);
-                                            setBillingSaleDetails(saleDetails[sale.id]);
-                                            setBillingError('');
-                                            setShowBillingModal(true);
-                                          }}
+                                          onClick={() => openBillingModal(sale)}
                                           style={{ background: 'var(--color-primary)', color: '#fff', padding: '6px 12px', fontSize: '12px', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}
                                         >
                                           <FileText size={14} />
@@ -680,6 +726,22 @@ export function ReportsPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* Selector de Cliente Frecuente */}
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Buscar Cliente Frecuente</label>
+                  <select 
+                    value={selectedFrequentClientId}
+                    onChange={(e) => handleSelectFrequentClient(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                  >
+                    <option value="">-- Cliente Nuevo / Escribir Datos --</option>
+                    {frequentCustomers.map(c => (
+                      <option key={c.id} value={c.id}>{c.razonSocial} ({c.rfc})</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>RFC</label>
@@ -688,7 +750,8 @@ export function ReportsPage() {
                       placeholder="XAXX010101000" 
                       value={billingCustomer.rfc} 
                       onChange={(e) => setBillingCustomer({ ...billingCustomer, rfc: e.target.value.toUpperCase() })} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)' }}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)', color: 'inherit' }}
+                      disabled={!!selectedFrequentClientId}
                     />
                   </div>
                   <div>
@@ -699,7 +762,8 @@ export function ReportsPage() {
                       maxLength={5}
                       value={billingCustomer.codigoPostal} 
                       onChange={(e) => setBillingCustomer({ ...billingCustomer, codigoPostal: e.target.value.replace(/\D/g, '') })} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)' }}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                      disabled={!!selectedFrequentClientId}
                     />
                   </div>
                 </div>
@@ -711,7 +775,8 @@ export function ReportsPage() {
                     placeholder="Tal cual aparece en Constancia Fiscal" 
                     value={billingCustomer.razonSocial} 
                     onChange={(e) => setBillingCustomer({ ...billingCustomer, razonSocial: e.target.value.toUpperCase() })} 
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)' }}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)', color: 'inherit' }}
+                    disabled={!!selectedFrequentClientId}
                   />
                 </div>
 
@@ -722,7 +787,8 @@ export function ReportsPage() {
                     placeholder="correo@cliente.com" 
                     value={billingCustomer.email} 
                     onChange={(e) => setBillingCustomer({ ...billingCustomer, email: e.target.value })} 
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)' }}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                    disabled={!!selectedFrequentClientId}
                   />
                 </div>
 
@@ -752,6 +818,18 @@ export function ReportsPage() {
                     </select>
                   </div>
                 </div>
+
+                {!selectedFrequentClientId && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', marginTop: '6px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={saveToFrequent}
+                      onChange={(e) => setSaveToFrequent(e.target.checked)}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <span>Guardar en el catálogo de Clientes Frecuentes</span>
+                  </label>
+                )}
               </div>
             )}
 
@@ -838,6 +916,21 @@ export function ReportsPage() {
                       };
 
                       await saveInvoiceToBackend(backendPayload);
+
+                      // Guardar en clientes frecuentes si se solicitó
+                      if (saveToFrequent && !isEco) {
+                        try {
+                          await saveCustomer({
+                            rfc: billingCustomer.rfc,
+                            razonSocial: billingCustomer.razonSocial,
+                            regimenFiscal: billingCustomer.regimenFiscal,
+                            codigoPostal: billingCustomer.codigoPostal,
+                            email: billingCustomer.email
+                          });
+                        } catch (saveCustErr) {
+                          console.error('Error auto-saving customer:', saveCustErr);
+                        }
+                      }
 
                       // Actualizar el estado local
                       setInvoices(prev => {

@@ -39,7 +39,18 @@ export interface InvoiceResponse {
 export interface InvoiceProvider {
   getName(): string;
   createInvoice(request: InvoiceRequest): Promise<InvoiceResponse>;
-  cancelInvoice(uuid: string, reason: string): Promise<{ success: boolean; message?: string }>;
+  cancelInvoice(uuid: string, reason: string, substituteUuid?: string): Promise<{ success: boolean; message?: string }>;
+  checkInvoiceStatus(uuid: string): Promise<{ success: boolean; status?: string; message?: string }>;
+}
+
+export interface Customer {
+  id?: number;
+  rfc: string;
+  razonSocial: string;
+  regimenFiscal: string;
+  codigoPostal: string;
+  email: string;
+  createdAt?: string;
 }
 
 // SAT Catalogs for CFDI 4.0 in Mexico

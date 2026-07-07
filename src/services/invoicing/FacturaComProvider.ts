@@ -5,6 +5,8 @@ import {
   FORMA_PAGO_MAP,
   InvoiceCustomer
 } from '../../types/invoicing';
+import { ENDPOINTS } from '../../config';
+import { authFetch } from '../authService';
 
 export class FacturaComProvider implements InvoiceProvider {
   private apiKey: string;
@@ -37,13 +39,40 @@ export class FacturaComProvider implements InvoiceProvider {
     };
   }
 
+  private async fetchProxy(url: string, options: RequestInit = {}): Promise<Response> {
+    const proxyUrl = ENDPOINTS.POS_INVOICES_PROXY;
+    const bodyStr = options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : undefined;
+
+    const rawHeaders: Record<string, string> = {};
+    if (options.headers) {
+      const headersObj = options.headers as Record<string, string>;
+      for (const key in headersObj) {
+        rawHeaders[key] = headersObj[key];
+      }
+    }
+
+    const payload = {
+      url,
+      method: options.method || 'GET',
+      headers: rawHeaders,
+      body: bodyStr
+    };
+
+    const response = await authFetch(proxyUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    return response;
+  }
+
   /**
    * Searches for a client by RFC. Returns client UID if found, null otherwise.
    */
   private async checkClientExists(rfc: string): Promise<string | null> {
     try {
       const url = `${this.getBaseUrl()}/v1/clients/rfc/${rfc}`;
-      const response = await fetch(url, {
+      const response = await this.fetchProxy(url, {
         method: 'GET',
         headers: this.getHeaders()
       });
@@ -54,11 +83,13 @@ export class FacturaComProvider implements InvoiceProvider {
 
       const res = await response.json();
       // Factura.com returns client info in 'data' field, which could be an array or object
-      if (res.status === 'success' && res.data) {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          return res.data[0].UID || res.data[0].uid || null;
-        } else if (typeof res.data === 'object' && !Array.isArray(res.data)) {
-          return res.data.UID || res.data.uid || null;
+      const isSuccess = res.status === 'success' || res.response === 'success';
+      const dataPayload = res.Data || res.data;
+      if (isSuccess && dataPayload) {
+        if (Array.isArray(dataPayload) && dataPayload.length > 0) {
+          return dataPayload[0].UID || dataPayload[0].uid || null;
+        } else if (typeof dataPayload === 'object' && !Array.isArray(dataPayload)) {
+          return dataPayload.UID || dataPayload.uid || null;
         }
       }
       return null;
@@ -75,24 +106,28 @@ export class FacturaComProvider implements InvoiceProvider {
     const url = `${this.getBaseUrl()}/v1/clients/create`;
     const payload = {
       rfc: customer.rfc.trim().toUpperCase(),
-      razon_social: customer.razonSocial.trim().toUpperCase(),
+      razons: customer.razonSocial.trim().toUpperCase(),
       email: customer.email.trim(),
-      codigo_postal: customer.codigoPostal.trim(),
-      regimen_fiscal: customer.regimenFiscal
+      codpos: customer.codigoPostal.trim(),
+      regimen: customer.regimenFiscal
     };
 
-    const response = await fetch(url, {
+    const response = await this.fetchProxy(url, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(payload)
     });
 
     const res = await response.json();
-    if (res.status !== 'success' || !res.data) {
-      throw new Error(res.message || 'Error al registrar el cliente en Factura.com');
+    const isSuccess = res.status === 'success' || res.response === 'success';
+    const dataPayload = res.Data || res.data;
+    if (!isSuccess || !dataPayload) {
+      console.error('[FacturaComProvider] Error registering client:', res);
+      const apiMessage = res.message || (typeof res.response === 'string' ? res.response : '') || (res.errors ? JSON.stringify(res.errors) : '');
+      throw new Error(apiMessage || 'Error al registrar el cliente en Factura.com');
     }
 
-    const uid = res.data.UID || res.data.uid;
+    const uid = dataPayload.UID || dataPayload.uid;
     if (!uid) {
       throw new Error('No se recibió el UID del cliente registrado');
     }
@@ -111,9 +146,7 @@ export class FacturaComProvider implements InvoiceProvider {
 
       // 2. Prepare payload for CFDI 4.0
       const concepts = request.items.map((item) => {
-        // En CFDI 4.0, ObjetoImp:
-        // '01' = No objeto de impuesto
-        // '02' = Sí objeto de impuesto (si tiene IVA > 0)
+        const priceNum = Number(item.price);
         const hasTaxes = item.taxRate > 0;
         const objetoImp = hasTaxes ? '02' : '01';
 
@@ -122,13 +155,13 @@ export class FacturaComProvider implements InvoiceProvider {
           Cantidad: item.quantity.toString(),
           ClaveUnidad: item.claveUnidad || 'H87', // Pieza por defecto
           Descripcion: item.name,
-          ValorUnitario: item.price.toFixed(6),
-          Importe: (item.price * item.quantity).toFixed(6),
+          ValorUnitario: priceNum.toFixed(6),
+          Importe: (priceNum * item.quantity).toFixed(6),
           ObjetoImp: objetoImp
         };
 
         if (hasTaxes) {
-          const base = item.price * item.quantity;
+          const base = priceNum * item.quantity;
           const rate = item.taxRate / 100;
           const taxAmount = base * rate;
           
@@ -168,21 +201,23 @@ export class FacturaComProvider implements InvoiceProvider {
       };
 
       const url = `${this.getBaseUrl()}/v4/cfdi40/create`;
-      const response = await fetch(url, {
+      const response = await this.fetchProxy(url, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(invoicePayload)
       });
 
       const res = await response.json();
+      const isSuccess = res.status === 'success' || res.response === 'success';
+      const dataPayload = res.Data || res.data;
 
-      if (res.status === 'success' && res.data) {
+      if (isSuccess && dataPayload) {
         return {
           success: true,
-          uuid: res.data.uuid,
-          invoiceNumber: `${res.data.serie || ''}${res.data.folio || ''}` || 'SAT-CFDI',
-          pdfUrl: res.data.pdf || res.data.pdf_url,
-          xmlUrl: res.data.xml || res.data.xml_url,
+          uuid: dataPayload.uuid || dataPayload.UUID,
+          invoiceNumber: `${dataPayload.serie || ''}${dataPayload.folio || ''}` || 'SAT-CFDI',
+          pdfUrl: dataPayload.pdf || dataPayload.pdf_url,
+          xmlUrl: dataPayload.xml || dataPayload.xml_url,
           message: res.message || 'Factura timbrada exitosamente.'
         };
       }
@@ -203,21 +238,25 @@ export class FacturaComProvider implements InvoiceProvider {
     }
   }
 
-  async cancelInvoice(uuid: string, reason: string): Promise<{ success: boolean; message?: string }> {
+  async cancelInvoice(uuid: string, reason: string, substituteUuid?: string): Promise<{ success: boolean; message?: string }> {
     try {
       const url = `${this.getBaseUrl()}/v4/cfdi40/${uuid}/cancel`;
-      const payload = {
+      const payload: any = {
         motivo: reason // SAT cancelation code (e.g. '01', '02')
       };
+      if (substituteUuid) {
+        payload.folioSustituto = substituteUuid;
+      }
 
-      const response = await fetch(url, {
+      const response = await this.fetchProxy(url, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload)
       });
 
       const res = await response.json();
-      if (res.status === 'success') {
+      const isSuccess = res.status === 'success' || res.response === 'success';
+      if (isSuccess) {
         return {
           success: true,
           message: res.message || 'Factura cancelada exitosamente ante el SAT.'
@@ -233,6 +272,40 @@ export class FacturaComProvider implements InvoiceProvider {
       return {
         success: false,
         message: `Error de cancelación: ${error.message || 'Desconocido'}`
+      };
+    }
+  }
+
+  async checkInvoiceStatus(uuid: string): Promise<{ success: boolean; status?: string; message?: string }> {
+    try {
+      const url = `${this.getBaseUrl()}/v4/cfdi40/${uuid}/cancel_status`;
+      const response = await this.fetchProxy(url, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
+
+      const res = await response.json();
+      const isSuccess = res.status === 'success' || res.response === 'success';
+      const dataPayload = res.Data || res.data;
+      if (isSuccess && dataPayload) {
+        const satStatus = dataPayload.status || dataPayload.statusSat || dataPayload.estado || 'Desconocido';
+        const satMessage = res.message || `Estado SAT: ${satStatus}`;
+        return {
+          success: true,
+          status: satStatus,
+          message: satMessage
+        };
+      }
+
+      return {
+        success: false,
+        message: res.message || 'Error al obtener el estado de la factura.'
+      };
+    } catch (error: any) {
+      console.error('Error checking CFDI status:', error);
+      return {
+        success: false,
+        message: `Error de consulta: ${error.message || 'Desconocido'}`
       };
     }
   }

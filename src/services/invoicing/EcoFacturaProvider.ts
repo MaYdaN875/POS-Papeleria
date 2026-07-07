@@ -27,4 +27,12 @@ export class EcoFacturaProvider implements InvoiceProvider {
       message: `Nota: Esta factura se registró de forma manual. Por favor proceda a cancelarla directamente en el portal de EcoFactura (UUID: ${uuid}, Motivo: ${reason}).`
     };
   }
+
+  async checkInvoiceStatus(uuid: string): Promise<{ success: boolean; status?: string; message?: string }> {
+    return {
+      success: true,
+      status: 'Manual',
+      message: `Esta factura (${uuid}) fue registrada mediante el esquema manual de EcoFactura. Favor de validar su estado directamente en el portal del PAC.`
+    };
+  }
 }

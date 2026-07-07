@@ -32,5 +32,7 @@ export const ENDPOINTS = {
   POS_USERS_MANAGER: `${API_BASE_URL}/admin/users/pos_users_manager.php`,
   POS_SETTINGS:      `${API_BASE_URL}/admin/sales/pos_settings.php`,
   POS_INVOICES:      `${API_BASE_URL}/admin/sales/pos_invoices.php`,
+  POS_INVOICES_PROXY: `${API_BASE_URL}/admin/sales/pos_invoices_proxy.php`,
+  POS_CUSTOMERS:     `${API_BASE_URL}/admin/sales/pos_customers.php`,
   POS_TAECEL:        `${API_BASE_URL}/admin/sales/pos_taecel.php`,
 };

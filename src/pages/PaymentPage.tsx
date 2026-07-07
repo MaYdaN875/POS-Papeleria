@@ -13,9 +13,10 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer, InvoiceResponse } from '../types/invoicing';
+import { REGIMENES_FISCALES, USOS_CFDI, InvoiceCustomer, InvoiceResponse, Customer } from '../types/invoicing';
 import { InvoiceService } from '../services/invoicing/InvoiceService';
 import { saveInvoiceToBackend } from '../services/invoicing/backendService';
+import { getAllCustomers, saveCustomer } from '../services/invoicing/customerService';
 import TicketPrint, { TicketData } from '../components/TicketPrint';
 import { useCart } from '../context/CartContext';
 import { logout } from '../services/authService';
@@ -64,6 +65,11 @@ export default function PaymentPage() {
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<InvoiceResponse | null>(null);
 
+  // Clientes frecuentes
+  const [frequentCustomers, setFrequentCustomers] = useState<Customer[]>([]);
+  const [selectedFrequentClientId, setSelectedFrequentClientId] = useState('');
+  const [saveToFrequent, setSaveToFrequent] = useState(false);
+
   // Inicializar cashReceived con el total SOLO una vez al cargar
   const [initialized, setInitialized] = useState(false);
   useEffect(() => {
@@ -73,14 +79,42 @@ export default function PaymentPage() {
     }
   }, [total, initialized]);
 
-  // Cargar ajustes globales
+  // Cargar ajustes globales y clientes frecuentes
   useEffect(() => {
     getGlobalSettings().then(res => {
       if (res.ok && res.settings) {
         setSettings(res.settings);
       }
     });
+    getAllCustomers().then(setFrequentCustomers).catch(console.error);
   }, []);
+
+  const handleSelectFrequentClient = (idStr: string) => {
+    setSelectedFrequentClientId(idStr);
+    if (!idStr) {
+      setInvoiceCustomer({
+        rfc: '',
+        razonSocial: '',
+        regimenFiscal: '601',
+        codigoPostal: '',
+        email: '',
+      });
+      setSaveToFrequent(false);
+      return;
+    }
+
+    const c = frequentCustomers.find(cust => cust.id === parseInt(idStr));
+    if (c) {
+      setInvoiceCustomer({
+        rfc: c.rfc,
+        razonSocial: c.razonSocial,
+        regimenFiscal: c.regimenFiscal,
+        codigoPostal: c.codigoPostal,
+        email: c.email
+      });
+      setSaveToFrequent(false);
+    }
+  };
 
   // Redirigir a ventas si el carrito está vacío
   useEffect(() => {
@@ -185,6 +219,22 @@ export default function PaymentPage() {
               pdf_url: invoiceRes.pdfUrl,
               xml_url: invoiceRes.xmlUrl
             });
+
+            // Guardar en clientes frecuentes si se solicitó
+            if (saveToFrequent) {
+              try {
+                await saveCustomer({
+                  rfc: invoiceCustomer.rfc,
+                  razonSocial: invoiceCustomer.razonSocial,
+                  regimenFiscal: invoiceCustomer.regimenFiscal,
+                  codigoPostal: invoiceCustomer.codigoPostal,
+                  email: invoiceCustomer.email
+                });
+              } catch (saveCustErr) {
+                console.error('Error auto-saving customer:', saveCustErr);
+              }
+            }
+
             invoiceCreatedSuccessfully = true;
           } else {
             alert(`Venta registrada exitosamente (Ticket #${saleId}), pero falló el timbrado fiscal:\n${invoiceRes.message || 'Error desconocido'}.\n\nPuede intentar timbrar este ticket más tarde desde el panel de Reportes.`);
@@ -535,6 +585,22 @@ export default function PaymentPage() {
 
               {wantsInvoice && (
                 <div className="payment-invoice-form animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                  
+                  {/* Selector de Cliente Frecuente */}
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Buscar Cliente Frecuente</label>
+                    <select 
+                      value={selectedFrequentClientId}
+                      onChange={(e) => handleSelectFrequentClient(e.target.value)}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                    >
+                      <option value="">-- Cliente Nuevo / Escribir Datos --</option>
+                      {frequentCustomers.map(c => (
+                        <option key={c.id} value={c.id}>{c.razonSocial} ({c.rfc})</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     <div>
                       <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>RFC</label>
@@ -543,7 +609,8 @@ export default function PaymentPage() {
                         placeholder="XAXX010101000" 
                         value={invoiceCustomer.rfc} 
                         onChange={(e) => setInvoiceCustomer({ ...invoiceCustomer, rfc: e.target.value.toUpperCase() })} 
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase' }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)', color: 'inherit' }}
+                        disabled={!!selectedFrequentClientId}
                       />
                     </div>
                     <div>
@@ -554,7 +621,8 @@ export default function PaymentPage() {
                         maxLength={5}
                         value={invoiceCustomer.codigoPostal} 
                         onChange={(e) => setInvoiceCustomer({ ...invoiceCustomer, codigoPostal: e.target.value.replace(/\D/g, '') })} 
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px' }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', background: 'var(--color-bg-card)', color: 'inherit' }}
+                        disabled={!!selectedFrequentClientId}
                       />
                     </div>
                   </div>
@@ -566,7 +634,8 @@ export default function PaymentPage() {
                       placeholder="Tal cual aparece en Constancia Fiscal" 
                       value={invoiceCustomer.razonSocial} 
                       onChange={(e) => setInvoiceCustomer({ ...invoiceCustomer, razonSocial: e.target.value.toUpperCase() })} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase' }}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '13px', textTransform: 'uppercase', background: 'var(--color-bg-card)', color: 'inherit' }}
+                      disabled={!!selectedFrequentClientId}
                     />
                   </div>
 
@@ -599,7 +668,7 @@ export default function PaymentPage() {
                       <select 
                         value={usoCFDI} 
                         onChange={(e) => setUsoCFDI(e.target.value)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)' }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-light)', fontSize: '12px', background: 'var(--color-bg-card)', color: 'inherit' }}
                       >
                         {USOS_CFDI.map((u) => (
                           <option key={u.code} value={u.code}>{u.code} - {u.description}</option>
@@ -607,6 +676,18 @@ export default function PaymentPage() {
                       </select>
                     </div>
                   </div>
+
+                  {!selectedFrequentClientId && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', marginTop: '6px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={saveToFrequent}
+                        onChange={(e) => setSaveToFrequent(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      <span>Guardar en el catálogo de Clientes Frecuentes</span>
+                    </label>
+                  )}
                 </div>
               )}
             </div>

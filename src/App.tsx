@@ -15,6 +15,7 @@ import { ServicesPage } from './pages/ServicesPage';
 import { useEffect } from 'react';
 import { getGlobalSettings } from './services/settingsService';
 import ElectronBanner from './components/ElectronBanner';
+import InvoicesPage from './pages/InvoicesPage';
 
 export default function App() {
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function App() {
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/users" element={<UsersPage />} />
-                <Route path="/billing" element={<DashboardPage />} />
+                <Route path="/billing" element={<InvoicesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>

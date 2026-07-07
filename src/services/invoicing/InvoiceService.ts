@@ -34,8 +34,15 @@ class InvoiceServiceClass {
   /**
    * Request invoice cancelation from the active provider.
    */
-  async cancelInvoice(uuid: string, reason: string): Promise<{ success: boolean; message?: string }> {
-    return this.provider.cancelInvoice(uuid, reason);
+  async cancelInvoice(uuid: string, reason: string, substituteUuid?: string): Promise<{ success: boolean; message?: string }> {
+    return this.provider.cancelInvoice(uuid, reason, substituteUuid);
+  }
+
+  /**
+   * Check the status of an invoice via the active provider.
+   */
+  async checkInvoiceStatus(uuid: string): Promise<{ success: boolean; status?: string; message?: string }> {
+    return this.provider.checkInvoiceStatus(uuid);
   }
 }
 

@@ -24,11 +24,22 @@ export class MockProvider implements InvoiceProvider {
     };
   }
 
-  async cancelInvoice(uuid: string, reason: string): Promise<{ success: boolean; message?: string }> {
+  async cancelInvoice(uuid: string, reason: string, substituteUuid?: string): Promise<{ success: boolean; message?: string }> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    const substituteInfo = substituteUuid ? ` (Sustituida por: ${substituteUuid})` : '';
     return {
       success: true,
-      message: `Factura ${uuid} cancelada con éxito (Motivo: ${reason})`
+      message: `Factura ${uuid} cancelada con éxito (Motivo: ${reason})${substituteInfo}`
+    };
+  }
+
+  async checkInvoiceStatus(uuid: string): Promise<{ success: boolean; status?: string; message?: string }> {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    // Simulate active status or cancelled if it's already cancelled
+    return {
+      success: true,
+      status: 'Vigente',
+      message: `Factura con UUID ${uuid} se encuentra vigente en el SAT (simulado).`
     };
   }
 }
