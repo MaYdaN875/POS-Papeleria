@@ -35,4 +35,6 @@ export const ENDPOINTS = {
   POS_INVOICES_PROXY: `${API_BASE_URL}/admin/sales/pos_invoices_proxy.php`,
   POS_CUSTOMERS:     `${API_BASE_URL}/admin/sales/pos_customers.php`,
   POS_TAECEL:        `${API_BASE_URL}/admin/sales/pos_taecel.php`,
+  POS_SUPPLIERS:     `${API_BASE_URL}/admin/sales/pos_suppliers.php`,
+  POS_PURCHASE_ORDERS: `${API_BASE_URL}/admin/sales/pos_purchase_orders.php`,
 };

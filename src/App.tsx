@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { getGlobalSettings } from './services/settingsService';
 import ElectronBanner from './components/ElectronBanner';
 import InvoicesPage from './pages/InvoicesPage';
+import PurchasesPage from './pages/PurchasesPage';
 
 export default function App() {
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function App() {
               {/* Rutas SOLO para Administradores */}
               <Route element={<ProtectedRoute requireAdmin={true} />}>
                 <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/purchases" element={<PurchasesPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/billing" element={<InvoicesPage />} />
