@@ -249,6 +249,14 @@
   margin-bottom: var(--space-sm);
 }
 
+.sales-product-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
 .sales-product-name {
   font-weight: 600;
   font-size: var(--font-size-sm);
@@ -256,7 +264,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
+  width: 100%;
+}
+
+.sales-product-brand {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .sales-product-price {

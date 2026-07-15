@@ -23,6 +23,7 @@ export interface Product {
   offerPrice: number | null;
   discountPercentage: number;
   barcodes?: string[];
+  isActive?: boolean;
 }
 
 export interface CartItem {
@@ -72,6 +73,7 @@ function mapProduct(p: Record<string, unknown>): Product {
     offerPrice: p.offer_price != null ? Number(p.offer_price) : null,
     discountPercentage: Number(p.discount_percentage || 0),
     barcodes: Array.isArray(p.barcodes) ? p.barcodes.map(String) : [],
+    isActive: p.is_active !== undefined ? !!p.is_active : true,
   };
 }
 
@@ -83,10 +85,10 @@ export async function getProducts(): Promise<Product[]> {
   // POS: precios físicos, stock y códigos de barras.
   // Pública: imágenes y categorías (las guarda en otra tabla que el POS no ve).
   const [posData, pubData] = await Promise.all([
-    fetch(`${ENDPOINTS.POS_PRODUCTS}?t=${Date.now()}`)
+    fetch(`${ENDPOINTS.POS_PRODUCTS}?include_inactive=1&t=${Date.now()}`)
       .then((r) => r.json())
       .catch(() => null),
-    fetch(ENDPOINTS.PRODUCTS)
+    fetch(`${ENDPOINTS.PRODUCTS}?include_inactive=1`)
       .then((r) => r.json())
       .catch(() => null),
   ]);

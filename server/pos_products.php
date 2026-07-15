@@ -62,6 +62,7 @@ try {
         (in_array('is_offer', $cols, true) ? 'COALESCE(p.is_offer, 0)' : '0') . ' AS is_offer',
         $col('offer_price', 'NULL') . ' AS offer_price',
         $col('discount_percentage', '0') . ' AS discount_percentage',
+        $col('is_active', '1') . ' AS is_active',
     ];
 
     $joins = '';
@@ -88,9 +89,13 @@ try {
         $selects[] = "'General' AS parent_category";
     }
 
-    $where = in_array('is_active', $cols, true)
-        ? 'WHERE COALESCE(p.is_active, 1) = 1'
-        : (in_array('active', $cols, true) ? 'WHERE COALESCE(p.active, 1) = 1' : '');
+    $includeInactive = isset($_GET['include_inactive']) && $_GET['include_inactive'] == 1;
+    $where = '';
+    if (!$includeInactive) {
+        $where = in_array('is_active', $cols, true)
+            ? 'WHERE COALESCE(p.is_active, 1) = 1'
+            : (in_array('active', $cols, true) ? 'WHERE COALESCE(p.active, 1) = 1' : '');
+    }
 
     $sql = 'SELECT ' . implode(', ', $selects) . ' FROM products p ' . $joins . ' ' . $where . ' ORDER BY p.id DESC';
 
@@ -147,6 +152,7 @@ try {
             'category_slug'       => $p['category_slug'],
             'parent_category'     => $p['parent_category'],
             'barcodes'            => $barcodesByProduct[(int)$p['id']] ?? [],
+            'is_active'           => isset($p['is_active']) ? (int)$p['is_active'] : 1,
         ];
     }
 

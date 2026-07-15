@@ -188,4 +188,13 @@ function registerPrinterHandlers() {
       return { ok: false, error: err.message }
     }
   })
+
+  ipcMain.on('focus-fix', () => {
+    if (win) {
+      win.blur()
+      setTimeout(() => {
+        win?.focus()
+      }, 50)
+    }
+  })
 }

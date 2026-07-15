@@ -68,6 +68,7 @@ export default function InventoryPage() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [newForm, setNewForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
 
   useBarcodeScanner({
     enabled: !showNewModal && editingId === null,
@@ -289,6 +290,9 @@ export default function InventoryPage() {
   };
 
   const filteredProducts = products.filter((p) => {
+    if (p.isActive === false && !showInactive) {
+      return false;
+    }
     if (searchTerm === '') return true;
 
     const term = searchTerm.toLowerCase();
@@ -316,10 +320,18 @@ export default function InventoryPage() {
       <div className="inventory-header">
         <div className="inventory-header-left">
           <h1 className="inventory-title">Inventario</h1>
-          <span className="inventory-count-badge">{products.length} productos</span>
+          <span className="inventory-count-badge">{filteredProducts.length} productos</span>
         </div>
 
         <div className="inventory-header-right">
+          <label className="inventory-toggle-inactive">
+            <input
+              type="checkbox"
+              checked={showInactive}
+              onChange={(e) => setShowInactive(e.target.checked)}
+            />
+            <span>Mostrar inactivos</span>
+          </label>
           <div className="inventory-search">
             <Search size={18} className="inventory-search-icon" />
             <input
@@ -358,7 +370,7 @@ export default function InventoryPage() {
               const effectivePosPrice = product.posPrice ?? product.price;
 
               return (
-                <div className="inventory-card" key={product.id}>
+                <div className={`inventory-card ${product.isActive === false ? 'inv-card--inactive' : ''}`} key={product.id}>
                   <div className="inv-card-image-wrapper">
                     <img
                       src={getImageUrl(product.image)}
@@ -368,6 +380,11 @@ export default function InventoryPage() {
                         (e.target as HTMLImageElement).src = `${API_BASE_URL}/../images/boligrafos.jpg`;
                       }}
                     />
+                    {product.isActive === false && (
+                      <span className="inv-inactive-badge">
+                        Inactivo
+                      </span>
+                    )}
                     {!isEditing && (
                       <span className={`inv-stock-badge-corner ${getStockBadgeClass(product.stock)}`}>
                         {product.stock} u.
