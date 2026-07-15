@@ -69,8 +69,9 @@ export default function SalesPage() {
     return () => window.removeEventListener('focus', onFocus);
   }, []);
 
-  // Filtrar productos por categoría y búsqueda
+  // Filtrar productos por categoría y búsqueda (solo productos activos)
   const filteredProducts = products.filter((p) => {
+    if (p.isActive === false) return false;
     const matchesCategory =
       activeCategory === 'Todos' || p.parentCategory === activeCategory;
     const matchesSearch =
@@ -99,7 +100,7 @@ export default function SalesPage() {
           <div>
             <h1 className="sales-title">Productos</h1>
             <p className="sales-subtitle">
-              {products.length} productos disponibles
+              {products.filter((p) => p.isActive !== false).length} productos disponibles
             </p>
           </div>
           <div className="sales-categories">
@@ -170,7 +171,12 @@ export default function SalesPage() {
                   />
                 </div>
                 <div className="sales-product-info">
-                  <span className="sales-product-name">{product.name}</span>
+                  <div className="sales-product-title-group">
+                    <span className="sales-product-name" title={product.name}>{product.name}</span>
+                    {product.brand && (
+                      <span className="sales-product-brand">{product.brand}</span>
+                    )}
+                  </div>
                   <span className="sales-product-price">
                     ${product.price.toFixed(2)}
                   </span>

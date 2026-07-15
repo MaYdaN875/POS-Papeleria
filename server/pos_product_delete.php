@@ -96,6 +96,13 @@ try {
     }
 
     if ($softDeleteCol !== null) {
+        // Liberar códigos de barras del producto eliminado para que puedan reusarse en otros
+        try {
+            $pdo->prepare('DELETE FROM product_barcodes WHERE product_id = ?')->execute([$productId]);
+        } catch (Throwable $e) {
+            // Continuar si falla
+        }
+
         $stmt = $pdo->prepare("UPDATE products SET {$softDeleteCol} = 0 WHERE id = ?");
         $stmt->execute([$productId]);
         adminJsonResponse(200, ['ok' => true, 'message' => 'Producto eliminado del catálogo']);
