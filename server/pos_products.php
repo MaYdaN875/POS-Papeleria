@@ -63,6 +63,7 @@ try {
         $col('offer_price', 'NULL') . ' AS offer_price',
         $col('discount_percentage', '0') . ' AS discount_percentage',
         $col('is_active', '1') . ' AS is_active',
+        $col('base_unit', "'pieza'") . ' AS base_unit',
     ];
 
     $joins = '';
@@ -116,6 +117,36 @@ try {
         // Tabla opcional
     }
 
+    $presentationsByProduct = [];
+    $hasPresentationsTable = adminTableExists($pdo, 'pos_product_presentations');
+    if ($hasPresentationsTable) {
+        try {
+            $presStmt = $pdo->query('
+                SELECT id, product_id, name, barcode, units_per_sale, sale_price, is_default, is_active 
+                FROM pos_product_presentations 
+                ORDER BY product_id, is_default DESC, id ASC
+            ');
+            foreach ($presStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $pid = (int)$row['product_id'];
+                if (!isset($presentationsByProduct[$pid])) {
+                    $presentationsByProduct[$pid] = [];
+                }
+                $presentationsByProduct[$pid][] = [
+                    'id' => (int)$row['id'],
+                    'product_id' => $pid,
+                    'name' => $row['name'],
+                    'barcode' => $row['barcode'],
+                    'units_per_sale' => (float)$row['units_per_sale'],
+                    'sale_price' => (float)$row['sale_price'],
+                    'is_default' => (bool)$row['is_default'],
+                    'is_active' => (bool)$row['is_active'],
+                ];
+            }
+        } catch (Throwable $e) {
+            // Ignorar errores menores
+        }
+    }
+
     $products = [];
     foreach ($rows as $p) {
         $basePrice = (float)$p['price'];
@@ -134,8 +165,26 @@ try {
             ? (float)$p['pos_price']
             : null;
 
+        $pId = (int)$p['id'];
+        $presentations = isset($presentationsByProduct[$pId]) ? $presentationsByProduct[$pId] : [];
+        if (empty($presentations)) {
+            $firstBarcode = isset($barcodesByProduct[$pId][0]) ? $barcodesByProduct[$pId][0] : null;
+            $presentations = [
+                [
+                    'id' => 0,
+                    'product_id' => $pId,
+                    'name' => 'Pieza',
+                    'barcode' => $firstBarcode,
+                    'units_per_sale' => 1.000,
+                    'sale_price' => $posPrice !== null ? $posPrice : $basePrice,
+                    'is_default' => true,
+                    'is_active' => true,
+                ]
+            ];
+        }
+
         $products[] = [
-            'id'                  => (int)$p['id'],
+            'id'                  => $pId,
             'name'                => $p['name'],
             'brand'               => $p['brand'] ?? '',
             'description'         => $p['description'] ?? '',
@@ -151,8 +200,10 @@ try {
             'category'            => $p['category'],
             'category_slug'       => $p['category_slug'],
             'parent_category'     => $p['parent_category'],
-            'barcodes'            => $barcodesByProduct[(int)$p['id']] ?? [],
+            'barcodes'            => $barcodesByProduct[$pId] ?? [],
             'is_active'           => isset($p['is_active']) ? (int)$p['is_active'] : 1,
+            'base_unit'           => $p['base_unit'] ?? 'pieza',
+            'presentations'       => $presentations,
         ];
     }
 

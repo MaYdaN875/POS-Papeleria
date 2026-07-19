@@ -94,6 +94,10 @@ try {
                 adminJsonResponse(400, ['ok' => false, 'message' => 'Proveedor inválido']);
             }
 
+            $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+            $hasBrand = in_array('brand', $cols, true);
+            $brandSelect = $hasBrand ? "COALESCE(p.brand, '') AS product_brand" : "'' AS product_brand";
+
             $stmt = $pdo->prepare("
                 SELECT
                   ps.id AS link_id,
@@ -102,6 +106,7 @@ try {
                   ps.cost_price,
                   ps.is_primary,
                   p.name AS product_name,
+                  {$brandSelect},
                   p.stock AS product_stock,
                   p.sku AS product_sku
                 FROM pos_product_suppliers ps
@@ -115,7 +120,11 @@ try {
 
         } elseif ($action === 'all_products') {
             // Retorna lista simplificada de todos los productos para enlazarlos
-            $stmt = $pdo->query("SELECT id, name, sku, stock, price, pos_price FROM products WHERE is_active = 1 ORDER BY name ASC");
+            $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+            $hasBrand = in_array('brand', $cols, true);
+            $brandSelect = $hasBrand ? "COALESCE(brand, '') AS brand" : "'' AS brand";
+
+            $stmt = $pdo->query("SELECT id, name, {$brandSelect}, sku, stock, price, pos_price FROM products WHERE is_active = 1 ORDER BY name ASC");
             $allProducts = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
             adminJsonResponse(200, ['ok' => true, 'products' => $allProducts]);
 

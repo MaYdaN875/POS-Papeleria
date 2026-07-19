@@ -1,4 +1,4 @@
-import { Check, Edit2, Loader2, Search, Trash2, X } from 'lucide-react';
+import { Check, Edit2, Loader2, Search, Trash2, X, Layers } from 'lucide-react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
@@ -12,8 +12,11 @@ import {
   getProducts,
   removeProductBarcode,
   updateProduct,
+  saveProductPresentation,
+  deleteProductPresentation,
   type Category,
   type Product,
+  type Presentation,
 } from '../services/productService';
 import { getGlobalSettings } from '../services/settingsService';
 import '../styles/InventoryPage.css';
@@ -41,11 +44,29 @@ export default function InventoryPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editPosPrice, setEditPosPrice] = useState<string>('');
   const [editStock, setEditStock] = useState<string>('');
+  const [editBaseUnit, setEditBaseUnit] = useState<string>('');
   const [newBarcode, setNewBarcode] = useState<string>('');
   const [editBarcodes, setEditBarcodes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const editPriceInputRef = useRef<HTMLInputElement>(null);
+
+  // Estados del modal de Presentaciones
+  const [selectedProductForPresentations, setSelectedProductForPresentations] = useState<Product | null>(null);
+  const [showPresentationsModal, setShowPresentationsModal] = useState(false);
+  const [presentationsList, setPresentationsList] = useState<Presentation[]>([]);
+  const [loadingPresentations, setLoadingPresentations] = useState(false);
+
+  // Formulario de nueva/editar presentación
+  const [presForm, setPresForm] = useState({
+    id: 0,
+    name: '',
+    barcode: '',
+    unitsPerSale: '1',
+    salePrice: '',
+    isDefault: false,
+    isActive: true
+  });
 
   // Al entrar en modo edición, enfocar el campo de precio.
   // Esto evita el bug de Electron donde el teclado no responde hasta cambiar de ventana.
@@ -125,6 +146,7 @@ export default function InventoryPage() {
     setEditingId(product.id);
     setEditPosPrice((product.posPrice ?? product.price).toString());
     setEditStock(product.stock.toString());
+    setEditBaseUnit(product.baseUnit ?? 'pieza');
     setEditBarcodes([...(product.barcodes || [])]);
     setNewBarcode('');
   };
@@ -146,7 +168,7 @@ export default function InventoryPage() {
     try {
       setSaving(true);
 
-      const result = await updateProduct(productId, newPosPrice, newStock);
+      const result = await updateProduct(productId, newPosPrice, newStock, editBaseUnit);
       if (!result.ok) {
         if (result.sessionExpired) {
           await handleSessionExpired(result.message);
@@ -194,6 +216,106 @@ export default function InventoryPage() {
       alert('Error de conexión al guardar');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOpenPresentationsModal = (product: Product) => {
+    setSelectedProductForPresentations(product);
+    setPresentationsList(product.presentations || []);
+    setPresForm({
+      id: 0,
+      name: '',
+      barcode: '',
+      unitsPerSale: '1',
+      salePrice: (product.posPrice ?? product.price).toString(),
+      isDefault: false,
+      isActive: true
+    });
+    setShowPresentationsModal(true);
+  };
+
+  const handleSavePresentation = async () => {
+    if (!selectedProductForPresentations) return;
+    const { id, name, barcode, unitsPerSale, salePrice, isDefault, isActive } = presForm;
+    const factor = parseFloat(unitsPerSale);
+    const priceVal = parseFloat(salePrice);
+
+    if (!name.trim() || isNaN(factor) || factor <= 0 || isNaN(priceVal) || priceVal < 0) {
+      alert('Por favor completa todos los campos de forma válida.');
+      return;
+    }
+
+    try {
+      setLoadingPresentations(true);
+      const res = await saveProductPresentation({
+        id: id > 0 ? id : undefined,
+        productId: selectedProductForPresentations.id,
+        name: name.trim(),
+        barcode: barcode.trim() !== '' ? barcode.trim() : null,
+        unitsPerSale: factor,
+        salePrice: priceVal,
+        isDefault,
+        isActive
+      });
+
+      if (res.ok) {
+        // Recargar productos
+        await loadProducts();
+        
+        // Recargar el producto actual en modal
+        const prods = await getProducts();
+        const updatedProd = prods.find(p => p.id === selectedProductForPresentations.id);
+        if (updatedProd) {
+          setSelectedProductForPresentations(updatedProd);
+          setPresentationsList(updatedProd.presentations || []);
+        }
+
+        // Resetear formulario
+        setPresForm({
+          id: 0,
+          name: '',
+          barcode: '',
+          unitsPerSale: '1',
+          salePrice: (selectedProductForPresentations.posPrice ?? selectedProductForPresentations.price).toString(),
+          isDefault: false,
+          isActive: true
+        });
+      } else {
+        alert(res.message || 'Error al guardar la presentación');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión');
+    } finally {
+      setLoadingPresentations(false);
+    }
+  };
+
+  const handleDeletePresentation = async (presId: number) => {
+    if (!selectedProductForPresentations) return;
+    if (presId <= 0) return;
+    const confirmed = window.confirm('¿Seguro que deseas eliminar esta presentación?');
+    if (!confirmed) return;
+
+    try {
+      setLoadingPresentations(true);
+      const res = await deleteProductPresentation(presId, selectedProductForPresentations.id);
+      if (res.ok) {
+        await loadProducts();
+        const prods = await getProducts();
+        const updatedProd = prods.find(p => p.id === selectedProductForPresentations.id);
+        if (updatedProd) {
+          setSelectedProductForPresentations(updatedProd);
+          setPresentationsList(updatedProd.presentations || []);
+        }
+      } else {
+        alert(res.message || 'Error al eliminar la presentación');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión');
+    } finally {
+      setLoadingPresentations(false);
     }
   };
 
@@ -430,7 +552,7 @@ export default function InventoryPage() {
                             />
                           </div>
                           <div className="inv-edit-group">
-                            <label>Stock (u.)</label>
+                            <label>Stock ({product.baseUnit || 'pieza'})</label>
                             <input
                               type="text"
                               inputMode="numeric"
@@ -440,6 +562,16 @@ export default function InventoryPage() {
                                 const val = e.target.value;
                                 if (/^\d*$/.test(val)) setEditStock(val);
                               }}
+                            />
+                          </div>
+                          <div className="inv-edit-group">
+                            <label>Unidad Base</label>
+                            <input
+                              type="text"
+                              className="inv-edit-input"
+                              value={editBaseUnit}
+                              onChange={(e) => setEditBaseUnit(e.target.value)}
+                              placeholder="Ej. pieza"
                             />
                           </div>
 
@@ -550,13 +682,22 @@ export default function InventoryPage() {
                             <span className="inv-card-price">${effectivePosPrice.toFixed(2)}</span>
                             <span className="inv-card-price-web">Web: ${product.webPrice.toFixed(2)}</span>
                           </div>
-                          <button
-                            className="inv-action-btn"
-                            title="Editar Inventario"
-                            onClick={() => handleEditClick(product)}
-                          >
-                            <Edit2 size={18} /> Editar
-                          </button>
+                          <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto' }}>
+                            <button
+                              className="inv-action-btn"
+                              title="Editar Inventario"
+                              onClick={() => handleEditClick(product)}
+                            >
+                              <Edit2 size={16} /> Editar
+                            </button>
+                            <button
+                              className="inv-action-btn"
+                              title="Ver Presentaciones comerciales"
+                              onClick={() => handleOpenPresentationsModal(product)}
+                            >
+                              <Layers size={16} /> Pres.
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -715,6 +856,273 @@ export default function InventoryPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showPresentationsModal && selectedProductForPresentations && (
+        <div className="inv-modal-overlay" onClick={() => !loadingPresentations && setShowPresentationsModal(false)}>
+          <div className="inv-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '90%' }}>
+            <div className="inv-modal-header">
+              <h2>Presentaciones de venta: {selectedProductForPresentations.name}</h2>
+              <button
+                className="inv-modal-close"
+                onClick={() => !loadingPresentations && setShowPresentationsModal(false)}
+                disabled={loadingPresentations}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="inv-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ background: 'var(--color-bg-main)', padding: '12px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <strong>Stock físico base:</strong> {selectedProductForPresentations.stock} {selectedProductForPresentations.baseUnit || 'pieza'}(s)
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Unidad Base:</label>
+                  <input
+                    type="text"
+                    value={selectedProductForPresentations.baseUnit || 'pieza'}
+                    onChange={async (e) => {
+                      const val = e.target.value.trim();
+                      if (val) {
+                        try {
+                          await updateProduct(
+                            selectedProductForPresentations.id,
+                            selectedProductForPresentations.posPrice ?? selectedProductForPresentations.price,
+                            selectedProductForPresentations.stock,
+                            val
+                          );
+                          await loadProducts();
+                          const prods = await getProducts();
+                          const updated = prods.find(p => p.id === selectedProductForPresentations.id);
+                          if (updated) setSelectedProductForPresentations(updated);
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }
+                    }}
+                    style={{
+                      width: '100px',
+                      padding: '4px 8px',
+                      fontSize: '13px',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '4px',
+                      background: 'var(--color-bg-card)',
+                      color: 'var(--color-text-main)'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Formulario para agregar / editar presentación */}
+              <div style={{ background: 'var(--color-bg-card)', padding: '16px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>
+                  {presForm.id > 0 ? 'Editar Presentación' : 'Agregar Presentación'}
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  <div className="inv-form-group" style={{ margin: 0 }}>
+                    <label style={{ fontSize: '12px' }}>Nombre *</label>
+                    <input
+                      type="text"
+                      placeholder="Ej. Caja c/12"
+                      value={presForm.name}
+                      onChange={(e) => setPresForm({ ...presForm, name: e.target.value })}
+                      style={{ padding: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+                  <div className="inv-form-group" style={{ margin: 0 }}>
+                    <label style={{ fontSize: '12px' }}>Código barras</label>
+                    <input
+                      type="text"
+                      placeholder="Opcional"
+                      value={presForm.barcode}
+                      onChange={(e) => setPresForm({ ...presForm, barcode: e.target.value })}
+                      style={{ padding: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+                  <div className="inv-form-group" style={{ margin: 0 }}>
+                    <label style={{ fontSize: '12px' }}>Contenido (factor)</label>
+                    <input
+                      type="number"
+                      min="0.001"
+                      step="any"
+                      placeholder="1"
+                      value={presForm.unitsPerSale}
+                      onChange={(e) => setPresForm({ ...presForm, unitsPerSale: e.target.value })}
+                      style={{ padding: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+                  <div className="inv-form-group" style={{ margin: 0 }}>
+                    <label style={{ fontSize: '12px' }}>Precio ($) *</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      value={presForm.salePrice}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) setPresForm({ ...presForm, salePrice: val });
+                      }}
+                      style={{ padding: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginTop: '12px', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={presForm.isDefault}
+                      onChange={(e) => setPresForm({ ...presForm, isDefault: e.target.checked })}
+                    />
+                    Presentación por defecto
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={presForm.isActive}
+                      onChange={(e) => setPresForm({ ...presForm, isActive: e.target.checked })}
+                    />
+                    Activo
+                  </label>
+
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                    {presForm.id > 0 && (
+                      <button
+                        type="button"
+                        className="inv-modal-btn inv-modal-btn--cancel"
+                        onClick={() => setPresForm({
+                          id: 0,
+                          name: '',
+                          barcode: '',
+                          unitsPerSale: '1',
+                          salePrice: (selectedProductForPresentations.posPrice ?? selectedProductForPresentations.price).toString(),
+                          isDefault: false,
+                          isActive: true
+                        })}
+                        style={{ padding: '6px 12px', fontSize: '13px' }}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="inv-modal-btn inv-modal-btn--save"
+                      onClick={handleSavePresentation}
+                      disabled={loadingPresentations}
+                      style={{ padding: '6px 12px', fontSize: '13px' }}
+                    >
+                      {loadingPresentations ? <Loader2 size={16} className="inventory-spinner" /> : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabla de presentaciones actuales */}
+              <div>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>Presentaciones Configuradas</h3>
+                <div style={{ border: '1px solid var(--color-border)', borderRadius: '6px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
+                        <th style={{ padding: '10px' }}>Nombre</th>
+                        <th style={{ padding: '10px' }}>Código de barras</th>
+                        <th style={{ padding: '10px' }}>Multiplicador</th>
+                        <th style={{ padding: '10px' }}>Precio</th>
+                        <th style={{ padding: '10px' }}>Por defecto</th>
+                        <th style={{ padding: '10px' }}>Estado</th>
+                        <th style={{ padding: '10px', textAlign: 'right' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {presentationsList.map((pres) => (
+                        <tr key={pres.id} style={{ borderBottom: '1px solid var(--color-border)', background: pres.id === presForm.id ? 'var(--color-bg-secondary)' : 'transparent' }}>
+                          <td style={{ padding: '10px', fontWeight: 600 }}>{pres.name}</td>
+                          <td style={{ padding: '10px', color: 'var(--color-text-secondary)' }}>{pres.barcode || '(Sin código)'}</td>
+                          <td style={{ padding: '10px' }}>{pres.unitsPerSale} {selectedProductForPresentations.baseUnit || 'pieza'}(s)</td>
+                          <td style={{ padding: '10px', fontWeight: 600 }}>${pres.salePrice.toFixed(2)}</td>
+                          <td style={{ padding: '10px' }}>{pres.isDefault ? 'Sí' : 'No'}</td>
+                          <td style={{ padding: '10px' }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              background: pres.isActive ? '#dcfce7' : '#fee2e2',
+                              color: pres.isActive ? '#15803d' : '#b91c1c'
+                            }}>
+                              {pres.isActive ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <button
+                                type="button"
+                                onClick={() => setPresForm({
+                                  id: pres.id,
+                                  name: pres.name,
+                                  barcode: pres.barcode || '',
+                                  unitsPerSale: pres.unitsPerSale.toString(),
+                                  salePrice: pres.salePrice.toString(),
+                                  isDefault: pres.isDefault,
+                                  isActive: pres.isActive
+                                })}
+                                style={{
+                                  border: '1px solid var(--color-border)',
+                                  background: 'var(--color-bg-card)',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePresentation(pres.id)}
+                                disabled={pres.isDefault}
+                                style={{
+                                  border: '1px solid #fecaca',
+                                  background: '#fee2e2',
+                                  color: '#dc2626',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  cursor: pres.isDefault ? 'not-allowed' : 'pointer',
+                                  fontSize: '12px'
+                                }}
+                                title={pres.isDefault ? "No se puede eliminar la presentación por defecto" : "Eliminar presentación"}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {presentationsList.length === 0 && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                            No hay presentaciones configuradas aún.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <div className="inv-modal-footer">
+              <button
+                type="button"
+                className="inv-modal-btn inv-modal-btn--cancel"
+                onClick={() => setShowPresentationsModal(false)}
+                disabled={loadingPresentations}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

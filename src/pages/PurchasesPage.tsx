@@ -816,7 +816,14 @@ export default function PurchasesPage() {
                           <tbody>
                             {supplierProducts.map(p => (
                               <tr key={p.product_id}>
-                                <td style={{ fontWeight: 600 }}>{p.product_name}</td>
+                                <td style={{ fontWeight: 600 }}>
+                                  {p.product_name}
+                                  {p.product_brand && (
+                                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 500 }}>
+                                      {p.product_brand}
+                                    </span>
+                                  )}
+                                </td>
                                 <td>{p.product_sku || 'N/A'}</td>
                                 <td>{p.supplier_sku || 'N/A'}</td>
                                 <td style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>
@@ -1463,7 +1470,14 @@ export default function PurchasesPage() {
 
                   <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: '4px', padding: '4px' }}>
                     {allProducts
-                      .filter(p => p.name.toLowerCase().includes(searchProductLink.toLowerCase()) || (p.sku && p.sku.includes(searchProductLink)))
+                      .filter(p => {
+                        const q = searchProductLink.toLowerCase().trim();
+                        return (
+                          p.name.toLowerCase().includes(q) ||
+                          (p.brand && p.brand.toLowerCase().includes(q)) ||
+                          (p.sku && p.sku.toLowerCase().includes(q))
+                        );
+                      })
                       .map(p => (
                         <div
                           key={p.id}
@@ -1479,7 +1493,10 @@ export default function PurchasesPage() {
                             alignItems: 'center'
                           }}
                         >
-                          <span>{p.name}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span>{p.name}</span>
+                            {p.brand && <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 500 }}>Marca: {p.brand}</span>}
+                          </div>
                           <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Stock: {p.stock}</span>
                         </div>
                       ))}
@@ -1494,6 +1511,7 @@ export default function PurchasesPage() {
                     return (
                       <div style={{ background: 'var(--color-bg-main)', padding: '12px', borderRadius: '6px', fontSize: '0.85rem', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <div style={{ fontWeight: 700, color: 'var(--color-primary)', marginBottom: '4px' }}>Producto Seleccionado</div>
+                        <div><strong>Marca:</strong> {selectedProductForLink.brand || 'Sin marca'}</div>
                         <div><strong>SKU:</strong> {selectedProductForLink.sku || 'Sin SKU'}</div>
                         <div><strong>Precio Web:</strong> ${Number(selectedProductForLink.price ?? 0).toFixed(2)}</div>
                         {selectedProductForLink.pos_price !== null && selectedProductForLink.pos_price !== undefined && (
@@ -1576,7 +1594,14 @@ export default function PurchasesPage() {
 
               <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: '4px', padding: '4px' }}>
                 {allProducts
-                  .filter(p => p.name.toLowerCase().includes(searchProductForOrder.toLowerCase()))
+                  .filter(p => {
+                    const q = searchProductForOrder.toLowerCase().trim();
+                    return (
+                      p.name.toLowerCase().includes(q) ||
+                      (p.brand && p.brand.toLowerCase().includes(q)) ||
+                      (p.sku && p.sku.toLowerCase().includes(q))
+                    );
+                  })
                   .map(p => (
                     <div
                       key={p.id}
@@ -1592,7 +1617,10 @@ export default function PurchasesPage() {
                       }}
                       className="panel-list-item"
                     >
-                      <span style={{ fontWeight: 600 }}>{p.name}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 600 }}>{p.name}</span>
+                        {p.brand && <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 500 }}>Marca: {p.brand}</span>}
+                      </div>
                       <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Stock: {p.stock}</span>
                     </div>
                   ))}

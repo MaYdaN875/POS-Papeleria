@@ -119,10 +119,20 @@ try {
     $saleId = (int)$pdo->lastInsertId();
 
     // 2. Insertar items y descontar stock
-    $insertItemStmt = $pdo->prepare('
-      INSERT INTO pos_sale_items (pos_sale_id, product_id, product_name, quantity, unit_price, total_price)
-      VALUES (:sale_id, :product_id, :product_name, :quantity, :unit_price, :total_price)
-    ');
+    $saleItemCols = $pdo->query('SHOW COLUMNS FROM pos_sale_items')->fetchAll(PDO::FETCH_COLUMN);
+    $hasPresCols = in_array('presentation_id', $saleItemCols, true);
+
+    if ($hasPresCols) {
+      $insertItemStmt = $pdo->prepare('
+        INSERT INTO pos_sale_items (pos_sale_id, product_id, product_name, quantity, unit_price, total_price, presentation_id, presentation_name, units_per_sale, inventory_units)
+        VALUES (:sale_id, :product_id, :product_name, :quantity, :unit_price, :total_price, :presentation_id, :presentation_name, :units_per_sale, :inventory_units)
+      ');
+    } else {
+      $insertItemStmt = $pdo->prepare('
+        INSERT INTO pos_sale_items (pos_sale_id, product_id, product_name, quantity, unit_price, total_price)
+        VALUES (:sale_id, :product_id, :product_name, :quantity, :unit_price, :total_price)
+      ');
+    }
 
     // Descontar stock en todas las columnas que existan
     $productCols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
@@ -148,21 +158,67 @@ try {
 
       if ($productId <= 0 || $quantity <= 0) continue;
 
-      $insertItemStmt->execute([
+      $presentationId = isset($item['presentation_id']) ? (int)$item['presentation_id'] : null;
+      $presentationName = isset($item['presentation_name']) ? (string)$item['presentation_name'] : null;
+      $unitsPerSale = isset($item['units_per_sale']) ? (float)$item['units_per_sale'] : 1.000;
+      
+      // Recalcular unidades de inventario de forma segura en el servidor
+      $inventoryUnits = $quantity * $unitsPerSale;
+
+      $bindParams = [
         'sale_id'      => $saleId,
         'product_id'   => $productId,
         'product_name' => $productName,
         'quantity'     => $quantity,
         'unit_price'   => $unitPrice,
         'total_price'  => $unitPrice * $quantity,
-      ]);
+      ];
 
-      // Descontar stock del producto
+      if ($hasPresCols) {
+        $bindParams['presentation_id'] = $presentationId;
+        $bindParams['presentation_name'] = $presentationName;
+        $bindParams['units_per_sale'] = $unitsPerSale;
+        $bindParams['inventory_units'] = $inventoryUnits;
+      }
+
+      $insertItemStmt->execute($bindParams);
+
+      // Obtener stock previo para bitácora
+      $prevStock = 0.0;
+      try {
+        $stockQuery = $pdo->prepare('SELECT stock FROM products WHERE id = ?');
+        $stockQuery->execute([$productId]);
+        $prevStock = (float)$stockQuery->fetchColumn();
+      } catch (Throwable $e) {}
+
+      $newStock = max(0.0, $prevStock - $inventoryUnits);
+
+      // Descontar stock del producto usando $inventoryUnits en lugar de $quantity
       if ($updateStockStmt) {
         $updateStockStmt->execute([
-          'qty'        => $quantity,
+          'qty'        => $inventoryUnits,
           'product_id' => $productId,
         ]);
+      }
+
+      // Registrar en la bitácora pos_inventory_transactions
+      if (adminTableExists($pdo, 'pos_inventory_transactions')) {
+        try {
+          $stmtTrans = $pdo->prepare('
+              INSERT INTO pos_inventory_transactions (product_id, admin_user_id, transaction_type, quantity, previous_stock, new_stock, notes)
+              VALUES (?, ?, \'sale\', ?, ?, ?, ?)
+          ');
+          $stmtTrans->execute([
+              $productId,
+              $adminId,
+              -$inventoryUnits,
+              $prevStock,
+              $newStock,
+              "Venta POS. Venta de la presentación: " . ($presentationName ?: 'Pieza/Unidad') . " (Venta #" . $saleId . ")"
+          ]);
+        } catch (Throwable $e) {
+          // Ignorar fallos menores de bitácora
+        }
       }
     }
 

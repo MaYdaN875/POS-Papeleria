@@ -21,6 +21,9 @@ export interface CreateSalePayload {
     product_name: string;
     quantity: number;
     unit_price: number;
+    presentation_id?: number;
+    presentation_name?: string;
+    units_per_sale?: number;
   }[];
   payment_method: 'cash' | 'card' | 'transfer';
   subtotal: number;
@@ -40,7 +43,7 @@ export async function createSale(
   taxRate: number = 0
 ): Promise<SaleResult> {
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.presentation.salePrice * item.quantity,
     0
   );
   const taxAmount = subtotal * (taxRate / 100);
@@ -49,9 +52,12 @@ export async function createSale(
   const payload: CreateSalePayload = {
     items: cart.map((item) => ({
       product_id: item.product.id,
-      product_name: item.product.name,
+      product_name: `${item.product.name} - ${item.presentation.name}`,
       quantity: item.quantity,
-      unit_price: item.product.price,
+      unit_price: item.presentation.salePrice,
+      presentation_id: item.presentation.id,
+      presentation_name: item.presentation.name,
+      units_per_sale: item.presentation.unitsPerSale,
     })),
     payment_method: paymentMethod,
     subtotal,

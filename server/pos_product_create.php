@@ -169,6 +169,27 @@ try {
         }
     }
 
+    $hasPresentationsTable = adminTableExists($pdo, 'pos_product_presentations');
+    if ($hasPresentationsTable) {
+        try {
+            $priceVal = isset($params['pos_price']) && $params['pos_price'] !== null && $params['pos_price'] !== ''
+                ? (float)$params['pos_price']
+                : (float)($params['price'] ?? 0.0);
+            
+            $pdo->prepare('
+                INSERT INTO pos_product_presentations (product_id, name, barcode, units_per_sale, sale_price, is_default, is_active)
+                VALUES (?, ?, ?, 1.000, ?, 1, 1)
+            ')->execute([
+                $productId,
+                'Pieza',
+                $barcode !== '' ? $barcode : null,
+                $priceVal
+            ]);
+        } catch (Throwable $e) {
+            // Ignorar fallos de presentación por defecto
+        }
+    }
+
     adminJsonResponse(201, [
         'ok'         => true,
         'product_id' => $productId,

@@ -122,6 +122,12 @@ try {
         $params[] = $newStock;
     }
 
+    $baseUnit = isset($_POST['base_unit']) ? trim((string)$_POST['base_unit']) : '';
+    if ($baseUnit !== '' && in_array('base_unit', $cols, true)) {
+        $sets[] = 'base_unit = ?';
+        $params[] = $baseUnit;
+    }
+
     if (empty($sets)) {
         adminJsonResponse(500, ['ok' => false, 'message' => 'No se encontraron columnas actualizables']);
     }
