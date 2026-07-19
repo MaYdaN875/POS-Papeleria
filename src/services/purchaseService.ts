@@ -21,6 +21,7 @@ export interface ProductSupplier {
   cost_price: number;
   is_primary: boolean; // Mapeado desde 0/1 en el backend
   product_name: string;
+  product_brand?: string;
   product_stock: number;
   product_sku: string | null;
 }
@@ -65,6 +66,7 @@ export interface PurchaseSuggestion {
 export interface SimpleProduct {
   id: number;
   name: string;
+  brand?: string;
   sku: string | null;
   stock: number;
   price?: number;

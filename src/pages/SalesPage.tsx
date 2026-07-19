@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
-import { getCategories, getProducts, type Product } from '../services/productService';
+import { getCategories, getProducts, type Product, type Presentation } from '../services/productService';
 import '../styles/SalesPage.css';
 
 export default function SalesPage() {
@@ -18,26 +18,59 @@ export default function SalesPage() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Detectar escáner de código de barras
-  useBarcodeScanner({
-    onScan: (code) => {
-      // Buscar el producto por código de barras, id, sku o nombre exacto
-      const product = products.find(
+  const handleSearchAdd = (code: string): boolean => {
+    let foundProduct: Product | null = null;
+    let foundPresentation: Presentation | null = null;
+
+    // 1. Buscar por código de barras de presentación
+    for (const p of products) {
+      if (p.presentations) {
+        const pr = p.presentations.find((pres) => pres.barcode === code);
+        if (pr) {
+          foundProduct = p;
+          foundPresentation = pr;
+          break;
+        }
+      }
+    }
+
+    // 2. Buscar por ID o barcodes heredados del producto
+    if (!foundProduct) {
+      foundProduct = products.find(
         (p) =>
           p.id.toString() === code ||
           p.name.toLowerCase() === code.toLowerCase() ||
-          (p as any).barcode === code ||
-          (p as any).sku === code ||
           (p.barcodes && p.barcodes.includes(code))
-      );
+      ) || null;
+      if (foundProduct) {
+        foundPresentation = foundProduct.presentations?.find(pr => pr.isDefault) ?? foundProduct.presentations?.[0] ?? {
+          id: 0,
+          productId: foundProduct.id,
+          name: 'Pieza',
+          barcode: foundProduct.barcodes?.[0] || null,
+          unitsPerSale: 1.0,
+          salePrice: foundProduct.price,
+          isDefault: true,
+          isActive: true
+        };
+      }
+    }
 
-      if (product) {
-        if (!addToCart(product)) {
-          alert(`Sin stock disponible para: ${product.name}`);
-        } else {
-          setSearchTerm('');
-        }
+    if (foundProduct && foundPresentation) {
+      if (!addToCart(foundProduct, foundPresentation)) {
+        alert(`Sin stock disponible para: ${foundProduct.name} (${foundPresentation.name})`);
       } else {
+        setSearchTerm('');
+      }
+      return true;
+    }
+    return false;
+  };
+
+  // Detectar escáner de código de barras
+  useBarcodeScanner({
+    onScan: (code) => {
+      if (!handleSearchAdd(code)) {
         alert(`Producto no encontrado para el código: ${code}`);
       }
     },
@@ -74,10 +107,17 @@ export default function SalesPage() {
     if (p.isActive === false) return false;
     const matchesCategory =
       activeCategory === 'Todos' || p.parentCategory === activeCategory;
+    
+    const query = searchTerm.toLowerCase().trim();
+    if (query === '') return matchesCategory;
+
     const matchesSearch =
-      searchTerm === '' ||
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchTerm.toLowerCase());
+      p.name.toLowerCase().includes(query) ||
+      p.brand.toLowerCase().includes(query) ||
+      p.id.toString() === query ||
+      (p.barcodes && p.barcodes.includes(query)) ||
+      (p.presentations && p.presentations.some(pr => pr.barcode && pr.barcode.toLowerCase() === query));
+
     return matchesCategory && matchesSearch;
   });
 
@@ -127,6 +167,14 @@ export default function SalesPage() {
             className="sales-search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const term = searchTerm.trim();
+                if (term) {
+                  handleSearchAdd(term);
+                }
+              }
+            }}
           />
         </div>
 
@@ -154,7 +202,8 @@ export default function SalesPage() {
                     alert('Producto agotado');
                     return;
                   }
-                  if (!addToCart(product)) {
+                  const defaultPres = product.presentations?.find(pr => pr.isDefault) ?? product.presentations?.[0];
+                  if (!addToCart(product, defaultPres)) {
                     alert(`Stock máximo alcanzado para: ${product.name}`);
                   }
                 }}
@@ -225,58 +274,102 @@ export default function SalesPage() {
               <p>Agrega productos al carrito</p>
             </div>
           ) : (
-            cart.map((item) => (
-              <div className="sales-cart-item" key={item.product.id}>
-                <div className="sales-cart-item-image">
-                  <img
-                    src={getImageUrl(item.product.image)}
-                    alt={item.product.name}
-                    className="sales-cart-item-img"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-                <div className="sales-cart-item-info">
-                  <span className="sales-cart-item-name">
-                    {item.product.name}
-                  </span>
-                  <div className="sales-cart-item-controls">
-                    <button
-                      className="sales-cart-qty-btn"
-                      onClick={() => updateQuantity(item.product.id, -1)}
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="sales-cart-qty">
-                      {String(item.quantity).padStart(2, '0')}
-                    </span>
-                    <button
-                      className="sales-cart-qty-btn"
-                      onClick={() => {
-                        if (!updateQuantity(item.product.id, 1)) {
-                          alert(`Stock máximo alcanzado para: ${item.product.name}`);
-                        }
+            cart.map((item) => {
+              const uniqueKey = `${item.product.id}-${item.presentation.id}`;
+              return (
+                <div className="sales-cart-item" key={uniqueKey}>
+                  <div className="sales-cart-item-image">
+                    <img
+                      src={getImageUrl(item.product.image)}
+                      alt={item.product.name}
+                      className="sales-cart-item-img"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
                       }}
+                    />
+                  </div>
+                  <div className="sales-cart-item-info">
+                    <span className="sales-cart-item-name" style={{ fontWeight: 600 }}>
+                      {item.product.name}
+                    </span>
+                    
+                    {/* Selector de Presentación en Carrito */}
+                    {item.product.presentations && item.product.presentations.length > 1 ? (
+                      <select
+                        className="sales-cart-item-presentation-select"
+                        value={item.presentation.id}
+                        onChange={(e) => {
+                          const presId = parseInt(e.target.value, 10);
+                          const nextPres = item.product.presentations?.find(pr => pr.id === presId);
+                          if (nextPres) {
+                            removeFromCart(item.product.id, item.presentation.id);
+                            if (!addToCart(item.product, nextPres)) {
+                              addToCart(item.product, item.presentation);
+                              alert(`Stock insuficiente para cambiar a la presentación: ${nextPres.name}`);
+                            }
+                          }
+                        }}
+                        style={{
+                          fontSize: '0.8rem',
+                          padding: '2px 4px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg-card)',
+                          color: 'var(--color-text-main)',
+                          marginTop: '4px',
+                          cursor: 'pointer',
+                          maxWidth: '150px'
+                        }}
+                      >
+                        {item.product.presentations.map(pr => (
+                          <option key={pr.id} value={pr.id}>
+                            {pr.name} (${pr.salePrice.toFixed(2)})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                        {item.presentation.name} (${item.presentation.salePrice.toFixed(2)})
+                      </span>
+                    )}
+
+                    <div className="sales-cart-item-controls" style={{ marginTop: '8px' }}>
+                      <button
+                        className="sales-cart-qty-btn"
+                        onClick={() => updateQuantity(item.product.id, item.presentation.id, -1)}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="sales-cart-qty">
+                        {String(item.quantity).padStart(2, '0')}
+                      </span>
+                      <button
+                        className="sales-cart-qty-btn"
+                        onClick={() => {
+                          if (!updateQuantity(item.product.id, item.presentation.id, 1)) {
+                            alert(`Stock máximo alcanzado para: ${item.product.name} (${item.presentation.name})`);
+                          }
+                        }}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', justifyContent: 'space-between' }}>
+                    <button 
+                      onClick={() => removeFromCart(item.product.id, item.presentation.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '4px' }}
+                      title="Eliminar producto"
                     >
-                      <Plus size={14} />
+                      <Trash2 size={16} />
                     </button>
+                    <span className="sales-cart-item-price" style={{ fontWeight: 700 }}>
+                      ${(item.presentation.salePrice * item.quantity).toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                  <button 
-                    onClick={() => removeFromCart(item.product.id)}
-                    style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '4px' }}
-                    title="Eliminar producto"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                  <span className="sales-cart-item-price">
-                    ${(item.product.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

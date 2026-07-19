@@ -23,6 +23,7 @@ export const ENDPOINTS = {
   POS_DASHBOARD:     `${API_BASE_URL}/admin/sales/pos_dashboard.php`,
   POS_INVENTORY_UPDATE: `${API_BASE_URL}/admin/sales/pos_inventory_update.php`,
   POS_PRODUCTS:       `${API_BASE_URL}/admin/sales/pos_products.php`,
+  POS_PRODUCT_PRESENTATIONS: `${API_BASE_URL}/admin/sales/pos_product_presentations.php`,
   POS_PRODUCT_CREATE: `${API_BASE_URL}/admin/sales/pos_product_create.php`,
   POS_PRODUCT_DELETE: `${API_BASE_URL}/admin/sales/pos_product_delete.php`,
   POS_PRODUCT_BARCODES: `${API_BASE_URL}/admin/sales/pos_product_barcodes.php`,

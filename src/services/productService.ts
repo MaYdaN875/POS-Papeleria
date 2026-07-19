@@ -5,6 +5,17 @@
 
 import { ENDPOINTS } from '../config';
 
+export interface Presentation {
+  id: number;
+  productId: number;
+  name: string;
+  barcode: string | null;
+  unitsPerSale: number;
+  salePrice: number;
+  isDefault: boolean;
+  isActive: boolean;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -24,10 +35,13 @@ export interface Product {
   discountPercentage: number;
   barcodes?: string[];
   isActive?: boolean;
+  baseUnit?: string;
+  presentations?: Presentation[];
 }
 
 export interface CartItem {
   product: Product;
+  presentation: Presentation;
   quantity: number;
 }
 
@@ -55,6 +69,18 @@ function mapProduct(p: Record<string, unknown>): Product {
       ? Number(rawPosPrice)
       : null;
 
+  const rawPresentations = Array.isArray(p.presentations) ? p.presentations : [];
+  const presentations: Presentation[] = rawPresentations.map((pr: any) => ({
+    id: Number(pr.id),
+    productId: Number(pr.product_id ?? pr.productId ?? p.id),
+    name: String(pr.name ?? ''),
+    barcode: pr.barcode ? String(pr.barcode) : null,
+    unitsPerSale: Number(pr.units_per_sale ?? pr.unitsPerSale ?? 1),
+    salePrice: Number(pr.sale_price ?? pr.salePrice ?? 0),
+    isDefault: !!(pr.is_default ?? pr.isDefault),
+    isActive: !!(pr.is_active ?? pr.isActive),
+  }));
+
   return {
     id: Number(p.id),
     name: String(p.name ?? ''),
@@ -74,6 +100,8 @@ function mapProduct(p: Record<string, unknown>): Product {
     discountPercentage: Number(p.discount_percentage || 0),
     barcodes: Array.isArray(p.barcodes) ? p.barcodes.map(String) : [],
     isActive: p.is_active !== undefined ? !!p.is_active : true,
+    baseUnit: String(p.base_unit ?? 'pieza'),
+    presentations,
   };
 }
 
@@ -163,7 +191,8 @@ export function getCategories(products: Product[]): string[] {
 export async function updateProduct(
   id: number,
   posPrice: number,
-  stock: number
+  stock: number,
+  baseUnit?: string
 ): Promise<{ ok: boolean; message?: string; sessionExpired?: boolean }> {
   try {
     const token = localStorage.getItem('pos_token');
@@ -177,6 +206,9 @@ export async function updateProduct(
     formData.append('pos_price', posPrice.toString());
     formData.append('stock', stock.toString());
     formData.append('access_token', token);
+    if (baseUnit !== undefined) {
+      formData.append('base_unit', baseUnit);
+    }
 
     // Sin header Authorization: evita bloqueo CORS en Hostinger.
     // El token va en access_token dentro del formulario POST.
@@ -351,5 +383,70 @@ export async function removeProductBarcode(
   } catch (error) {
     console.error(error);
     return { ok: false, message: 'Error de red' };
+  }
+}
+
+/**
+ * Guarda una presentación de venta (crear o actualizar).
+ */
+export async function saveProductPresentation(
+  presentation: Omit<Presentation, 'id'> & { id?: number }
+): Promise<{ ok: boolean; message?: string; id?: number }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const res = await fetch(ENDPOINTS.POS_PRODUCT_PRESENTATIONS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_token: token,
+        action: 'save',
+        id: presentation.id,
+        product_id: presentation.productId,
+        name: presentation.name,
+        barcode: presentation.barcode,
+        units_per_sale: presentation.unitsPerSale,
+        sale_price: presentation.salePrice,
+        is_default: presentation.isDefault ? 1 : 0,
+        is_active: presentation.isActive ? 1 : 0,
+      }),
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return { ok: false, message: 'Error de conexión' };
+  }
+}
+
+/**
+ * Elimina una presentación de venta.
+ */
+export async function deleteProductPresentation(
+  id: number,
+  productId: number
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const res = await fetch(ENDPOINTS.POS_PRODUCT_PRESENTATIONS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_token: token,
+        action: 'delete',
+        id,
+        product_id: productId,
+      }),
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return { ok: false, message: 'Error de conexión' };
   }
 }
