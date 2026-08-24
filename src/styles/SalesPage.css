@@ -449,6 +449,26 @@
   text-align: center;
 }
 
+.sales-cart-qty-input {
+  width: 42px;
+  min-width: 42px;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.sales-cart-qty-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
 .sales-cart-item-price {
   font-weight: 700;
   font-size: var(--font-size-base);

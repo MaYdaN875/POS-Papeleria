@@ -10,6 +10,7 @@ interface CartContextValue {
   cart: CartItem[];
   addToCart: (product: Product, presentation?: Presentation) => boolean;
   updateQuantity: (productId: number, presentationId: number, delta: number) => boolean;
+  setQuantity: (productId: number, presentationId: number, quantity: number) => boolean;
   removeFromCart: (productId: number, presentationId: number) => void;
   clearCart: () => void;
   subtotal: number;
@@ -90,6 +91,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return true;
   };
 
+  const setQuantity = (productId: number, presentationId: number, quantity: number): boolean => {
+    const item = cart.find((i) => i.product.id === productId && i.presentation.id === presentationId);
+    if (!item) return false;
+
+    const nextQty = Math.floor(quantity);
+    if (nextQty <= 0) {
+      setCart((prev) =>
+        prev.filter((i) => !(i.product.id === productId && i.presentation.id === presentationId))
+      );
+      return true;
+    }
+
+    const othersUsed = cart
+      .filter((i) => i.product.id === productId && i.presentation.id !== presentationId)
+      .reduce((sum, i) => sum + i.quantity * i.presentation.unitsPerSale, 0);
+    const unitsNeeded = nextQty * item.presentation.unitsPerSale;
+    if (othersUsed + unitsNeeded > item.product.stock) {
+      const maxQty = Math.floor((item.product.stock - othersUsed) / item.presentation.unitsPerSale);
+      if (maxQty <= 0) return false;
+      setCart((prev) =>
+        prev.map((i) =>
+          i.product.id === productId && i.presentation.id === presentationId
+            ? { ...i, quantity: Math.max(1, maxQty) }
+            : i
+        )
+      );
+      return false;
+    }
+
+    setCart((prev) =>
+      prev.map((i) =>
+        i.product.id === productId && i.presentation.id === presentationId
+          ? { ...i, quantity: nextQty }
+          : i
+      )
+    );
+    return true;
+  };
+
   const removeFromCart = (productId: number, presentationId: number) => {
     setCart((prev) => prev.filter((item) => !(item.product.id === productId && item.presentation.id === presentationId)));
   };
@@ -103,7 +143,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, updateQuantity, removeFromCart, clearCart, subtotal }}
+      value={{ cart, addToCart, updateQuantity, setQuantity, removeFromCart, clearCart, subtotal }}
     >
       {children}
     </CartContext.Provider>

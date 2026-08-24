@@ -9,7 +9,7 @@ import '../styles/SalesPage.css';
 
 export default function SalesPage() {
   const navigate = useNavigate();
-  const { cart, addToCart, updateQuantity, removeFromCart, subtotal } = useCart();
+  const { cart, addToCart, updateQuantity, setQuantity, removeFromCart, subtotal } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(['Todos']);
@@ -17,6 +17,7 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
 
   const handleSearchAdd = (code: string): boolean => {
     let foundProduct: Product | null = null;
@@ -335,20 +336,80 @@ export default function SalesPage() {
 
                     <div className="sales-cart-item-controls" style={{ marginTop: '8px' }}>
                       <button
+                        type="button"
                         className="sales-cart-qty-btn"
-                        onClick={() => updateQuantity(item.product.id, item.presentation.id, -1)}
+                        onClick={() => {
+                          updateQuantity(item.product.id, item.presentation.id, -1);
+                          setQtyDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[`${item.product.id}-${item.presentation.id}`];
+                            return next;
+                          });
+                        }}
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="sales-cart-qty">
-                        {String(item.quantity).padStart(2, '0')}
-                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className="sales-cart-qty-input"
+                        aria-label={`Cantidad de ${item.product.name}`}
+                        value={
+                          qtyDrafts[`${item.product.id}-${item.presentation.id}`]
+                          ?? String(item.quantity)
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '');
+                          const key = `${item.product.id}-${item.presentation.id}`;
+                          setQtyDrafts((prev) => ({ ...prev, [key]: raw }));
+                          if (raw === '') return;
+                          const qty = Number.parseInt(raw, 10);
+                          if (!Number.isFinite(qty)) return;
+                          if (!setQuantity(item.product.id, item.presentation.id, qty)) {
+                            alert(`Stock máximo alcanzado para: ${item.product.name} (${item.presentation.name})`);
+                          }
+                        }}
+                        onBlur={() => {
+                          const key = `${item.product.id}-${item.presentation.id}`;
+                          const draft = qtyDrafts[key];
+                          setQtyDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[key];
+                            return next;
+                          });
+                          if (draft === undefined) return;
+                          if (draft === '') {
+                            setQuantity(item.product.id, item.presentation.id, item.quantity);
+                            return;
+                          }
+                          const qty = Number.parseInt(draft, 10);
+                          if (!Number.isFinite(qty) || qty <= 0) {
+                            setQuantity(item.product.id, item.presentation.id, 1);
+                            return;
+                          }
+                          if (!setQuantity(item.product.id, item.presentation.id, qty)) {
+                            alert(`Stock máximo alcanzado para: ${item.product.name} (${item.presentation.name})`);
+                          }
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                      />
                       <button
+                        type="button"
                         className="sales-cart-qty-btn"
                         onClick={() => {
                           if (!updateQuantity(item.product.id, item.presentation.id, 1)) {
                             alert(`Stock máximo alcanzado para: ${item.product.name} (${item.presentation.name})`);
                           }
+                          setQtyDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[`${item.product.id}-${item.presentation.id}`];
+                            return next;
+                          });
                         }}
                       >
                         <Plus size={14} />
