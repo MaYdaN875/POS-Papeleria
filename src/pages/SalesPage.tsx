@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { getCategories, getProducts, type Product, type Presentation } from '../services/productService';
 import '../styles/SalesPage.css';
+import MobileScannerButton from '../components/MobileScannerButton';
 
 export default function SalesPage() {
   const navigate = useNavigate();
@@ -176,6 +177,15 @@ export default function SalesPage() {
                 }
               }
             }}
+          />
+          <MobileScannerButton 
+            onScan={(code) => {
+              if (!handleSearchAdd(code)) {
+                alert(`Producto no encontrado para el código: ${code}`);
+              }
+            }} 
+            iconOnly={true} 
+            className="sales-mobile-scan-btn"
           />
         </div>
 

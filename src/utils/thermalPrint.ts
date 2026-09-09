@@ -40,7 +40,10 @@ export function isElectronEnv(): boolean {
   return navigator.userAgent.toLowerCase().includes('electron');
 }
 
+import { Capacitor } from '@capacitor/core';
+
 export function isBrowserWithoutBridge(): boolean {
+  if (Capacitor.isNativePlatform()) return false;
   return !hasPrintBridge() && !isElectronEnv();
 }
 

@@ -703,3 +703,40 @@
   from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
+
+@media (max-width: 1024px) {
+  .services-page {
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .services-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+
+  .taecel-balance {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .services-grid {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding: var(--space-sm);
+  }
+
+  .products-container,
+  .transaction-panel {
+    min-height: auto;
+  }
+
+  .products-list {
+    grid-template-columns: 1fr;
+    max-height: 360px;
+  }
+}
+

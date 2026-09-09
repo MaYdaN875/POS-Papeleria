@@ -3,7 +3,7 @@
  * La API es la misma que usa la tienda web de Papelería Godart en Hostinger.
  */
 
-export const API_BASE_URL = 'https://godart-papelería.com/api';
+export const API_BASE_URL = 'https://xn--godart-papelera-ipb.com/api';
 
 // Endpoints existentes (de la tienda web)
 export const ENDPOINTS = {
