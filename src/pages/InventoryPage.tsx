@@ -20,6 +20,7 @@ import {
 } from '../services/productService';
 import { getGlobalSettings } from '../services/settingsService';
 import '../styles/InventoryPage.css';
+import MobileScannerButton from '../components/MobileScannerButton';
 
 const EMPTY_FORM = {
   name: '',
@@ -464,6 +465,22 @@ export default function InventoryPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <MobileScannerButton 
+            onScan={(code) => {
+              setSearchTerm(code);
+              const matchingProduct = products.find(
+                (p) =>
+                  p.id.toString() === code ||
+                  p.name.toLowerCase() === code.toLowerCase() ||
+                  (p.barcodes && p.barcodes.includes(code))
+              );
+              if (matchingProduct) {
+                handleEditClick(matchingProduct);
+              }
+            }} 
+            iconOnly={true} 
+            className="inventory-mobile-scan-btn"
+          />
           <button
             className="topbar-new-sale-btn"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
@@ -529,7 +546,6 @@ export default function InventoryPage() {
                       ))}
                     </div>
 
-                    <div className="inv-card-actions">
                       {isEditing ? (
                         <div className="inv-edit-form">
                           <div className="inv-price-info">
@@ -682,7 +698,7 @@ export default function InventoryPage() {
                             <span className="inv-card-price">${effectivePosPrice.toFixed(2)}</span>
                             <span className="inv-card-price-web">Web: ${product.webPrice.toFixed(2)}</span>
                           </div>
-                          <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto' }}>
+                          <div className="inv-card-actions-row">
                             <button
                               className="inv-action-btn"
                               title="Editar Inventario"
@@ -700,7 +716,6 @@ export default function InventoryPage() {
                           </div>
                         </div>
                       )}
-                    </div>
                   </div>
                 </div>
               );

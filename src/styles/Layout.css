@@ -21,4 +21,17 @@
   overflow-x: hidden;
   padding: var(--space-xl);
   background: var(--color-bg-main);
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  .layout-main {
+    margin-left: 0;
+    width: 100vw;
+  }
+
+  .layout-content {
+    padding: 16px;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+  }
 }

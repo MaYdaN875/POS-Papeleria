@@ -91,6 +91,12 @@
   outline: none;
 }
 
+.inventory-mobile-scan-btn {
+  display: flex;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+}
+
 /* Grid Area */
 .inventory-table-container {
   flex: 1;
@@ -112,6 +118,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
@@ -225,6 +232,12 @@
 .inv-price-web {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+}
+
+.inv-card-actions-row {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
 
 /* Modal nuevo producto */
@@ -532,3 +545,74 @@
   cursor: pointer;
   accent-color: var(--color-primary);
 }
+
+@media (max-width: 1024px) {
+  .inventory-page {
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-md);
+  }
+
+  .inventory-header-right {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .inventory-search {
+    max-width: 100%;
+  }
+
+  .inventory-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .inventory-card {
+    border-radius: var(--radius-md);
+  }
+
+  .inv-card-image-wrapper {
+    height: 110px;
+    padding: var(--space-sm);
+  }
+
+  .inv-card-content {
+    padding: var(--space-sm);
+  }
+
+  .inv-card-name {
+    font-size: 13px;
+    margin-bottom: var(--space-sm);
+  }
+
+  .inv-card-price {
+    font-size: 15px;
+  }
+
+  .inv-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+    padding-top: var(--space-sm);
+  }
+
+  .inv-card-actions-row {
+    margin-left: 0;
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .inv-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+}
+

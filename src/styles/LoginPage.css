@@ -1,12 +1,15 @@
 /* ---- Login Page ---- */
 .login-page {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(135deg, #F8FBFF 0%, #E3F2FD 40%, #F0F7FF 100%);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 40px;
 }
 
 /* Header */
@@ -14,7 +17,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
+  padding-top: max(env(safe-area-inset-top, 24px), 48px);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .login-header-logo {
@@ -286,4 +292,26 @@
 .login-server-dot--offline {
   background: var(--color-danger);
 }
+
+@media (max-width: 1024px) {
+  .login-card-wrapper {
+    padding: var(--space-sm);
+  }
+  .login-card {
+    padding: var(--space-xl) var(--space-md);
+    border-radius: var(--radius-lg);
+  }
+  .login-header {
+    padding: var(--space-sm) var(--space-md);
+    padding-top: max(env(safe-area-inset-top, 32px), 60px);
+  }
+  .login-header-title {
+    font-size: var(--font-size-md);
+  }
+  .login-server-status {
+    font-size: var(--font-size-xs);
+    padding: 4px 10px;
+  }
+}
+
 

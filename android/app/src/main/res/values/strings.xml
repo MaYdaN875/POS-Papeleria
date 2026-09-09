@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">POS Papeleria</string>
+    <string name="title_activity_main">POS Papeleria</string>
+    <string name="package_name">com.godart.pos</string>
+    <string name="custom_url_scheme">com.godart.pos</string>
+</resources>

@@ -345,3 +345,56 @@
   color: var(--color-danger);
   white-space: nowrap;
 }
+
+@media (max-width: 1024px) {
+  .dashboard {
+    height: auto;
+    border-radius: var(--radius-lg);
+    overflow: visible;
+  }
+
+  .dashboard-header {
+    padding: var(--space-lg);
+    position: static;
+  }
+
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+
+  .dashboard-sales-card {
+    padding: var(--space-xl);
+  }
+
+  .dashboard-sales-amount {
+    font-size: 2.2rem;
+    margin-bottom: var(--space-lg);
+  }
+
+  .dashboard-stats {
+    gap: var(--space-lg);
+  }
+
+  .dashboard-inventory {
+    padding: 0 var(--space-lg) var(--space-xl);
+  }
+
+  .dashboard-inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding-top: var(--space-lg);
+  }
+
+  .dashboard-inventory-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+}

@@ -375,3 +375,46 @@
   background: var(--color-danger);
   color: white;
 }
+
+@media (max-width: 1024px) {
+  .settings-page {
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .settings-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+
+  .settings-layout {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .settings-nav-btn {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+
+  .settings-content {
+    padding: var(--space-md);
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+}
+

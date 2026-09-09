@@ -406,3 +406,39 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(13, 71, 161, 0.35);
 }
+
+@media (max-width: 1024px) {
+  .payment-header {
+    padding-top: max(env(safe-area-inset-top, 0px), 32px);
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .payment-header-profile {
+    display: none;
+  }
+
+  .payment-content {
+    grid-template-columns: 1fr;
+    padding: var(--space-md);
+    gap: var(--space-md);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+  }
+
+  .payment-total-card {
+    padding: var(--space-lg);
+  }
+
+  .payment-total-amount {
+    font-size: 2.8rem;
+  }
+
+  .payment-methods {
+    padding: var(--space-md);
+  }
+
+  .payment-cash-section {
+    padding: var(--space-md);
+  }
+}
+

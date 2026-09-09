@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GlobalSettings } from '../services/settingsService';
-import { printEscPosTicket } from '../utils/thermalPrint';
-import { Printer, X } from 'lucide-react';
+import { printEscPosTicket, isElectronEnv } from '../utils/thermalPrint';
+import { Printer, X, Share2 } from 'lucide-react';
 import '../styles/TicketPrint.css';
 
 export interface TicketData {
@@ -108,6 +108,38 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
     }
   };
 
+  const handleShare = async () => {
+    try {
+      const text = `
+🛒 *${storeInfo.storeName || storeInfo.name}*
+📍 ${storeInfo.storeAddress || storeInfo.address}
+📞 ${storeInfo.storePhone || storeInfo.phone}
+--------------------------------
+Ticket: #${data.saleId}
+Fecha: ${new Date(data.date).toLocaleString('es-MX')}
+Cajero: ${data.cashierName}
+--------------------------------
+${data.items.map(i => `${i.quantity}x ${i.name} - ${formatMoney(i.totalPrice)}`).join('\n')}
+--------------------------------
+TOTAL: ${formatMoney(data.total)}
+Método: ${translateMethod(data.paymentMethod)}
+--------------------------------
+${storeInfo.ticketThanksMessage || '¡Gracias por su compra!'}
+      `.trim();
+
+      if (navigator.share) {
+        await navigator.share({
+          title: `Ticket de Compra #${data.saleId}`,
+          text: text,
+        });
+      } else {
+        alert("Compartir no está disponible en este dispositivo.");
+      }
+    } catch (e) {
+      console.log('Error compartiendo:', e);
+    }
+  };
+
   const dateObj = new Date(data.date);
   const formattedDate = dateObj.toLocaleDateString('es-MX', {
     year: 'numeric',
@@ -130,6 +162,12 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
         <div className="ticket-preview-header">
           <h3>Vista Previa de Ticket</h3>
           <div className="ticket-preview-actions">
+            {!isElectronEnv() && (
+              <button className="btn-print-now" onClick={handleShare} style={{ background: '#25D366' }}>
+                <Share2 size={18} />
+                Compartir
+              </button>
+            )}
             <button className="btn-print-now" onClick={handlePrint}>
               <Printer size={18} />
               Imprimir

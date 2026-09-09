@@ -240,3 +240,17 @@
   transform: none;
   box-shadow: none;
 }
+
+@media (max-width: 1024px) {
+  .cash-page {
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .cash-grid {
+    grid-template-columns: 1fr;
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+}
+
