@@ -740,3 +740,15 @@
   }
 }
 
+@media (max-width: 480px) {
+  .services-header {
+    padding: var(--space-sm);
+  }
+  .products-container {
+    padding: var(--space-sm);
+  }
+  .transaction-panel {
+    padding: var(--space-md);
+  }
+}
+

@@ -1,4 +1,4 @@
-import { Check, Edit2, Loader2, Search, Trash2, X, Layers } from 'lucide-react';
+import { Check, Edit2, Loader2, Search, Trash2, X, Layers, ImagePlus } from 'lucide-react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
@@ -21,6 +21,7 @@ import {
 import { getGlobalSettings } from '../services/settingsService';
 import '../styles/InventoryPage.css';
 import MobileScannerButton from '../components/MobileScannerButton';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 const EMPTY_FORM = {
   name: '',
@@ -31,6 +32,7 @@ const EMPTY_FORM = {
   stock: '',
   categoryId: '',
   barcode: '',
+  imageBase64: '',
 };
 
 export default function InventoryPage() {
@@ -397,6 +399,7 @@ export default function InventoryPage() {
       stock,
       category_id: newForm.categoryId ? parseInt(newForm.categoryId, 10) : undefined,
       barcode: newForm.barcode.trim() || undefined,
+      image_base64: newForm.imageBase64 || undefined,
     });
     setCreating(false);
 
@@ -849,6 +852,59 @@ export default function InventoryPage() {
                   onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
                   placeholder="Opcional"
                 />
+              </div>
+
+              <div className="inv-form-group inv-form-group--full" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label>Foto del producto</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const image = await Camera.getPhoto({
+                          quality: 80,
+                          allowEditing: false,
+                          resultType: CameraResultType.Base64,
+                          source: CameraSource.Prompt,
+                          promptLabelHeader: 'Foto del Producto',
+                          promptLabelPhoto: 'Elegir de la galería',
+                          promptLabelPicture: 'Tomar foto',
+                          promptLabelCancel: 'Cancelar'
+                        });
+                        if (image.base64String) {
+                          setNewForm({ ...newForm, imageBase64: `data:image/${image.format};base64,${image.base64String}` });
+                        }
+                      } catch (error) {
+                        console.log('User cancelled or error', error);
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      background: 'var(--color-bg-card)',
+                      border: '1px solid var(--color-primary)',
+                      color: 'var(--color-primary)',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <ImagePlus size={18} /> Seleccionar Foto
+                  </button>
+                  {newForm.imageBase64 && (
+                    <div style={{ position: 'relative' }}>
+                      <img src={newForm.imageBase64} alt="Preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                      <button 
+                        type="button"
+                        onClick={() => setNewForm({ ...newForm, imageBase64: '' })}
+                        style={{ position: 'absolute', top: -5, right: -5, background: 'red', color: 'white', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, border: 'none', cursor: 'pointer' }}>
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="inv-modal-footer">

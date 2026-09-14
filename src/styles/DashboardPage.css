@@ -398,3 +398,22 @@
     gap: var(--space-md);
   }
 }
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: var(--space-md);
+  }
+  .dashboard-grid {
+    padding: var(--space-sm);
+    gap: var(--space-md);
+  }
+  .dashboard-sales-card {
+    padding: var(--space-md);
+  }
+  .dashboard-stats {
+    gap: var(--space-md);
+  }
+  .dashboard-inventory {
+    padding: 0 var(--space-md) var(--space-md);
+  }
+}

@@ -558,3 +558,12 @@
   }
 }
 
+@media (max-width: 480px) {
+  .sales-products {
+    padding: var(--space-sm);
+  }
+  .sales-grid {
+    gap: var(--space-sm);
+  }
+}
+
