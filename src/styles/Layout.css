@@ -35,3 +35,10 @@
     padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
   }
 }
+
+@media (max-width: 480px) {
+  .layout-content {
+    padding: 10px;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+  }
+}

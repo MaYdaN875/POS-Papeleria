@@ -254,3 +254,15 @@
   }
 }
 
+@media (max-width: 480px) {
+  .cash-header {
+    padding: var(--space-md);
+  }
+  .cash-grid {
+    padding: var(--space-sm);
+  }
+  .cash-panel {
+    padding: var(--space-md);
+  }
+}
+

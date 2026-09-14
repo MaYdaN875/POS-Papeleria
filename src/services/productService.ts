@@ -54,6 +54,7 @@ export interface CreateProductPayload {
   stock: number;
   category_id?: number;
   barcode?: string;
+  image_base64?: string;
 }
 
 export interface Category {

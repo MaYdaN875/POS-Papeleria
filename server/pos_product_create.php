@@ -49,6 +49,29 @@ try {
     $stock = (int)($data['stock'] ?? 0);
     $categoryId = (int)($data['category_id'] ?? 0);
     $image = trim((string)($data['image'] ?? '/images/boligrafos.jpg'));
+    
+    $imageBase64 = trim((string)($data['image_base64'] ?? ''));
+    if ($imageBase64 !== '') {
+        if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
+            $extension = strtolower($matches[1]);
+            if ($extension === 'jpeg') $extension = 'jpg';
+            
+            $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+            
+            // Assuming this file is in api/admin/sales/ and document root has an images folder
+            $uploadDir = __DIR__ . '/../../../images/';
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0777, true);
+            }
+            
+            $fileName = 'prod_' . time() . '_' . substr(uniqid(), -4) . '.' . $extension;
+            $filePath = $uploadDir . $fileName;
+            
+            if (file_put_contents($filePath, base64_decode($base64Data))) {
+                $image = '/images/' . $fileName; // Remplaza la imagen por defecto con la subida
+            }
+        }
+    }
 
     if ($name === '') {
         adminJsonResponse(400, ['ok' => false, 'message' => 'El nombre del producto es obligatorio']);

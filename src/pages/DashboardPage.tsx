@@ -3,12 +3,19 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPosDashboard } from '../services/dashboardService';
 import '../styles/DashboardPage.css';
+import { useShoppingListStore } from '../store/shoppingListStore';
+import ShoppingListModal from '../components/ShoppingListModal';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lowStock, setLowStock] = useState<any[]>([]);
+
+  // Shopping List
+  const { items: shoppingList, addItem: addToList } = useShoppingListStore();
+  const [showShoppingList, setShowShoppingList] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -17,8 +24,16 @@ export default function DashboardPage() {
         const result = await getPosDashboard();
         setData(result);
         setError('');
-      } catch (err) {
-        console.error('Error cargando dashboard', err);
+        const prods = result.low_stock || [];
+        const inListIds = new Set(useShoppingListStore.getState().items.map(i => i.id));
+        setLowStock(
+          prods
+            .filter((p: any) => p.stock < 5 && !inListIds.has(p.id))
+            .sort((a: any, b: any) => a.stock - b.stock)
+            .slice(0, 10)
+        );
+      } catch (error) {
+        console.error('Error cargando dashboard', error);
         setError('Error al cargar datos del servidor');
       } finally {
         setLoading(false);
@@ -60,8 +75,6 @@ export default function DashboardPage() {
   // Por ahora la gráfica de barras será plana si no hay ventas.
   const hourlySales = data.hourly_sales || Array(14).fill({ amount: 0 }); // 8am a 9pm
   const maxSale = Math.max(...hourlySales.map((s: any) => s.amount), 1); // Evitar dividir por cero
-
-  const lowStock = data.low_stock || [];
 
   return (
     <div className="dashboard">
@@ -166,9 +179,14 @@ export default function DashboardPage() {
               Productos que Requieren Atención
             </h2>
           </div>
-          <button className="dashboard-inventory-link-btn" onClick={() => navigate('/inventory')}>
-            Ver Todo el Inventario <ArrowUpRight size={16} />
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="dashboard-inventory-link-btn" onClick={() => setShowShoppingList(true)} style={{ background: 'var(--color-primary-bg)', color: 'var(--color-primary)' }}>
+              Lista de Compras ({shoppingList.length})
+            </button>
+            <button className="dashboard-inventory-link-btn" onClick={() => navigate('/inventory')}>
+              Ver Todo el Inventario <ArrowUpRight size={16} />
+            </button>
+          </div>
         </div>
 
         <div className="dashboard-inventory-grid">
@@ -196,11 +214,25 @@ export default function DashboardPage() {
                     {item.stock} u.
                   </span>
                 </div>
+                <button 
+                  onClick={() => {
+                    if (window.confirm('¿Agregar a lista de compras?')) {
+                      addToList(item);
+                      // Update lowStock state to remove it immediately from view
+                      setLowStock(prev => prev.filter(p => p.id !== item.id));
+                      alert('Listo, producto agregado');
+                    }
+                  }}
+                  style={{ marginTop: '8px', width: '100%', padding: '6px', background: 'var(--color-bg-body)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+                  + Agregar a lista
+                </button>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {showShoppingList && <ShoppingListModal onClose={() => setShowShoppingList(false)} />}
     </div>
   );
 }
