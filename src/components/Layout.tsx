@@ -3,9 +3,13 @@ import { Outlet } from 'react-router-dom';
 import '../styles/Layout.css';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import { useBackHandler } from '../utils/backButtonManager';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Cerrar sidebar en móviles al presionar botón atrás
+  useBackHandler(sidebarOpen, () => setSidebarOpen(false));
 
   return (
     <div className="layout">

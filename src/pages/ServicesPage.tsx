@@ -3,6 +3,7 @@ import { Smartphone, Zap, CheckCircle, XCircle, Loader2, RefreshCw, AlertTriangl
 import { useTaecelStore } from '../store/taecelStore';
 import { TaecelProduct, TaecelTransaction } from '../types/taecel';
 import '../styles/ServicesPage.css';
+import { useBackHandler } from '../utils/backButtonManager';
 
 function formatPhoneDisplay(digits: string): string {
   if (digits.length <= 2) return digits;
@@ -34,6 +35,9 @@ export const ServicesPage: React.FC = () => {
   const [lastProductName, setLastProductName] = useState('');
   const [localError, setLocalError] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Cerrar modal de confirmación de recarga con botón atrás
+  useBackHandler(showConfirmModal, () => setShowConfirmModal(false));
 
   useEffect(() => {
     fetchBalance();

@@ -22,6 +22,7 @@ import { getGlobalSettings } from '../services/settingsService';
 import '../styles/InventoryPage.css';
 import MobileScannerButton from '../components/MobileScannerButton';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { useBackHandler } from '../utils/backButtonManager';
 
 const EMPTY_FORM = {
   name: '',
@@ -93,6 +94,11 @@ export default function InventoryPage() {
   const [newForm, setNewForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
+
+  // Manejadores de botón atrás para modales de inventario
+  useBackHandler(showNewModal, () => setShowNewModal(false));
+  useBackHandler(showPresentationsModal, () => setShowPresentationsModal(false));
+  useBackHandler(editingId !== null, () => setEditingId(null));
 
   useBarcodeScanner({
     enabled: !showNewModal && editingId === null,

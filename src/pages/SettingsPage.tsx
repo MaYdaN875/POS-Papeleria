@@ -16,12 +16,17 @@ import TicketPrint from '../components/TicketPrint';
 import { getGlobalSettings, GlobalSettings, saveGlobalSettings } from '../services/settingsService';
 import '../styles/SettingsPage.css';
 import { listPrinters, type PrinterInfo } from '../utils/thermalPrint';
+import { useBackHandler } from '../utils/backButtonManager';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Cerrar vista previa con el botón atrás
+  useBackHandler(showPreview, () => setShowPreview(false));
+
   const [message, setMessage] = useState({ text: '', type: '' });
   const [activeTab, setActiveTab] = useState<'general' | 'ticket' | 'system' | 'appearance' | 'invoicing'>('general');
   const [printers, setPrinters] = useState<PrinterInfo[]>([]);

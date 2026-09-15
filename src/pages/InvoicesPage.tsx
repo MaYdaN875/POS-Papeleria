@@ -34,6 +34,7 @@ import {
   InvoiceCustomer 
 } from '../types/invoicing';
 import '../styles/ReportsPage.css'; // Reutilizar estilos de reportes para consistencia
+import { useBackHandler } from '../utils/backButtonManager';
 
 export default function InvoicesPage() {
   const [activeTab, setActiveTab] = useState<'history' | 'billing' | 'customers'>('history');
@@ -57,6 +58,10 @@ export default function InvoicesPage() {
   
   // Cliente Add/Edit Modal
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+
+  // Cerrar modales al presionar atrás
+  useBackHandler(showCancelModal, () => setShowCancelModal(false));
+  useBackHandler(showCustomerModal, () => setShowCustomerModal(false));
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [customerForm, setCustomerForm] = useState<Customer>({
     rfc: '',

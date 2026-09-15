@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, UserCog, Trash2, Shield, User, Mail, Lock, RefreshCw } from 'lucide-react';
 import { getUsers, createUser, updateUser, deleteUser, AdminUser } from '../services/userService';
 import '../styles/UsersPage.css';
+import { useBackHandler } from '../utils/backButtonManager';
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  useBackHandler(showModal, () => setShowModal(false));
   const [isEditing, setIsEditing] = useState(false);
   
   // Formulario

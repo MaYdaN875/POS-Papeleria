@@ -6,12 +6,14 @@ import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import type { Product } from '../services/productService';
+import { useBackHandler } from '../utils/backButtonManager';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function ShoppingListModal({ onClose }: Props) {
+  useBackHandler(true, onClose);
   const { items, removeItem, clearList } = useShoppingListStore();
 
   const handleDownloadPdf = async (product?: Product) => {

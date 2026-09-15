@@ -4,6 +4,7 @@ import { GlobalSettings } from '../services/settingsService';
 import { printEscPosTicket, isElectronEnv } from '../utils/thermalPrint';
 import { Printer, X, Share2 } from 'lucide-react';
 import '../styles/TicketPrint.css';
+import { useBackHandler } from '../utils/backButtonManager';
 
 export interface TicketData {
   saleId: number;
@@ -71,6 +72,9 @@ export default function TicketPrint({ data, settings, onPrintDone }: TicketPrint
     finishingRef.current = true;
     onPrintDone();
   }, [onPrintDone]);
+
+  // Cerrar el modal/vista de ticket al presionar botón atrás
+  useBackHandler(true, finishAndReturn);
 
   const buildEscPosPayload = () => ({
     saleId: data.saleId,

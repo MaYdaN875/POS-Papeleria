@@ -43,6 +43,7 @@ import {
   cancelPurchaseOrder
 } from '../services/purchaseService';
 import '../styles/PurchasesPage.css';
+import { useBackHandler } from '../utils/backButtonManager';
 
 export default function PurchasesPage() {
   const [activeTab, setActiveTab] = useState<'suppliers' | 'create_order' | 'active_orders' | 'suggestions' | 'history'>('suppliers');
@@ -108,6 +109,12 @@ export default function PurchasesPage() {
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [receiveQuantities, setReceiveQuantities] = useState<Record<number, number>>({});
   const [receivingOrder, setReceivingOrder] = useState(false);
+
+  // Cerrar modales con el botón atrás
+  useBackHandler(showSupplierModal, () => setShowSupplierModal(false));
+  useBackHandler(showLinkModal, () => setShowLinkModal(false));
+  useBackHandler(showAddProductToOrderModal, () => setShowAddProductToOrderModal(false));
+  useBackHandler(showReceiveModal, () => setShowReceiveModal(false));
 
   // --- Estado de Sugerencias ---
   const [suggestions, setSuggestions] = useState<PurchaseSuggestion[]>([]);

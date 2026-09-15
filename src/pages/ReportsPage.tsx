@@ -8,6 +8,7 @@ import { saveInvoiceToBackend, getInvoiceBySaleId, BackendInvoice } from '../ser
 import { getAllCustomers, saveCustomer } from '../services/invoicing/customerService';
 import { isElectronEnv } from '../utils/thermalPrint';
 import '../styles/ReportsPage.css';
+import { useBackHandler } from '../utils/backButtonManager';
 
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<'sales' | 'cash'>('sales');
@@ -30,6 +31,11 @@ export function ReportsPage() {
   
   // Modal states for billing a past sale
   const [showBillingModal, setShowBillingModal] = useState(false);
+
+  // Cerrar modales de vista previa o facturación con el botón atrás
+  useBackHandler(showPreview, () => setShowPreview(false));
+  useBackHandler(showBillingModal, () => setShowBillingModal(false));
+
   const [billingSale, setBillingSale] = useState<any | null>(null);
   const [billingSaleDetails, setBillingSaleDetails] = useState<any | null>(null);
   const [billingLoading, setBillingLoading] = useState(false);

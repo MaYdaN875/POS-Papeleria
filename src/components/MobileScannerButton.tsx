@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Camera, ScanLine, Smartphone } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { useBackHandler } from '../utils/backButtonManager';
 
 interface MobileScannerButtonProps {
   onScan: (code: string) => void;
@@ -12,6 +13,13 @@ interface MobileScannerButtonProps {
 export default function MobileScannerButton({ onScan, className = '', iconOnly = false }: MobileScannerButtonProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [showPrePermission, setShowPrePermission] = useState(false);
+
+  // Cerrar modal de permisos o cancelar escaneo al presionar atrás
+  useBackHandler(showPrePermission, () => setShowPrePermission(false), 20);
+  useBackHandler(isScanning, () => {
+    setIsScanning(false);
+    document.querySelector('body')?.classList.remove('barcode-scanner-active');
+  }, 20);
 
   // Solo se muestra si estamos en Android/iOS (Capacitor Nativo)
   if (!Capacitor.isNativePlatform()) {

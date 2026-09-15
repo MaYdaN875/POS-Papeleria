@@ -15,6 +15,7 @@ import { ServicesPage } from './pages/ServicesPage';
 import { useEffect } from 'react';
 import { getGlobalSettings } from './services/settingsService';
 import ElectronBanner from './components/ElectronBanner';
+import NativeBackHandler from './components/NativeBackHandler';
 import InvoicesPage from './pages/InvoicesPage';
 import PurchasesPage from './pages/PurchasesPage';
 
@@ -38,6 +39,7 @@ export default function App() {
 
   return (
     <HashRouter>
+      <NativeBackHandler />
       <ElectronBanner />
       <CartProvider>
         <Routes>
