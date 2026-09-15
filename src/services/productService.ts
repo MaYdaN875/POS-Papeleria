@@ -193,7 +193,9 @@ export async function updateProduct(
   id: number,
   posPrice: number,
   stock: number,
-  baseUnit?: string
+  baseUnit?: string,
+  imageBase64?: string,
+  removeImage?: boolean
 ): Promise<{ ok: boolean; message?: string; sessionExpired?: boolean }> {
   try {
     const token = localStorage.getItem('pos_token');
@@ -209,6 +211,12 @@ export async function updateProduct(
     formData.append('access_token', token);
     if (baseUnit !== undefined) {
       formData.append('base_unit', baseUnit);
+    }
+    if (imageBase64) {
+      formData.append('image_base64', imageBase64);
+    }
+    if (removeImage) {
+      formData.append('remove_image', '1');
     }
 
     // Sin header Authorization: evita bloqueo CORS en Hostinger.

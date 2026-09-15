@@ -51,6 +51,8 @@ export default function InventoryPage() {
   const [editBaseUnit, setEditBaseUnit] = useState<string>('');
   const [newBarcode, setNewBarcode] = useState<string>('');
   const [editBarcodes, setEditBarcodes] = useState<string[]>([]);
+  const [editImageBase64, setEditImageBase64] = useState<string>('');
+  const [editRemoveImage, setEditRemoveImage] = useState<boolean>(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const editPriceInputRef = useRef<HTMLInputElement>(null);
@@ -158,11 +160,15 @@ export default function InventoryPage() {
     setEditBaseUnit(product.baseUnit ?? 'pieza');
     setEditBarcodes([...(product.barcodes || [])]);
     setNewBarcode('');
+    setEditImageBase64('');
+    setEditRemoveImage(false);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditBarcodes([]);
+    setEditImageBase64('');
+    setEditRemoveImage(false);
   };
 
   const handleSaveEdit = async (productId: number) => {
@@ -177,7 +183,14 @@ export default function InventoryPage() {
     try {
       setSaving(true);
 
-      const result = await updateProduct(productId, newPosPrice, newStock, editBaseUnit);
+      const result = await updateProduct(
+        productId,
+        newPosPrice,
+        newStock,
+        editBaseUnit,
+        editImageBase64 || undefined,
+        editRemoveImage
+      );
       if (!result.ok) {
         if (result.sessionExpired) {
           await handleSessionExpired(result.message);
@@ -220,6 +233,8 @@ export default function InventoryPage() {
       await loadProducts();
       setEditingId(null);
       setEditBarcodes([]);
+      setEditImageBase64('');
+      setEditRemoveImage(false);
     } catch (err) {
       console.error(err);
       alert('Error de conexión al guardar');
@@ -517,11 +532,20 @@ export default function InventoryPage() {
               const isEditing = editingId === product.id;
               const effectivePosPrice = product.posPrice ?? product.price;
 
+              let displayImage = getImageUrl(product.image);
+              if (isEditing) {
+                if (editImageBase64) {
+                  displayImage = editImageBase64;
+                } else if (editRemoveImage) {
+                  displayImage = `${API_BASE_URL}/../images/boligrafos.jpg`;
+                }
+              }
+
               return (
                 <div className={`inventory-card ${product.isActive === false ? 'inv-card--inactive' : ''}`} key={product.id}>
                   <div className="inv-card-image-wrapper">
                     <img
-                      src={getImageUrl(product.image)}
+                      src={displayImage}
                       alt={product.name}
                       className="inv-card-image"
                       onError={(e) => {
@@ -656,6 +680,104 @@ export default function InventoryPage() {
                               >
                                 Añadir
                               </button>
+                            </div>
+                          </div>
+
+                          {/* Sección para cambiar, tomar o borrar foto del producto */}
+                          <div className="inv-edit-group inv-edit-group--image" style={{ marginTop: '12px', marginBottom: '8px' }}>
+                            <label style={{ fontWeight: 600, fontSize: '12px', display: 'block', marginBottom: '6px' }}>
+                              Foto del producto
+                            </label>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    const image = await Camera.getPhoto({
+                                      quality: 80,
+                                      allowEditing: false,
+                                      resultType: CameraResultType.Base64,
+                                      source: CameraSource.Prompt,
+                                      promptLabelHeader: 'Foto del Producto',
+                                      promptLabelPhoto: 'Elegir de la galería',
+                                      promptLabelPicture: 'Tomar foto con cámara',
+                                      promptLabelCancel: 'Cancelar'
+                                    });
+                                    if (image.base64String) {
+                                      setEditImageBase64(`data:image/${image.format};base64,${image.base64String}`);
+                                      setEditRemoveImage(false);
+                                    }
+                                  } catch (error) {
+                                    console.log('Cancelado o error', error);
+                                  }
+                                }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '8px 12px',
+                                  background: 'var(--color-bg-card)',
+                                  border: '1px solid var(--color-primary)',
+                                  color: 'var(--color-primary)',
+                                  borderRadius: 'var(--radius-md)',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <ImagePlus size={16} /> {editImageBase64 || (!editRemoveImage && product.image) ? 'Cambiar / Tomar Foto' : 'Subir / Tomar Foto'}
+                              </button>
+
+                              {!editRemoveImage && (editImageBase64 || product.image) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditImageBase64('');
+                                    setEditRemoveImage(true);
+                                  }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 12px',
+                                    background: 'rgba(239, 68, 68, 0.1)',
+                                    border: '1px solid #ef4444',
+                                    color: '#ef4444',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Eliminar foto del producto"
+                                >
+                                  <Trash2 size={16} /> Borrar foto
+                                </button>
+                              )}
+
+                              {(editImageBase64 !== '' || editRemoveImage) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditImageBase64('');
+                                    setEditRemoveImage(false);
+                                  }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '6px 10px',
+                                    background: 'var(--color-bg-hover, #f1f5f9)',
+                                    border: '1px solid var(--color-border, #e2e8f0)',
+                                    color: 'var(--color-text-secondary, #64748b)',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontSize: '11px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Restaurar original
+                                </button>
+                              )}
                             </div>
                           </div>
 

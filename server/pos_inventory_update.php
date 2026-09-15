@@ -128,6 +128,46 @@ try {
         $params[] = $baseUnit;
     }
 
+    // Manejo de imagen / foto de producto (subir nueva, tomar foto o borrar)
+    $imageColToUpdate = null;
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imgCol) {
+        if (in_array($imgCol, $cols, true)) {
+            $imageColToUpdate = $imgCol;
+            break;
+        }
+    }
+
+    $imageBase64 = isset($_POST['image_base64']) ? trim((string)$_POST['image_base64']) : '';
+    $removeImage = isset($_POST['remove_image']) && ((string)$_POST['remove_image'] === '1' || $_POST['remove_image'] === 'true');
+
+    if ($imageColToUpdate !== null) {
+        if ($imageBase64 !== '') {
+            if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
+                $extension = strtolower($matches[1]);
+                if ($extension === 'jpeg') $extension = 'jpg';
+                
+                $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+                $uploadDir = __DIR__ . '/../../../images/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                
+                $fileName = 'prod_' . time() . '_' . substr(uniqid(), -4) . '.' . $extension;
+                $filePath = $uploadDir . $fileName;
+                
+                if (file_put_contents($filePath, base64_decode($base64Data))) {
+                    $newImagePath = '/images/' . $fileName;
+                    $sets[] = "{$imageColToUpdate} = ?";
+                    $params[] = $newImagePath;
+                }
+            }
+        } elseif ($removeImage) {
+            // Borrar foto y volver a la imagen por defecto
+            $sets[] = "{$imageColToUpdate} = ?";
+            $params[] = '/images/boligrafos.jpg';
+        }
+    }
+
     if (empty($sets)) {
         adminJsonResponse(500, ['ok' => false, 'message' => 'No se encontraron columnas actualizables']);
     }
