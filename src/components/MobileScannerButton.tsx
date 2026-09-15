@@ -12,10 +12,8 @@ interface MobileScannerButtonProps {
 
 export default function MobileScannerButton({ onScan, className = '', iconOnly = false }: MobileScannerButtonProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [showPrePermission, setShowPrePermission] = useState(false);
 
-  // Cerrar modal de permisos o cancelar escaneo al presionar atrás
-  useBackHandler(showPrePermission, () => setShowPrePermission(false), 20);
+  // Cancelar escaneo activo con el botón atrás
   useBackHandler(isScanning, () => {
     setIsScanning(false);
     document.querySelector('body')?.classList.remove('barcode-scanner-active');
@@ -31,28 +29,18 @@ export default function MobileScannerButton({ onScan, className = '', iconOnly =
       const status = await BarcodeScanner.checkPermissions();
       
       if (status.camera === 'granted' || status.camera === 'limited') {
-        // Ya tenemos permiso, iniciamos directo
         await executeNativeScan();
       } else {
-        // Mostrar modal estético pidiendo permiso
-        setShowPrePermission(true);
+        // Pedir permiso directo del sistema operativo
+        const request = await BarcodeScanner.requestPermissions();
+        if (request.camera === 'granted' || request.camera === 'limited') {
+          await executeNativeScan();
+        } else {
+          alert('Permiso de cámara denegado. Por favor habilítalo desde los ajustes de tu celular.');
+        }
       }
     } catch (err) {
-      console.error('Error checking permissions:', err);
-    }
-  };
-
-  const handleGrantPermission = async () => {
-    setShowPrePermission(false);
-    try {
-      const request = await BarcodeScanner.requestPermissions();
-      if (request.camera === 'granted' || request.camera === 'limited') {
-        await executeNativeScan();
-      } else {
-        alert('Permiso denegado. Por favor habilita el uso de la cámara desde la configuración de tu celular.');
-      }
-    } catch (err) {
-      console.error('Error requesting permissions:', err);
+      console.error('Error al verificar permisos de escaneo:', err);
     }
   };
 
@@ -67,7 +55,7 @@ export default function MobileScannerButton({ onScan, className = '', iconOnly =
         onScan(result.barcodes[0].rawValue);
       }
     } catch (error) {
-      console.error('Error scanning barcode', error);
+      console.error('Error durante el escaneo:', error);
     } finally {
       setIsScanning(false);
       document.querySelector('body')?.classList.remove('barcode-scanner-active');
@@ -77,58 +65,61 @@ export default function MobileScannerButton({ onScan, className = '', iconOnly =
   return (
     <>
       <button 
+        type="button"
         onClick={checkAndStartScan} 
-        className={`flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 transition-colors shadow-sm ${className}`}
-        title="Escanear con cámara"
+        className={`sales-scan-trigger-btn ${className}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          background: 'var(--color-primary, #2563eb)',
+          color: '#ffffff',
+          borderRadius: '12px',
+          padding: iconOnly ? '10px' : '10px 16px',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+          transition: 'all 0.15s ease'
+        }}
+        title="Escanear código de barras con cámara"
       >
         <Camera size={20} />
-        {!iconOnly && <span className="font-medium">Escanear</span>}
+        {!iconOnly && <span style={{ fontWeight: 600, fontSize: '13px' }}>Escanear</span>}
       </button>
 
-      {/* Modal Pre-Permisos Estético */}
-      {showPrePermission && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="text-blue-600" size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">
-                Acceso a Cámara Requerido
-              </h3>
-              <p className="text-slate-600 text-sm mb-6">
-                El sistema de Papelería Godart necesita permiso para usar la cámara y poder escanear los códigos de barras de los productos de forma rápida.
-              </p>
-              
-              <div className="flex flex-col gap-3">
-                <button 
-                  onClick={handleGrantPermission}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
-                >
-                  Continuar y Permitir
-                </button>
-                <button 
-                  onClick={() => setShowPrePermission(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl transition-colors"
-                >
-                  Ahora no
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Overlay transparente para cancelar escaneo nativo (por si queda atorado en Android) */}
+      {/* Overlay para cancelar escaneo nativo */}
       {isScanning && (
         <div 
-          className="fixed inset-0 z-[9998] bg-black/80 flex items-end justify-center pb-20"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 999999,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            paddingBottom: '40px'
+          }}
           onClick={() => {
             setIsScanning(false);
             document.querySelector('body')?.classList.remove('barcode-scanner-active');
           }}
         >
-          <button className="bg-red-600 text-white px-8 py-3 rounded-full shadow-lg font-bold">
+          <button 
+            type="button"
+            style={{
+              background: '#ef4444',
+              color: '#ffffff',
+              padding: '14px 28px',
+              borderRadius: '9999px',
+              fontSize: '15px',
+              fontWeight: 700,
+              boxShadow: '0 10px 25px rgba(239, 68, 68, 0.5)',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
             Cancelar Escaneo
           </button>
         </div>
