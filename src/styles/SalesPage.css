@@ -9,6 +9,7 @@
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
   overflow: hidden;
+  max-width: 100%;
 }
 
 /* Products Section */
@@ -16,9 +17,12 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--space-lg);
   background: var(--color-bg-main);
   border-right: 1px solid var(--color-border);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sales-products-header {
@@ -30,6 +34,8 @@
   gap: var(--space-md);
   padding-bottom: var(--space-md);
   border-bottom: 1px solid var(--color-border);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sales-title {
@@ -49,17 +55,34 @@
 .sales-categories {
   display: flex;
   gap: var(--space-sm);
+  overflow-x: auto;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 6px;
+  padding-top: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sales-categories::-webkit-scrollbar {
+  display: none;
 }
 
 .sales-category-btn {
-  padding: var(--space-sm) var(--space-md);
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--font-size-sm);
   border: 1px solid var(--color-border);
   transition: all var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
 }
 
 .sales-category-btn:hover {
@@ -531,16 +554,49 @@
     flex-direction: column;
     height: auto;
     border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .sales-products {
     border-right: none;
     border-bottom: 1px solid var(--color-border);
     padding: var(--space-md);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sales-products-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .sales-title {
+    font-size: 1.5rem;
+  }
+
+  .sales-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .sales-categories {
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 8px;
   }
 
   .sales-products-grid {
     grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
   }
 
   .sales-featured-card {
@@ -551,10 +607,14 @@
   .sales-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: var(--space-md);
+    width: 100%;
+    max-width: 100%;
   }
 
   .sales-cart {
     height: auto;
+    width: 100%;
+    max-width: 100%;
   }
 }
 

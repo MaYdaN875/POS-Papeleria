@@ -146,7 +146,7 @@ export default function SalesPage() {
             </p>
           </div>
           <div className="sales-categories">
-            {categories.slice(0, 6).map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 className={`sales-category-btn ${
