@@ -530,36 +530,38 @@ export default function InventoryPage() {
               <option key={c.id} value={c.name}>{c.name}</option>
             ))}
           </select>
-          <MobileScannerButton 
-            onScan={(code) => {
-              setSearchTerm(code);
-              const matchingProduct = products.find(
-                (p) =>
-                  p.id.toString() === code ||
-                  p.name.toLowerCase() === code.toLowerCase() ||
-                  (p.barcodes && p.barcodes.includes(code))
-              );
-              if (matchingProduct) {
-                handleEditClick(matchingProduct);
-              }
-            }} 
-            iconOnly={true} 
-            className="inventory-mobile-scan-btn"
-          />
-          <button
-            className="topbar-new-sale-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', background: 'var(--color-primary-bg)', color: 'var(--color-primary)' }}
-            onClick={() => setShowShoppingList(true)}
-          >
-            Lista de Compras ({shoppingList.length})
-          </button>
-          <button
-            className="topbar-new-sale-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
-            onClick={() => setShowNewModal(true)}
-          >
-            <span>+</span> Nuevo
-          </button>
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+            <MobileScannerButton 
+              onScan={(code) => {
+                setSearchTerm(code);
+                const matchingProduct = products.find(
+                  (p) =>
+                    p.id.toString() === code ||
+                    p.name.toLowerCase() === code.toLowerCase() ||
+                    (p.barcodes && p.barcodes.includes(code))
+                );
+                if (matchingProduct) {
+                  handleEditClick(matchingProduct);
+                }
+              }} 
+              iconOnly={true} 
+              className="inventory-mobile-scan-btn"
+            />
+            <button
+              className="topbar-new-sale-btn"
+              style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap', background: 'var(--color-primary-bg)', color: 'var(--color-primary)' }}
+              onClick={() => setShowShoppingList(true)}
+            >
+              Lista ({shoppingList.length})
+            </button>
+            <button
+              className="topbar-new-sale-btn"
+              style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              onClick={() => setShowNewModal(true)}
+            >
+              <span>+</span> Nuevo
+            </button>
+          </div>
         </div>
       </div>
 

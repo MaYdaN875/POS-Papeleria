@@ -626,7 +626,8 @@
   .inv-card-actions-row {
     margin-left: 0;
     width: 100%;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
   }
 
