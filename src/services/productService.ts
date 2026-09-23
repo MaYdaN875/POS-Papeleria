@@ -459,3 +459,28 @@ export async function deleteProductPresentation(
     return { ok: false, message: 'Error de conexión' };
   }
 }
+
+/**
+ * Crea una nueva categoría
+ */
+export async function createCategory(
+  name: string
+): Promise<{ ok: boolean; category_id?: number; name?: string; message?: string }> {
+  try {
+    const token = localStorage.getItem('pos_token');
+    if (!token) return { ok: false, message: 'No hay sesión iniciada' };
+
+    const res = await fetch(ENDPOINTS.POS_CATEGORY_CREATE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, access_token: token }),
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error creating category:', error);
+    return { ok: false, message: 'Error de red' };
+  }
+}
