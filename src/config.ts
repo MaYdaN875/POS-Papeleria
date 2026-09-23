@@ -27,6 +27,7 @@ export const ENDPOINTS = {
   POS_PRODUCT_CREATE: `${API_BASE_URL}/admin/sales/pos_product_create.php`,
   POS_PRODUCT_DELETE: `${API_BASE_URL}/admin/sales/pos_product_delete.php`,
   POS_PRODUCT_BARCODES: `${API_BASE_URL}/admin/sales/pos_product_barcodes.php`,
+  POS_CATEGORY_CREATE: `${API_BASE_URL}/admin/sales/pos_category_create.php`,
   POS_CASH_CLOSE:    `${API_BASE_URL}/admin/sales/pos_cash_close.php`,
   POS_SALES_HISTORY: `${API_BASE_URL}/admin/sales/pos_sales_history.php`,
   POS_CASH_HISTORY:  `${API_BASE_URL}/admin/sales/pos_cash_history.php`,

@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import { logout } from '../services/authService';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
+import { useShoppingListStore } from '../store/shoppingListStore';
+import ShoppingListModal from '../components/ShoppingListModal';
 import {
   addProductBarcode,
   createProduct,
+  createCategory,
   deleteProduct,
   getProductCategories,
   getProducts,
@@ -43,7 +46,11 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('Todas');
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
+
+  const { items: shoppingList, addItem: addToList } = useShoppingListStore();
+  const [showShoppingList, setShowShoppingList] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editPosPrice, setEditPosPrice] = useState<string>('');
@@ -101,10 +108,19 @@ export default function InventoryPage() {
   useBackHandler(showNewModal, () => setShowNewModal(false));
   useBackHandler(showPresentationsModal, () => setShowPresentationsModal(false));
   useBackHandler(editingId !== null, () => setEditingId(null));
+  useBackHandler(showShoppingList, () => setShowShoppingList(false));
 
   useBarcodeScanner({
-    enabled: !showNewModal && editingId === null,
+    enabled: true, // Habilitado siempre, la lógica decide dónde asignar el código
     onScan: (code) => {
+      if (showNewModal) {
+        setNewForm((prev) => ({ ...prev, barcode: code }));
+        return;
+      }
+      if (editingId !== null) {
+        setNewBarcode(code);
+        return;
+      }
       setSearchTerm(code);
 
       const matchingProduct = products.find(
@@ -440,6 +456,9 @@ export default function InventoryPage() {
     if (p.isActive === false && !showInactive) {
       return false;
     }
+    if (filterCategory !== 'Todas' && p.category !== filterCategory && p.parentCategory !== filterCategory) {
+      return false;
+    }
     if (searchTerm === '') return true;
 
     const term = searchTerm.toLowerCase();
@@ -489,6 +508,17 @@ export default function InventoryPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <select
+            className="inventory-search-input"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-main)' }}
+          >
+            <option value="Todas">Todas las categorías</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
           <MobileScannerButton 
             onScan={(code) => {
               setSearchTerm(code);
@@ -505,6 +535,13 @@ export default function InventoryPage() {
             iconOnly={true} 
             className="inventory-mobile-scan-btn"
           />
+          <button
+            className="topbar-new-sale-btn"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', background: 'var(--color-primary-bg)', color: 'var(--color-primary)' }}
+            onClick={() => setShowShoppingList(true)}
+          >
+            Lista de Compras ({shoppingList.length})
+          </button>
           <button
             className="topbar-new-sale-btn"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
@@ -844,6 +881,18 @@ export default function InventoryPage() {
                             >
                               <Layers size={16} /> Pres.
                             </button>
+                            <button
+                              className="inv-action-btn"
+                              title="Agregar a lista de compras"
+                              onClick={() => {
+                                if (window.confirm('¿Agregar a lista de compras?')) {
+                                  addToList(product);
+                                  alert('Listo, producto agregado');
+                                }
+                              }}
+                            >
+                              + Lista
+                            </button>
                           </div>
                         </div>
                       )}
@@ -905,17 +954,41 @@ export default function InventoryPage() {
 
               <div className="inv-form-group">
                 <label>Categoría</label>
-                <select
-                  value={newForm.categoryId}
-                  onChange={(e) => setNewForm({ ...newForm, categoryId: e.target.value })}
-                >
-                  <option value="">General (automática)</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select
+                    value={newForm.categoryId}
+                    onChange={(e) => setNewForm({ ...newForm, categoryId: e.target.value })}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">General (automática)</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="inv-action-btn"
+                    onClick={() => {
+                      const name = window.prompt('Nombre de la nueva categoría:');
+                      if (name && name.trim()) {
+                        createCategory(name.trim()).then(res => {
+                          if (res.ok) {
+                            getProductCategories().then(setCategories);
+                            if (res.category_id) {
+                              setNewForm({ ...newForm, categoryId: res.category_id.toString() });
+                            }
+                          } else {
+                            alert(res.message || 'Error al crear la categoría');
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    + Nueva
+                  </button>
+                </div>
               </div>
 
               <div className="inv-form-group">
@@ -1325,6 +1398,7 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
+      {showShoppingList && <ShoppingListModal onClose={() => setShowShoppingList(false)} />}
     </div>
   );
 }
