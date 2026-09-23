@@ -731,7 +731,7 @@ export default function InventoryPage() {
                                 className="inv-action-btn"
                                 onClick={handleAddBarcodeTemp}
                                 disabled={saving || !newBarcode.trim()}
-                                style={{ padding: '8px 16px', flexShrink: 0 }}
+                                style={{ padding: '8px 16px', flexShrink: 0, width: 'auto' }}
                               >
                                 Añadir
                               </button>
@@ -1003,6 +1003,7 @@ export default function InventoryPage() {
                         });
                       }
                     }}
+                    style={{ padding: '8px 16px', flexShrink: 0, width: 'auto' }}
                   >
                     + Nueva
                   </button>
@@ -1113,7 +1114,7 @@ export default function InventoryPage() {
                       }
                     }}
                     disabled={creating || !newForm.barcode.trim()}
-                    style={{ padding: '8px 16px', flexShrink: 0 }}
+                    style={{ padding: '8px 16px', flexShrink: 0, width: 'auto' }}
                   >
                     Añadir
                   </button>
