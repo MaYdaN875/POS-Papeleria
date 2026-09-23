@@ -711,12 +711,12 @@ export default function InventoryPage() {
                                 </span>
                               )}
                             </div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
                               <input
                                 type="text"
                                 placeholder="Nuevo código..."
                                 className="inv-edit-input"
-                                style={{ flex: 1, minWidth: 0 }}
+                                style={{ width: '100%', minWidth: 0, margin: 0 }}
                                 value={newBarcode}
                                 onChange={(e) => setNewBarcode(e.target.value)}
                                 onKeyDown={(e) => {
@@ -731,7 +731,7 @@ export default function InventoryPage() {
                                 className="inv-action-btn"
                                 onClick={handleAddBarcodeTemp}
                                 disabled={saving || !newBarcode.trim()}
-                                style={{ padding: '8px 16px', flexShrink: 0, width: 'auto' }}
+                                style={{ padding: '8px 16px', margin: 0, width: '100%', whiteSpace: 'nowrap' }}
                               >
                                 Añadir
                               </button>
@@ -1086,11 +1086,11 @@ export default function InventoryPage() {
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
                   <input
                     type="text"
                     className="inv-edit-input"
-                    style={{ flex: 1, minWidth: 0 }}
+                    style={{ width: '100%', minWidth: 0, margin: 0 }}
                     value={newForm.barcode}
                     onChange={(e) => setNewForm({ ...newForm, barcode: e.target.value })}
                     onKeyDown={(e) => {
@@ -1114,7 +1114,7 @@ export default function InventoryPage() {
                       }
                     }}
                     disabled={creating || !newForm.barcode.trim()}
-                    style={{ padding: '8px 16px', flexShrink: 0, width: 'auto' }}
+                    style={{ padding: '8px 16px', margin: 0, width: '100%', whiteSpace: 'nowrap' }}
                   >
                     Añadir
                   </button>
