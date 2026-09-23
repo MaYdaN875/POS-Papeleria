@@ -731,7 +731,7 @@ export default function InventoryPage() {
                                 className="inv-action-btn"
                                 onClick={handleAddBarcodeTemp}
                                 disabled={saving || !newBarcode.trim()}
-                                style={{ padding: '8px 16px', margin: 0, width: '100%', whiteSpace: 'nowrap' }}
+                                style={{ padding: '8px 16px', margin: 0, width: 'auto', whiteSpace: 'nowrap' }}
                               >
                                 Añadir
                               </button>
@@ -1114,7 +1114,7 @@ export default function InventoryPage() {
                       }
                     }}
                     disabled={creating || !newForm.barcode.trim()}
-                    style={{ padding: '8px 16px', margin: 0, width: '100%', whiteSpace: 'nowrap' }}
+                    style={{ padding: '8px 16px', margin: 0, width: 'auto', whiteSpace: 'nowrap' }}
                   >
                     Añadir
                   </button>
