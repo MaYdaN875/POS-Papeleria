@@ -36,6 +36,7 @@ const EMPTY_FORM = {
   stock: '',
   categoryId: '',
   barcode: '',
+  barcodes: [] as string[],
   imageBase64: '',
 };
 
@@ -114,7 +115,12 @@ export default function InventoryPage() {
     enabled: true, // Habilitado siempre, la lógica decide dónde asignar el código
     onScan: (code) => {
       if (showNewModal) {
-        setNewForm((prev) => ({ ...prev, barcode: code }));
+        setNewForm((prev) => {
+          if (!prev.barcodes.includes(code)) {
+            return { ...prev, barcodes: [...prev.barcodes, code] };
+          }
+          return prev;
+        });
         return;
       }
       if (editingId !== null) {
@@ -435,12 +441,17 @@ export default function InventoryPage() {
       pos_price: posPrice ?? webPrice,
       stock,
       category_id: newForm.categoryId ? parseInt(newForm.categoryId, 10) : undefined,
-      barcode: newForm.barcode.trim() || undefined,
+      barcode: newForm.barcodes.length > 0 ? newForm.barcodes[0] : undefined,
       image_base64: newForm.imageBase64 || undefined,
     });
     setCreating(false);
 
     if (result.ok) {
+      if (result.productId && newForm.barcodes.length > 1) {
+        for (let i = 1; i < newForm.barcodes.length; i++) {
+          await addProductBarcode(result.productId, newForm.barcodes[i]);
+        }
+      }
       setShowNewModal(false);
       setNewForm(EMPTY_FORM);
       await loadProducts();
@@ -704,16 +715,23 @@ export default function InventoryPage() {
                               <input
                                 type="text"
                                 placeholder="Nuevo código..."
-                                className="inv-barcode-add-input"
+                                className="inv-edit-input"
+                                style={{ flex: 1, minWidth: 0 }}
                                 value={newBarcode}
                                 onChange={(e) => setNewBarcode(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddBarcodeTemp()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddBarcodeTemp();
+                                  }
+                                }}
                               />
                               <button
                                 type="button"
                                 className="inv-action-btn"
                                 onClick={handleAddBarcodeTemp}
                                 disabled={saving || !newBarcode.trim()}
+                                style={{ padding: '8px 16px', flexShrink: 0 }}
                               >
                                 Añadir
                               </button>
@@ -1035,14 +1053,71 @@ export default function InventoryPage() {
                 />
               </div>
 
-              <div className="inv-form-group">
-                <label>Código de barras</label>
-                <input
-                  type="text"
-                  value={newForm.barcode}
-                  onChange={(e) => setNewForm({ ...newForm, barcode: e.target.value })}
-                  placeholder="Opcional"
-                />
+              <div className="inv-form-group inv-edit-group--barcodes">
+                <label>Códigos de barras</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  {newForm.barcodes.map((b) => (
+                    <span
+                      key={b}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'var(--color-bg-secondary)',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      {b}
+                      <button
+                        type="button"
+                        onClick={() => setNewForm({ ...newForm, barcodes: newForm.barcodes.filter(x => x !== b) })}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', color: 'var(--color-danger)' }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                  {newForm.barcodes.length === 0 && (
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                      Sin códigos
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="inv-edit-input"
+                    style={{ flex: 1, minWidth: 0 }}
+                    value={newForm.barcode}
+                    onChange={(e) => setNewForm({ ...newForm, barcode: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const trimmed = newForm.barcode.trim();
+                        if (trimmed && !newForm.barcodes.includes(trimmed)) {
+                          setNewForm({ ...newForm, barcodes: [...newForm.barcodes, trimmed], barcode: '' });
+                        }
+                      }
+                    }}
+                    placeholder="Escanear o escribir..."
+                  />
+                  <button
+                    type="button"
+                    className="inv-action-btn"
+                    onClick={() => {
+                      const trimmed = newForm.barcode.trim();
+                      if (trimmed && !newForm.barcodes.includes(trimmed)) {
+                        setNewForm({ ...newForm, barcodes: [...newForm.barcodes, trimmed], barcode: '' });
+                      }
+                    }}
+                    disabled={creating || !newForm.barcode.trim()}
+                    style={{ padding: '8px 16px', flexShrink: 0 }}
+                  >
+                    Añadir
+                  </button>
+                </div>
               </div>
 
               <div className="inv-form-group inv-form-group--full">

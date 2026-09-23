@@ -11,7 +11,7 @@ interface UseBarcodeScannerOptions {
  * Hook para detectar la entrada de un lector de código de barras.
  * El lector simula teclado rápido + Enter. No intercepta cuando escribes en inputs.
  */
-export function useBarcodeScanner({ onScan, threshold = 50, enabled = true }: UseBarcodeScannerOptions) {
+export function useBarcodeScanner({ onScan, threshold = 200, enabled = true }: UseBarcodeScannerOptions) {
   const barcode = useRef('');
   const lastKeyTime = useRef(Date.now());
   const savedOnScan = useRef(onScan);
