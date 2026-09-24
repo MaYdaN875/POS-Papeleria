@@ -52,7 +52,8 @@ export default function MobileScannerButton({ onScan, className = '', iconOnly =
       const result = await BarcodeScanner.scan();
       
       if (result.barcodes.length > 0 && result.barcodes[0].rawValue) {
-        onScan(result.barcodes[0].rawValue);
+        const cleanCode = result.barcodes[0].rawValue.replace(/^\][A-Za-z][0-9]/, '');
+        onScan(cleanCode);
       }
     } catch (error) {
       console.error('Error durante el escaneo:', error);

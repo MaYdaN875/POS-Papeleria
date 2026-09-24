@@ -46,7 +46,9 @@ export function useBarcodeScanner({ onScan, threshold = 200, enabled = true }: U
         if (barcode.current.length > 0) {
           // ¡Es un escaneo!
           playBeep();
-          savedOnScan.current(barcode.current);
+          // Limpiar prefijos de simbología como ]C1 (Code 128) o ]E0 (EAN)
+          const cleanCode = barcode.current.replace(/^\][A-Za-z][0-9]/, '');
+          savedOnScan.current(cleanCode);
           barcode.current = '';
           
           // Prevenir comportamiento por defecto (como envío de formularios)

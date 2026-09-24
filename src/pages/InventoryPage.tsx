@@ -713,7 +713,15 @@ export default function InventoryPage() {
                                 </span>
                               )}
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '8px' }}>
+                              <MobileScannerButton
+                                iconOnly={true}
+                                onScan={(code) => {
+                                  if (code && !editBarcodes.includes(code)) {
+                                    setEditBarcodes([...editBarcodes, code]);
+                                  }
+                                }}
+                              />
                               <input
                                 type="text"
                                 placeholder="Nuevo código..."
@@ -1088,7 +1096,15 @@ export default function InventoryPage() {
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '8px' }}>
+                  <MobileScannerButton
+                    iconOnly={true}
+                    onScan={(code) => {
+                      if (code && !newForm.barcodes.includes(code)) {
+                        setNewForm({ ...newForm, barcodes: [...newForm.barcodes, code] });
+                      }
+                    }}
+                  />
                   <input
                     type="text"
                     className="inv-edit-input"
