@@ -308,6 +308,10 @@
   .inv-modal-form {
     grid-template-columns: 1fr;
     gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+  .inv-modal-header {
+    padding: var(--space-md);
   }
 }
 
@@ -330,6 +334,9 @@
 .inv-form-group input,
 .inv-form-group select,
 .inv-form-group textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

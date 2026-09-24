@@ -713,7 +713,7 @@ export default function InventoryPage() {
                                 </span>
                               )}
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '8px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: '8px' }}>
                               <MobileScannerButton
                                 iconOnly={true}
                                 onScan={(code) => {
@@ -1096,7 +1096,7 @@ export default function InventoryPage() {
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: '8px' }}>
                   <MobileScannerButton
                     iconOnly={true}
                     onScan={(code) => {
