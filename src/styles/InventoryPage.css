@@ -648,6 +648,14 @@
     padding: 8px 12px;
   }
 
+  .inv-edit-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 6px;
+    justify-content: stretch;
+  }
+
   .inv-edit-group {
     flex-direction: column;
     align-items: stretch;
