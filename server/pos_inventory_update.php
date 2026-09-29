@@ -161,6 +161,7 @@ try {
                 
                 $decodedData = base64_decode($base64Data);
                 if ($decodedData !== false && file_put_contents($filePath, $decodedData)) {
+                    @chmod($filePath, 0644); // Ensure the file is readable by the web server
                     $newImagePath = '/images/' . $fileName;
                     $sets[] = "{$imageColToUpdate} = ?";
                     $params[] = $newImagePath;
