@@ -69,6 +69,9 @@ try {
             if ($decodedData !== false && file_put_contents($filePath, $decodedData)) {
                 @chmod($filePath, 0644); // Ensure the file is readable by the web server
                 $image = '/images/' . $fileName; // Remplaza la imagen por defecto con la subida
+                
+                // FORCE DEBUG ALERT:
+                adminJsonResponse(400, ['ok' => false, 'message' => "DEBUG: Imagen guardada en $filePath . URL: $image"]);
             } else {
                 $errorMsg = "Error al guardar imagen en $filePath . Permisos o ruta incorrecta.";
                 error_log('pos_product_create.php: ' . $errorMsg);
