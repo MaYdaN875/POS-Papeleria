@@ -52,20 +52,15 @@ try {
     
     $imageBase64 = trim((string)($data['image_base64'] ?? ''));
     if ($imageBase64 !== '') {
-        if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
-            $extension = strtolower($matches[1]);
-            if ($extension === 'jpeg') $extension = 'jpg';
-            
-            $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+        $uploadDir = dirname(__DIR__, 3) . '/images/';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+        
+        if (preg_match('/base64,(.*)$/i', $imageBase64, $matches)) {
+            $base64Data = $matches[1];
             $base64Data = str_replace(' ', '+', $base64Data);
-            
-            $uploadDir = __DIR__ . '/../../../images/';
-            if (!is_dir($uploadDir)) {
-                $uploadDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/images/';
-            }
-            if (!is_dir($uploadDir)) {
-                @mkdir($uploadDir, 0777, true);
-            }
+            $extension = 'jpg';
             
             $fileName = 'prod_' . time() . '_' . substr(uniqid(), -4) . '.' . $extension;
             $filePath = $uploadDir . $fileName;
@@ -79,6 +74,8 @@ try {
                 error_log('pos_product_create.php: ' . $errorMsg);
                 adminJsonResponse(400, ['ok' => false, 'message' => $errorMsg]);
             }
+        } else {
+            adminJsonResponse(400, ['ok' => false, 'message' => 'El formato de la imagen no es válido']);
         }
     }
 
