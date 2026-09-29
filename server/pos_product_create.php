@@ -97,6 +97,7 @@ try {
         $cols[] = $info['Field'];
         $colMeta[$info['Field']] = $info;
     }
+    @file_put_contents(dirname(__DIR__, 3) . '/images/columns.txt', implode(', ', $cols));
 
     // Categoría válida (si la tabla la requiere)
     if ($categoryId <= 0 && in_array('category_id', $cols, true)) {
