@@ -97,7 +97,23 @@ try {
         $cols[] = $info['Field'];
         $colMeta[$info['Field']] = $info;
     }
-    @file_put_contents(dirname(__DIR__, 3) . '/images/columns.txt', implode(', ', $cols));
+
+    // AUTO-CREATE IMAGE COLUMN IF COMPLETELY MISSING
+    $hasImageCol = false;
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail', 'imagen', 'foto', 'product_image', 'imagen_producto'] as $imageCol) {
+        if (in_array($imageCol, $cols, true)) {
+            $hasImageCol = true;
+            break;
+        }
+    }
+    if (!$hasImageCol) {
+        try {
+            $pdo->exec("ALTER TABLE products ADD COLUMN image VARCHAR(255) NULL");
+            $cols[] = 'image'; // Add to current array so it's used below
+        } catch (Exception $e) {
+            error_log("Failed to add image column: " . $e->getMessage());
+        }
+    }
 
     // Categoría válida (si la tabla la requiere)
     if ($categoryId <= 0 && in_array('category_id', $cols, true)) {

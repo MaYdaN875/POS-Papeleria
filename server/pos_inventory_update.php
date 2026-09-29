@@ -86,6 +86,23 @@ try {
     }
 
     $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
+    
+    // AUTO-CREATE IMAGE COLUMN IF COMPLETELY MISSING
+    $hasImageCol = false;
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail', 'imagen', 'foto', 'product_image', 'imagen_producto'] as $imageCol) {
+        if (in_array($imageCol, $cols, true)) {
+            $hasImageCol = true;
+            break;
+        }
+    }
+    if (!$hasImageCol) {
+        try {
+            $pdo->exec("ALTER TABLE products ADD COLUMN image VARCHAR(255) NULL");
+            $cols[] = 'image';
+        } catch (Exception $e) {
+            error_log("Failed to add image column: " . $e->getMessage());
+        }
+    }
     $hasPosPrice = in_array('pos_price', $cols, true);
 
     // Crear la columna pos_price si no existe (evita pisar el precio web)
