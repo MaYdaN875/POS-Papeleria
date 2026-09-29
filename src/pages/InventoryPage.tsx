@@ -482,8 +482,10 @@ export default function InventoryPage() {
   });
 
   const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) return imagePath;
-    return `https://godart-papelería.com${imagePath}`;
+    if (!imagePath) return `${API_BASE_URL}/../images/boligrafos.jpg`;
+    if (imagePath.startsWith('http') || imagePath.startsWith('data:')) return imagePath;
+    const baseUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${baseUrl}${imagePath}`;
   };
 
   const getStockBadgeClass = (stock: number) => {
