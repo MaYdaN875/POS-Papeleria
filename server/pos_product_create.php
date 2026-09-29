@@ -58,8 +58,10 @@ try {
             
             $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
             
-            // Assuming this file is in api/admin/sales/ and document root has an images folder
             $uploadDir = __DIR__ . '/../../../images/';
+            if (!is_dir($uploadDir)) {
+                $uploadDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/images/';
+            }
             if (!is_dir($uploadDir)) {
                 @mkdir($uploadDir, 0777, true);
             }
@@ -67,8 +69,11 @@ try {
             $fileName = 'prod_' . time() . '_' . substr(uniqid(), -4) . '.' . $extension;
             $filePath = $uploadDir . $fileName;
             
-            if (file_put_contents($filePath, base64_decode($base64Data))) {
+            $decodedData = base64_decode($base64Data);
+            if ($decodedData !== false && file_put_contents($filePath, $decodedData)) {
                 $image = '/images/' . $fileName; // Remplaza la imagen por defecto con la subida
+            } else {
+                error_log('pos_product_create.php: Fallo al guardar la imagen en ' . $filePath);
             }
         }
     }

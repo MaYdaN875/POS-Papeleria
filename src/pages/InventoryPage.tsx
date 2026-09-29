@@ -761,7 +761,9 @@ export default function InventoryPage() {
                                 onClick={async () => {
                                   try {
                                     const image = await Camera.getPhoto({
-                                      quality: 80,
+                                      quality: 70,
+                                      width: 800,
+                                      height: 800,
                                       allowEditing: false,
                                       resultType: CameraResultType.Base64,
                                       source: CameraSource.Prompt,
@@ -1159,7 +1161,9 @@ export default function InventoryPage() {
                     onClick={async () => {
                       try {
                         const image = await Camera.getPhoto({
-                          quality: 80,
+                          quality: 70,
+                          width: 800,
+                          height: 800,
                           allowEditing: false,
                           resultType: CameraResultType.Base64,
                           source: CameraSource.Prompt,

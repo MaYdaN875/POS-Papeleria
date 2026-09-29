@@ -147,7 +147,11 @@ try {
                 if ($extension === 'jpeg') $extension = 'jpg';
                 
                 $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+                
                 $uploadDir = __DIR__ . '/../../../images/';
+                if (!is_dir($uploadDir)) {
+                    $uploadDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/images/';
+                }
                 if (!is_dir($uploadDir)) {
                     @mkdir($uploadDir, 0777, true);
                 }
@@ -155,10 +159,13 @@ try {
                 $fileName = 'prod_' . time() . '_' . substr(uniqid(), -4) . '.' . $extension;
                 $filePath = $uploadDir . $fileName;
                 
-                if (file_put_contents($filePath, base64_decode($base64Data))) {
+                $decodedData = base64_decode($base64Data);
+                if ($decodedData !== false && file_put_contents($filePath, $decodedData)) {
                     $newImagePath = '/images/' . $fileName;
                     $sets[] = "{$imageColToUpdate} = ?";
                     $params[] = $newImagePath;
+                } else {
+                    error_log('pos_inventory_update.php: Fallo al guardar la imagen en ' . $filePath);
                 }
             }
         } elseif ($removeImage) {
