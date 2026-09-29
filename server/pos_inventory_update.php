@@ -145,8 +145,8 @@ try {
             if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $matches)) {
                 $extension = strtolower($matches[1]);
                 if ($extension === 'jpeg') $extension = 'jpg';
-                
                 $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+                $base64Data = str_replace(' ', '+', $base64Data);
                 
                 $uploadDir = __DIR__ . '/../../../images/';
                 if (!is_dir($uploadDir)) {
@@ -165,7 +165,9 @@ try {
                     $sets[] = "{$imageColToUpdate} = ?";
                     $params[] = $newImagePath;
                 } else {
-                    error_log('pos_inventory_update.php: Fallo al guardar la imagen en ' . $filePath);
+                    $errorMsg = "Error al guardar imagen en $filePath . Permisos o ruta incorrecta.";
+                    error_log('pos_inventory_update.php: ' . $errorMsg);
+                    adminJsonResponse(400, ['ok' => false, 'message' => $errorMsg]);
                 }
             }
         } elseif ($removeImage) {

@@ -57,6 +57,7 @@ try {
             if ($extension === 'jpeg') $extension = 'jpg';
             
             $base64Data = substr($imageBase64, strpos($imageBase64, ',') + 1);
+            $base64Data = str_replace(' ', '+', $base64Data);
             
             $uploadDir = __DIR__ . '/../../../images/';
             if (!is_dir($uploadDir)) {
@@ -73,7 +74,9 @@ try {
             if ($decodedData !== false && file_put_contents($filePath, $decodedData)) {
                 $image = '/images/' . $fileName; // Remplaza la imagen por defecto con la subida
             } else {
-                error_log('pos_product_create.php: Fallo al guardar la imagen en ' . $filePath);
+                $errorMsg = "Error al guardar imagen en $filePath . Permisos o ruta incorrecta.";
+                error_log('pos_product_create.php: ' . $errorMsg);
+                adminJsonResponse(400, ['ok' => false, 'message' => $errorMsg]);
             }
         }
     }
