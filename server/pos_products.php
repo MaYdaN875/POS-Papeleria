@@ -32,7 +32,7 @@ try {
     };
 
     $imageSelect = "'' ";
-    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imageCol) {
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail', 'imagen', 'foto', 'product_image', 'imagen_producto'] as $imageCol) {
         if (in_array($imageCol, $cols, true)) {
             $imageSelect = "p.$imageCol";
             break;

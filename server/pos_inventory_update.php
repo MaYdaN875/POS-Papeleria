@@ -130,7 +130,7 @@ try {
 
     // Manejo de imagen / foto de producto (subir nueva, tomar foto o borrar)
     $imageColToUpdate = null;
-    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail'] as $imgCol) {
+    foreach (['image', 'image_url', 'img', 'photo', 'thumbnail', 'imagen', 'foto', 'product_image', 'imagen_producto'] as $imgCol) {
         if (in_array($imgCol, $cols, true)) {
             $imageColToUpdate = $imgCol;
             break;
