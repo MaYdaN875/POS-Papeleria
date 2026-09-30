@@ -86,57 +86,47 @@ try {
 
     $cols = $pdo->query('SHOW COLUMNS FROM products')->fetchAll(PDO::FETCH_COLUMN);
 
-    // Preferir desactivar (soft delete) para no romper ventas pasadas
-    $softDeleteCol = null;
-    foreach (['active', 'is_active', 'enabled', 'visible'] as $col) {
-        if (in_array($col, $cols, true)) {
-            $softDeleteCol = $col;
-            break;
-        }
-    }
-
-    if ($softDeleteCol !== null) {
-        // Liberar códigos de barras del producto eliminado para que puedan reusarse en otros
+    // Intentar HARD DELETE primero
+    try {
+        // Borrar barras
         try {
             $pdo->prepare('DELETE FROM product_barcodes WHERE product_id = ?')->execute([$productId]);
-        } catch (Throwable $e) {
-            // Continuar si falla
+        } catch (Throwable $e) {}
+
+        // Borrar producto físicamente
+        $stmt = $pdo->prepare('DELETE FROM products WHERE id = ?');
+        $stmt->execute([$productId]);
+
+        adminJsonResponse(200, ['ok' => true, 'message' => 'Producto eliminado definitivamente de la base de datos']);
+    } catch (PDOException $e) {
+        // Si hay error de foreign key (ya tiene ventas previas), hacer SOFT DELETE
+        if (strpos($e->getMessage(), 'foreign key') !== false || $e->getCode() === '23000') {
+            
+            $softDeleteCol = null;
+            foreach (['active', 'is_active', 'enabled', 'visible'] as $col) {
+                if (in_array($col, $cols, true)) {
+                    $softDeleteCol = $col;
+                    break;
+                }
+            }
+
+            if ($softDeleteCol !== null) {
+                $stmt = $pdo->prepare("UPDATE products SET {$softDeleteCol} = 0 WHERE id = ?");
+                $stmt->execute([$productId]);
+                adminJsonResponse(200, ['ok' => true, 'message' => 'Producto marcado como Inactivo (no se borró totalmente porque tiene ventas en el historial)']);
+            } elseif (in_array('deleted_at', $cols, true)) {
+                $stmt = $pdo->prepare('UPDATE products SET deleted_at = NOW() WHERE id = ?');
+                $stmt->execute([$productId]);
+                adminJsonResponse(200, ['ok' => true, 'message' => 'Producto marcado como Inactivo (no se borró totalmente porque tiene ventas en el historial)']);
+            } else {
+                adminJsonResponse(409, ['ok' => false, 'message' => 'No se puede borrar físicamente porque tiene ventas registradas, y tu tabla no soporta inactivos.']);
+            }
+        } else {
+            // Otro error de base de datos
+            error_log('pos_product_delete.php DB error: ' . $e->getMessage());
+            adminJsonResponse(500, ['ok' => false, 'message' => 'Error de base de datos']);
         }
-
-        $stmt = $pdo->prepare("UPDATE products SET {$softDeleteCol} = 0 WHERE id = ?");
-        $stmt->execute([$productId]);
-        adminJsonResponse(200, ['ok' => true, 'message' => 'Producto eliminado del catálogo']);
     }
-
-    if (in_array('deleted_at', $cols, true)) {
-        $stmt = $pdo->prepare('UPDATE products SET deleted_at = NOW() WHERE id = ?');
-        $stmt->execute([$productId]);
-        adminJsonResponse(200, ['ok' => true, 'message' => 'Producto eliminado del catálogo']);
-    }
-
-    // Sin columna de soft delete: borrar definitivamente (y sus códigos de barras)
-    try {
-        $pdo->prepare('DELETE FROM product_barcodes WHERE product_id = ?')->execute([$productId]);
-    } catch (Throwable $e) {
-        // La tabla puede no existir; continuar
-    }
-
-    $stmt = $pdo->prepare('DELETE FROM products WHERE id = ?');
-    $stmt->execute([$productId]);
-
-    adminJsonResponse(200, ['ok' => true, 'message' => 'Producto eliminado']);
-} catch (PDOException $e) {
-    error_log('pos_product_delete.php DB error: ' . $e->getMessage());
-
-    // Error típico: FK con ventas pasadas; no se puede borrar físico
-    if (strpos($e->getMessage(), 'foreign key') !== false || $e->getCode() === '23000') {
-        adminJsonResponse(409, [
-            'ok' => false,
-            'message' => 'No se puede borrar: el producto tiene ventas registradas.',
-        ]);
-    }
-
-    adminJsonResponse(500, ['ok' => false, 'message' => 'Error de base de datos']);
 } catch (Throwable $e) {
     error_log('pos_product_delete.php error: ' . $e->getMessage());
     adminJsonResponse(500, ['ok' => false, 'message' => $e->getMessage()]);
