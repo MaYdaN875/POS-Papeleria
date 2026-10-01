@@ -114,10 +114,10 @@ export async function getProducts(): Promise<Product[]> {
   // POS: precios físicos, stock y códigos de barras.
   // Pública: imágenes y categorías (las guarda en otra tabla que el POS no ve).
   const [posData, pubData] = await Promise.all([
-    fetch(`${ENDPOINTS.POS_PRODUCTS}?include_inactive=1&t=${Date.now()}`)
+    fetch(`${ENDPOINTS.POS_PRODUCTS}?t=${Date.now()}`)
       .then((r) => r.json())
       .catch(() => null),
-    fetch(`${ENDPOINTS.PRODUCTS}?include_inactive=1`)
+    fetch(`${ENDPOINTS.PRODUCTS}`)
       .then((r) => r.json())
       .catch(() => null),
   ]);

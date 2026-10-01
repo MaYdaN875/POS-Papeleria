@@ -503,14 +503,7 @@ export default function InventoryPage() {
         </div>
 
         <div className="inventory-header-right">
-          <label className="inventory-toggle-inactive">
-            <input
-              type="checkbox"
-              checked={showInactive}
-              onChange={(e) => setShowInactive(e.target.checked)}
-            />
-            <span>Mostrar inactivos</span>
-          </label>
+
           <div className="inventory-search">
             <Search size={18} className="inventory-search-icon" />
             <input
